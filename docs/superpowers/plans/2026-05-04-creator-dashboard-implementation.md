@@ -1071,6 +1071,8 @@ git commit -m "feat: add cloudflare worker handler wrapper"
 
 **Execution-order correction discovered during implementation:** Task 8 (shared connector contract, especially `FetchError`) must be completed before Task 6, because orchestration error classification imports and tests against `FetchError`. This does not enable any production sources early; the source registry remains empty until the Tier 1 connector task.
 
+
+**Second execution-order correction discovered during implementation:** Task 6 also needs the alert dedupe and DLQ primitives that were originally listed in Task 7, because `consumer.ts` calls `maybeSendAlert()` for permanent failures and `worker/queue.ts` dispatches DLQ batches. Implement `src/lib/server/alerts/discord.ts`, `src/lib/server/alerts/dedup.ts`, and `src/lib/server/orchestration/dlq.ts` with tests as part of orchestration, then Task 7 focuses on manual refresh and Health UI.
 ## Phase 2: Orchestration core
 
 ### Task 6: Add dispatcher, queue consumer, persistence, and error classification
