@@ -1069,6 +1069,8 @@ git commit -m "feat: add cloudflare worker handler wrapper"
 
 ---
 
+**Execution-order correction discovered during implementation:** Task 8 (shared connector contract, especially `FetchError`) must be completed before Task 6, because orchestration error classification imports and tests against `FetchError`. This does not enable any production sources early; the source registry remains empty until the Tier 1 connector task.
+
 ## Phase 2: Orchestration core
 
 ### Task 6: Add dispatcher, queue consumer, persistence, and error classification
