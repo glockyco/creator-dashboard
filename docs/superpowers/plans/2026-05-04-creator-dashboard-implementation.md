@@ -2146,7 +2146,7 @@ git commit -m "feat: add posts metadata sync"
 - Create: `src/lib/components/posts/PostHeader.svelte`
 - Create: `src/lib/components/posts/MarkdownBody.svelte`
 - Create: `src/lib/components/posts/PerformancePanel.svelte`
-- Create: `e2e/posts.spec.ts`
+- Pending after auth test harness: `e2e/posts.spec.ts`
 
 - [ ] **Step 1: Implement server queries**
 
@@ -2169,22 +2169,26 @@ Desktop `/posts` may be a table; below `md`, render card layout. `MarkdownBody` 
 
 - [ ] **Step 4: Verify**
 
+Per the Task 12 execution decision, do not add an auth bypass or local Access/JWKS harness in this task. Leave posts Playwright specs pending until an auth-capable e2e harness is explicitly added. Verify posts queries, shared post metadata code, and compiled routes instead:
+
 ```bash
-pnpm vitest run src/lib/server/posts.test.ts
-pnpm playwright test e2e/posts.spec.ts --project=chromium
+pnpm vitest run src/lib/server/posts.test.ts src/lib/posts/schema.test.ts src/lib/posts/loader.test.ts scripts/sync-posts.test.ts
+pnpm check
+pnpm build
 ```
 
 Expected:
 
 ```text
-posts queries pass
-Playwright confirms list filters, detail page, and performance panel render
+posts query and metadata tests pass
+Svelte check exits 0
+build exits 0
 ```
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/lib/server/posts.ts src/lib/server/posts.test.ts src/routes/posts src/lib/components/posts e2e/posts.spec.ts
+git add src/lib/server/posts.ts src/lib/server/posts.test.ts src/routes/posts src/lib/components/posts docs/superpowers/plans/2026-05-04-creator-dashboard-implementation.md
 git commit -m "feat: add posts pages"
 ```
 
