@@ -1,0 +1,12 @@
+.DS_Store
+node_modules/
+.svelte-kit/
+.wrangler/
+.dev.vars
+.env
+.env.*
+!.env.example
+.tmp/
+playwright-report/
+test-results/
+.worktrees/
