@@ -9,7 +9,8 @@ export const load: PageServerLoad = async ({ platform, url }) => {
   return {
     title: 'Creator Dashboard',
     snapshots,
-    identity
+    identity,
+    url: url.toString()
   };
 };
 

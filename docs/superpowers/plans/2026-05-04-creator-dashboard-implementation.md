@@ -1892,8 +1892,8 @@ git commit -m "feat: add dashboard query model"
 - Create: `src/routes/api/sources/[source_id]/status/+server.ts`
 - Modify: `src/routes/+layout.svelte`
 - Modify: `src/routes/+page.svelte`
-- Create: `e2e/dashboard-shell.spec.ts`
-- Create: `e2e/dashboard-tiles.spec.ts`
+- Pending after auth test harness: `e2e/dashboard-shell.spec.ts`
+- Pending after auth test harness: `e2e/dashboard-tiles.spec.ts`
 
 - [ ] **Step 1: Implement URL state helpers**
 
@@ -1944,24 +1944,28 @@ await fetch(`/api/refresh/${sourceId}`, {
 
 Then poll `/api/sources/${sourceId}/status` every 2 seconds for 30 seconds.
 
-- [ ] **Step 4: Verify UI state and e2e basics**
+- [ ] **Step 4: Verify UI state and dashboard build**
+
+Per the Task 12 execution decision, do not add an auth bypass or local Access/JWKS harness in this task. Leave dashboard Playwright specs pending until an auth-capable e2e harness is explicitly added. Verify the URL-state behavior and compiled dashboard instead:
 
 ```bash
 pnpm vitest run src/lib/ui/url-state.test.ts
-pnpm playwright test e2e/dashboard-shell.spec.ts e2e/dashboard-tiles.spec.ts --project=chromium
+pnpm check
+pnpm build
 ```
 
 Expected:
 
 ```text
 url-state tests pass
-Playwright confirms identity tabs, tile grid, and refresh request headers
+Svelte check exits 0
+build exits 0
 ```
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/lib/ui src/lib/components/dashboard src/routes/+layout.svelte src/routes/+page.svelte src/routes/api/sources e2e/dashboard-shell.spec.ts e2e/dashboard-tiles.spec.ts
+git add src/lib/ui src/lib/components/dashboard src/routes/+layout.svelte src/routes/+page.svelte src/routes/api/sources docs/superpowers/plans/2026-05-04-creator-dashboard-implementation.md docs/superpowers/specs/2026-05-04-creator-dashboard-design.md
 git commit -m "feat: add dashboard tiles and navigation"
 ```
 
