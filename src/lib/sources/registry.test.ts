@@ -4,7 +4,7 @@ import { SourceDef, sources } from './registry';
 const fetcher = async () => ({ metric_points: [], events: [] });
 
 describe('source registry', () => {
-  it('contains the seven Tier 1 source IDs with approved cadences', () => {
+  it('contains Tier 1 and enabled analytics source IDs with approved cadences', () => {
     expect(sources.map((source) => source.id)).toEqual([
       'github-glockyco',
       'steam-guide-erenshor',
@@ -12,9 +12,20 @@ describe('source registry', () => {
       'steam-reviews-erenshor',
       'steam-reviews-ak',
       'thunderstore-wowmuch',
-      'erenshor-wiki-recent'
+      'erenshor-wiki-recent',
+      'gsc-glockyco-com',
+      'gsc-ak-compendium',
+      'gsc-erenshor-maps',
+      'bing-glockyco-com',
+      'bing-ak-compendium',
+      'bing-erenshor-maps',
+      'cf-analytics-glockyco-com',
+      'cf-analytics-ak-compendium',
+      'cf-analytics-erenshor-maps'
     ]);
-    expect(sources.every((source) => source.cadenceHours === 1)).toBe(true);
+    expect(sources.filter((source) => source.category !== 'analytics').every((source) => source.cadenceHours === 1)).toBe(true);
+    expect(sources.filter((source) => source.category === 'analytics').every((source) => source.cadenceHours === 24)).toBe(true);
+    expect(sources.some((source) => source.id === 'ga4')).toBe(false);
   });
 
   it('accepts a valid source shape', () => {

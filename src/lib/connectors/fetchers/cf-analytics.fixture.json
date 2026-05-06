@@ -1,0 +1,13 @@
+{
+  "data": {
+    "viewer": {
+      "accounts": [
+        {
+          "rumPageloadEventsAdaptiveGroups": [
+            { "dimensions": { "date": "2026-05-01" }, "sum": { "visits": 42 }, "count": 64 }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "rows": [
+    {
+      "dimensionValues": [{ "value": "20260501" }],
+      "metricValues": [{ "value": "10" }, { "value": "7" }, { "value": "25" }, { "value": "40" }]
+    }
+  ]
+}

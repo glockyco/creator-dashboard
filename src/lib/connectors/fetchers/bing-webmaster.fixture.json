@@ -1,0 +1,6 @@
+{
+  "QueryStats": [
+    { "Query": "erenshor map", "Page": "https://erenshor-maps.wowmuch1.workers.dev/", "Clicks": 5, "Impressions": 50, "Ctr": 0.1, "Position": 3.5 },
+    { "Query": "ancient kingdoms", "Page": "https://ancient-kingdoms-compendium.wowmuch1.workers.dev/", "Clicks": 7, "Impressions": 70, "Ctr": 0.1, "Position": 5.5 }
+  ]
+}
