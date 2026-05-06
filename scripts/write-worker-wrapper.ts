@@ -1,16 +1,21 @@
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { rename, writeFile } from 'node:fs/promises';
 
 const out = '.svelte-kit/cloudflare/worker.js';
-const content = `import svelteWorker from './_worker.js';
+const svelteWorkerOut = '.svelte-kit/cloudflare/sveltekit-worker.js';
+
+await rename(out, svelteWorkerOut);
+
+const content = `import svelteWorker from './sveltekit-worker.js';
+import { scheduled, queue } from '../../src/worker.ts';
 
 export default {
   fetch(request, env, ctx) {
     return svelteWorker.fetch(request, env, ctx);
-  }
+  },
+  scheduled,
+  queue
 };
 `;
 
-await mkdir(dirname(out), { recursive: true });
 await writeFile(out, content);
 console.log(`wrote ${out}`);

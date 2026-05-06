@@ -143,7 +143,7 @@ crons = ["0 * * * *", "0 4,5 * * *"]
 
 `workers_dev = false` and `preview_urls = false` close off the workers.dev URL so nothing leaks unauthenticated.
 
-The deployed Worker uses a generated wrapper at `.svelte-kit/cloudflare/worker.js`: it delegates `fetch` to SvelteKit's generated `.svelte-kit/cloudflare/_worker.js` and exports source-controlled `scheduled` / `queue` handlers. This keeps the approved single-Worker architecture while matching Cloudflare's module-worker handler model.
+The deployed Worker uses a generated wrapper at `.svelte-kit/cloudflare/worker.js`: after SvelteKit builds its adapter output to that path, `scripts/write-worker-wrapper.ts` renames the adapter output to `.svelte-kit/cloudflare/sveltekit-worker.js`, then writes a wrapper that delegates `fetch` to `sveltekit-worker.js` and exports source-controlled `scheduled` / `queue` handlers. This keeps the approved single-Worker architecture while matching Cloudflare's module-worker handler model.
 
 ### 1.4 Auth — Cloudflare Access
 

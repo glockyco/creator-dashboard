@@ -289,7 +289,8 @@ export default defineConfig({
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "types": ["@cloudflare/workers-types", "node"]
   }
 }
 ```
@@ -431,11 +432,14 @@ export const load = async () => ({
 `scripts/write-worker-wrapper.ts`:
 
 ```ts
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { rename, writeFile } from 'node:fs/promises';
 
 const out = '.svelte-kit/cloudflare/worker.js';
-const content = `import svelteWorker from './_worker.js';
+const svelteWorkerOut = '.svelte-kit/cloudflare/sveltekit-worker.js';
+
+await rename(out, svelteWorkerOut);
+
+const content = `import svelteWorker from './sveltekit-worker.js';
 
 export default {
   fetch(request, env, ctx) {
@@ -444,7 +448,6 @@ export default {
 };
 `;
 
-await mkdir(dirname(out), { recursive: true });
 await writeFile(out, content);
 console.log(`wrote ${out}`);
 ```
@@ -1016,11 +1019,14 @@ export { scheduled, queue };
 `scripts/write-worker-wrapper.ts`:
 
 ```ts
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { rename, writeFile } from 'node:fs/promises';
 
 const out = '.svelte-kit/cloudflare/worker.js';
-const content = `import svelteWorker from './_worker.js';
+const svelteWorkerOut = '.svelte-kit/cloudflare/sveltekit-worker.js';
+
+await rename(out, svelteWorkerOut);
+
+const content = `import svelteWorker from './sveltekit-worker.js';
 import { scheduled, queue } from '../../src/worker.ts';
 
 export default {
@@ -1032,7 +1038,6 @@ export default {
 };
 `;
 
-await mkdir(dirname(out), { recursive: true });
 await writeFile(out, content);
 console.log(`wrote ${out}`);
 ```
