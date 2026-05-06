@@ -317,7 +317,7 @@ directory = ".svelte-kit/cloudflare"
 [[d1_databases]]
 binding       = "DB"
 database_name = "creator-dashboard"
-database_id   = "<replace with wrangler d1 create creator-dashboard database_id>"
+database_id   = "<replace with pnpm exec wrangler d1 create creator-dashboard database_id>"
 
 [[queues.producers]]
 binding = "FETCHER_QUEUE"
@@ -338,7 +338,7 @@ max_batch_size = 1
 crons = ["0 * * * *", "0 4,5 * * *"]
 ```
 
-Replace the placeholder `database_id` immediately after `wrangler d1 create creator-dashboard` returns the real ID.
+Replace the placeholder `database_id` immediately after `pnpm exec wrangler d1 create creator-dashboard` returns the real ID.
 
 - [ ] **Step 4: Add global CSS and minimal routes**
 
@@ -791,8 +791,8 @@ Run:
 
 ```bash
 pnpm migrate:local
-wrangler d1 execute creator-dashboard --local --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
-wrangler d1 execute creator-dashboard --local --command "SELECT name FROM sqlite_master WHERE type='index' ORDER BY name"
+pnpm exec wrangler d1 execute creator-dashboard --local --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+pnpm exec wrangler d1 execute creator-dashboard --local --command "SELECT name FROM sqlite_master WHERE type='index' ORDER BY name"
 ```
 
 Expected table names include:
@@ -1045,7 +1045,7 @@ Run:
 
 ```bash
 pnpm build
-wrangler dev --test-scheduled
+pnpm exec wrangler dev --test-scheduled
 curl "http://localhost:8787/__scheduled?cron=0+*+*+*+*"
 ```
 
@@ -1725,9 +1725,9 @@ Seed `.dev.vars` with non-production test tokens, then run:
 
 ```bash
 pnpm build
-wrangler dev --test-scheduled
+pnpm exec wrangler dev --test-scheduled
 curl "http://localhost:8787/__scheduled?cron=0+*+*+*+*"
-wrangler d1 execute creator-dashboard --local --command "SELECT source_id,last_status,consecutive_failures FROM fetcher_runs ORDER BY source_id"
+pnpm exec wrangler d1 execute creator-dashboard --local --command "SELECT source_id,last_status,consecutive_failures FROM fetcher_runs ORDER BY source_id"
 ```
 
 Expected after one successful fixture-backed local fetch:
@@ -2107,7 +2107,7 @@ COMMIT;
 Execute remote sync with:
 
 ```bash
-wrangler d1 execute creator-dashboard --remote --file .tmp/sync-posts.sql
+pnpm exec wrangler d1 execute creator-dashboard --remote --file .tmp/sync-posts.sql
 ```
 
 - [ ] **Step 5: Run tests**
@@ -2394,7 +2394,7 @@ Each script supports:
 `--dry-run` writes SQL only. `--execute-remote` runs:
 
 ```bash
-wrangler d1 execute creator-dashboard --remote --file <generated.sql>
+pnpm exec wrangler d1 execute creator-dashboard --remote --file <generated.sql>
 ```
 
 - [ ] **Step 2: Use connector modules, not duplicated parsing**
@@ -2660,7 +2660,7 @@ pnpm test
 pnpm build
 pnpm playwright test --project=chromium
 pnpm migrate:local
-wrangler d1 migrations apply creator-dashboard --remote
+pnpm exec wrangler d1 migrations apply creator-dashboard --remote
 pnpm deploy
 ```
 
@@ -2680,7 +2680,7 @@ manual deploy succeeds
 After deploy, verify manually:
 
 ```bash
-wrangler tail creator-dashboard
+pnpm exec wrangler tail creator-dashboard
 ```
 
 Then visit `https://dashboard.glockyco.com` through Cloudflare Access and confirm:

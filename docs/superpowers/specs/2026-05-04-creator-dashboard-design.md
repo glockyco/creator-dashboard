@@ -120,7 +120,7 @@ directory = ".svelte-kit/cloudflare"
 [[d1_databases]]
 binding       = "DB"
 database_name = "creator-dashboard"
-database_id   = "<from `wrangler d1 create creator-dashboard`>"
+database_id   = "<from `pnpm exec wrangler d1 create creator-dashboard`>"
 
 [[queues.producers]]
 binding = "FETCHER_QUEUE"
@@ -409,11 +409,11 @@ export const posts = Object.entries(raw).map(([path, src]) => {
 `pnpm deploy` runs:
 
 ```bash
-wrangler deploy && \
+pnpm exec wrangler deploy && \
 node --experimental-strip-types scripts/sync-posts.ts
 ```
 
-`scripts/sync-posts.ts` shares the same frontmatter schema and normalization logic as the runtime loader, but uses Node filesystem reads instead of the runtime `import.meta.glob` loader. It generates a single transaction (`BEGIN; DELETE FROM posts_sources; DELETE FROM posts_index; INSERT ...; COMMIT;`) and runs it via `wrangler d1 execute --remote --file=<generated.sql>`.
+`scripts/sync-posts.ts` shares the same frontmatter schema and normalization logic as the runtime loader, but uses Node filesystem reads instead of the runtime `import.meta.glob` loader. It generates a single transaction (`BEGIN; DELETE FROM posts_sources; DELETE FROM posts_index; INSERT ...; COMMIT;`) and runs it via `pnpm exec wrangler d1 execute --remote --file=<generated.sql>`.
 
 Why deploy-time, not runtime: the deploy is when "publish" happens. Sync at deploy = code, files, and DB always reflect the same git SHA. No drift, no per-isolate sync race, no "first request after deploy is slow" problem.
 
@@ -1020,7 +1020,7 @@ Each script:
 1. Reads the source registry (filters to its category).
 2. Runs the same fetcher modules from `src/lib/connectors/fetchers/`, but parameterized to a date range instead of "now".
 3. Pages through historical windows (GSC max 25k rows per query, paginate via `startRow`).
-4. Writes to D1 via `wrangler d1 execute --remote --file=<generated.sql>` in batches of ~500 rows per transaction.
+4. Writes to D1 via `pnpm exec wrangler d1 execute --remote --file=<generated.sql>` in batches of ~500 rows per transaction.
 
 **Why local scripts vs in-Worker:**
 
@@ -1234,7 +1234,7 @@ Dark by default. Light mode toggle in Settings. Tailwind 4 `@theme` block:
 | **Schema parsers**        | vitest     | `PostFrontmatter`, `SourceDef`, identity validators reject malformed input                  | Pre-commit + CI    |
 | **Posts sync**            | vitest     | `scripts/sync-posts.ts` against fixture `posts/` produces expected SQL transcript           | Pre-commit + CI    |
 | **Auth helper**           | vitest     | Access JWT verification accepts valid token, rejects expired/wrong-AUD/wrong-issuer         | Pre-commit + CI    |
-| **Worker integration**    | Wrangler   | `wrangler dev --test-scheduled` + scripted HTTP calls: scheduled handler reachable; fixture source can prove cron → queue → D1 row once Phase 2 test wiring exists | Pre-deploy         |
+| **Worker integration**    | Wrangler   | `pnpm exec wrangler dev --test-scheduled` + scripted HTTP calls: scheduled handler reachable; fixture source can prove cron → queue → D1 row once Phase 2 test wiring exists | Pre-deploy         |
 | **End-to-end UI**         | Playwright | Dashboard loads behind Access, tile renders, manual refresh updates                         | Pre-deploy (local) |
 | **D1 migration replay**   | Wrangler   | Apply migrations to a fresh local DB; assert all tables and indexes exist                   | Pre-deploy         |
 
@@ -1255,8 +1255,8 @@ migrations/
 ```
 
 ```bash
-wrangler d1 migrations apply creator-dashboard --local
-wrangler d1 migrations apply creator-dashboard --remote
+pnpm exec wrangler d1 migrations apply creator-dashboard --local
+pnpm exec wrangler d1 migrations apply creator-dashboard --remote
 ```
 
 D1 tracks applied versions in a system table. Migration files are immutable once committed (D1 records hashes; modifying a past migration triggers an error). `pnpm deploy` applies them on remote as part of the deploy step.
@@ -1264,7 +1264,7 @@ D1 tracks applied versions in a system table. Migration files are immutable once
 ### 6.3 Local development
 
 ```bash
-wrangler dev --test-scheduled              # Worker + local D1 + local Queues + scheduled test route, port 8787
+pnpm exec wrangler dev --test-scheduled     # Worker + local D1 + local Queues + scheduled test route, port 8787
 pnpm dev                              # SvelteKit dev server, port 5173, proxies to wrangler
 ```
 
@@ -1319,7 +1319,7 @@ In order of how often they're consulted:
 2. **Discord alert webhook** — push for permanent failures + DLQ.
 3. **Dashboard `/health` page** — interactive view; last-fetched ages, recent failures, alerts log.
 4. **Workers Logs** — persistent structured logs, 7-day retention on Paid. Filter by `level:error`, source ID, cron expression.
-5. **`wrangler tail`** — live tail during local iteration or freshly-deployed debugging.
+5. **`pnpm exec wrangler tail`** — live tail during local iteration or freshly-deployed debugging.
 
 Structured log shape:
 
@@ -1338,12 +1338,12 @@ Initial setup (one-time):
 
 ```bash
 pnpm install
-wrangler d1 create creator-dashboard
+pnpm exec wrangler d1 create creator-dashboard
 # (paste returned database_id into wrangler.toml)
-wrangler queues create creator-dashboard-fetchers
-wrangler queues create creator-dashboard-fetcher-dlq
+pnpm exec wrangler queues create creator-dashboard-fetchers
+pnpm exec wrangler queues create creator-dashboard-fetcher-dlq
 # (configure CF Access app in Zero Trust dashboard pointing at dashboard.glockyco.com)
-# (set all secrets via `wrangler secret put`)
+# (set all secrets via `pnpm exec wrangler secret put`)
 
 pnpm migrate:remote
 pnpm deploy
@@ -1360,7 +1360,7 @@ If migrations changed: deploy applies them first; if they fail, the Worker isn't
 
 ### 6.7 Backup strategy
 
-D1 Time Travel: 30 days point-in-time recovery on Workers Paid. Restores are destructive (in-place); for non-trivial recovery, capture current state first via `wrangler d1 export` before restoring. **Time Travel is sufficient for v1.**
+D1 Time Travel: 30 days point-in-time recovery on Workers Paid. Restores are destructive (in-place); for non-trivial recovery, capture current state first via `pnpm exec wrangler d1 export` before restoring. **Time Travel is sufficient for v1.**
 
 Future enhancement (not part of the v1 phasing): a weekly cron exports D1 to R2 as a redundant offsite backup. Adds a third cron expression (`0 3 * * 0` UTC, Sunday 03:00) and an R2 binding. Trivial to add when D1 grows large or paranoia warrants it; flagged here so the architecture has space for it.
 
