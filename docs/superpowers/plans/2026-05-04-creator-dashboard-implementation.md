@@ -32,7 +32,7 @@ These are implementation-level corrections discovered while converting the appro
 3. **Phase 2 no-fetcher acceptance:** Phase 2 proves orchestration with injected test fetchers and an empty production source registry. Phase 3 enables Tier 1 sources.
 4. **Posts sync shared code:** The runtime posts loader may use Vite `import.meta.glob`, but the Node deploy script cannot. Share schema and normalization code; use separate file readers.
 5. **Observable Plot rendering:** Implement dashboard sparklines with simple SVG first. For timeline Plot charts, default to client-side Plot rendering unless an explicit Worker-compatible DOM strategy is added and tested.
-6. **Daily digest dedupe:** The digest posts to Discord, an external side effect. Phase 8 adds a `digest_sent` table/migration before enabling digest dispatch.
+6. **Daily digest dedupe:** The digest posts to Discord, an external side effect. The `digest_sent` table belongs in the initial schema so the scheduled digest can be enabled later without a schema surprise.
 7. **Local secrets:** Use `.dev.vars` for Wrangler local development. Use `.env.local` only if SvelteKit-only tooling needs non-Wrangler variables later.
 
 ---
@@ -52,7 +52,6 @@ creator-dashboard/
   .dev.vars.example
   migrations/
     0001_initial_schema.sql
-    0002_digest_sent.sql
   posts/
     .gitkeep
   scripts/
@@ -2495,7 +2494,6 @@ git commit -m "feat: add timeline correlation view"
 ### Task 20: Add daily digest with Vienna guard and dedupe
 
 **Files:**
-- Create: `migrations/0002_digest_sent.sql`
 - Create: `src/lib/digest/types.ts`
 - Create: `src/lib/digest/vienna.ts`
 - Create: `src/lib/digest/vienna.test.ts`
@@ -2505,16 +2503,9 @@ git commit -m "feat: add timeline correlation view"
 - Create: `src/lib/digest/format.test.ts`
 - Modify: `src/lib/server/worker/scheduled.ts`
 
-- [ ] **Step 1: Add digest dedupe migration**
+- [ ] **Step 1: Confirm digest dedupe table exists**
 
-`migrations/0002_digest_sent.sql`:
-
-```sql
-CREATE TABLE digest_sent (
-  digest_date TEXT PRIMARY KEY,
-  sent_at     INTEGER NOT NULL
-);
-```
+`migrations/0001_initial_schema.sql` already creates `digest_sent (digest_date TEXT PRIMARY KEY, sent_at INTEGER NOT NULL)`. Do not add a second migration for this table.
 
 - [ ] **Step 2: Implement Vienna guard**
 
@@ -2565,7 +2556,7 @@ digest dedupe test proves one send per Vienna date
 - [ ] **Step 6: Commit**
 
 ```bash
-git add migrations/0002_digest_sent.sql src/lib/digest src/lib/server/worker/scheduled.ts
+git add src/lib/digest src/lib/server/worker/scheduled.ts
 git commit -m "feat: add daily digest"
 ```
 
