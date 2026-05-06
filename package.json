@@ -1,0 +1,51 @@
+{
+  "name": "creator-dashboard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build && node --experimental-strip-types scripts/write-worker-wrapper.ts",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "lint": "prettier --check . && eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "migrate:local": "wrangler d1 migrations apply creator-dashboard --local",
+    "migrate:remote": "wrangler d1 migrations apply creator-dashboard --remote",
+    "sync-posts": "node --experimental-strip-types scripts/sync-posts.ts",
+    "deploy": "pnpm migrate:remote && pnpm build && wrangler deploy && pnpm sync-posts",
+    "backfill": "node --experimental-strip-types scripts/backfill-gsc.ts && node --experimental-strip-types scripts/backfill-bing.ts && node --experimental-strip-types scripts/backfill-cf.ts && node --experimental-strip-types scripts/backfill-ga4.ts"
+  },
+  "dependencies": {
+    "@observablehq/plot": "latest",
+    "gray-matter": "latest",
+    "jose": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "@eslint/js": "latest",
+    "@playwright/test": "latest",
+    "@types/node": "latest",
+    "@sveltejs/adapter-cloudflare": "latest",
+    "@sveltejs/kit": "latest",
+    "@sveltejs/vite-plugin-svelte": "latest",
+    "@tailwindcss/vite": "latest",
+    "eslint": "latest",
+    "eslint-config-prettier": "latest",
+    "eslint-plugin-svelte": "latest",
+    "prettier": "latest",
+    "prettier-plugin-svelte": "latest",
+    "svelte": "latest",
+    "svelte-check": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "vitest": "latest",
+    "wrangler": "latest"
+  },
+  "packageManager": "pnpm@10.0.0"
+}

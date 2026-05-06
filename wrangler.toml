@@ -1,0 +1,37 @@
+name = "creator-dashboard"
+compatibility_date = "2026-05-04"
+compatibility_flags = ["nodejs_als"]
+workers_dev = false
+preview_urls = false
+main = ".svelte-kit/cloudflare/worker.js"
+
+routes = [
+  { pattern = "dashboard.glockyco.com", custom_domain = true, zone_name = "glockyco.com" }
+]
+
+[assets]
+binding = "ASSETS"
+directory = ".svelte-kit/cloudflare"
+
+[[d1_databases]]
+binding       = "DB"
+database_name = "creator-dashboard"
+database_id   = "<replace with wrangler d1 create creator-dashboard database_id>"
+
+[[queues.producers]]
+binding = "FETCHER_QUEUE"
+queue   = "creator-dashboard-fetchers"
+
+[[queues.consumers]]
+queue              = "creator-dashboard-fetchers"
+max_batch_size     = 1
+max_batch_timeout  = 0
+max_retries        = 5
+dead_letter_queue  = "creator-dashboard-fetcher-dlq"
+
+[[queues.consumers]]
+queue          = "creator-dashboard-fetcher-dlq"
+max_batch_size = 1
+
+[triggers]
+crons = ["0 * * * *", "0 4,5 * * *"]
