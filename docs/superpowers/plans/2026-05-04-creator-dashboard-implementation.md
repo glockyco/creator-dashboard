@@ -1982,7 +1982,7 @@ git commit -m "feat: add dashboard tiles and navigation"
 - Create: `src/lib/components/sources/EventsFeed.svelte`
 - Create: `src/lib/components/sources/LinkedPosts.svelte`
 - Create: `src/lib/components/sources/ContributionHeatmap.svelte`
-- Create: `e2e/source-detail.spec.ts`
+- Pending after auth test harness: `e2e/source-detail.spec.ts`
 
 - [ ] **Step 1: Implement source detail queries**
 
@@ -1998,22 +1998,26 @@ Use `ContributionHeatmap` only for `github-glockyco` and metric `contributions`;
 
 - [ ] **Step 4: Verify**
 
+Per the Task 12 execution decision, do not add an auth bypass or local Access/JWKS harness in this task. Leave source-detail Playwright specs pending until an auth-capable e2e harness is explicitly added. Verify the source-detail query/API behavior and compiled routes instead:
+
 ```bash
-pnpm vitest run src/lib/server/source-detail.test.ts
-pnpm playwright test e2e/source-detail.spec.ts --project=chromium
+pnpm vitest run src/lib/server/source-detail.test.ts src/routes/api/sources/[source_id]/events/server.test.ts
+pnpm check
+pnpm build
 ```
 
 Expected:
 
 ```text
-source detail query tests pass
-Playwright confirms known source loads and unknown source returns 404
+source detail and events endpoint tests pass
+Svelte check exits 0
+build exits 0
 ```
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/lib/server/source-detail.ts src/lib/server/source-detail.test.ts src/routes/sources src/routes/api/sources/[source_id]/events src/lib/components/sources e2e/source-detail.spec.ts
+git add src/lib/server/source-detail.ts src/lib/server/source-detail.test.ts src/routes/sources src/routes/api/sources/[source_id]/events src/lib/components/sources src/lib/components/dashboard/SourceTile.svelte docs/superpowers/plans/2026-05-04-creator-dashboard-implementation.md
 git commit -m "feat: add source detail pages"
 ```
 

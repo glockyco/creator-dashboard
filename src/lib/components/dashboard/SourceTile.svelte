@@ -21,7 +21,7 @@
         <span class={`h-2.5 w-2.5 rounded-full ${snapshot.source.identity === 'glockyco' ? 'bg-glockyco' : 'bg-wowmuch'}`}></span>
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-fg-muted">{snapshot.source.identity}</p>
       </div>
-      <h2 class="mt-2 text-lg font-semibold text-fg-primary">{snapshot.source.name}</h2>
+      <h2 class="mt-2 text-lg font-semibold text-fg-primary"><a class="hover:underline" href={`/sources/${snapshot.source.id}`}>{snapshot.source.name}</a></h2>
       <p class="text-xs text-fg-muted">{status.last_status ?? 'not run yet'}{status.consecutive_failures > 0 ? ` · ${status.consecutive_failures} failures` : ''}</p>
     </div>
     <ManualRefreshButton sourceId={snapshot.source.id} onStatus={updateStatus} />
