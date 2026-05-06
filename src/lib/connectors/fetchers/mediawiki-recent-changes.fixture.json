@@ -1,0 +1,22 @@
+{
+  "query": {
+    "recentchanges": [
+      {
+        "type": "edit",
+        "ns": 0,
+        "title": "Erenshor Maps",
+        "pageid": 10,
+        "revid": 1002,
+        "old_revid": 1001,
+        "rcid": 9001,
+        "user": "WoW Much",
+        "timestamp": "2026-05-04T12:00:00Z",
+        "comment": "Updated route details",
+        "minor": false,
+        "bot": false,
+        "oldlen": 1000,
+        "newlen": 1125
+      }
+    ]
+  }
+}

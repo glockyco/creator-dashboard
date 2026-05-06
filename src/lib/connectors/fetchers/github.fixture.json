@@ -1,0 +1,28 @@
+{
+  "data": {
+    "viewer": {
+      "login": "glockyco",
+      "followers": { "totalCount": 23 },
+      "contributionsCollection": {
+        "contributionCalendar": {
+          "totalContributions": 7,
+          "weeks": [
+            { "contributionDays": [
+              { "date": "2026-05-01", "contributionCount": 1 },
+              { "date": "2026-05-02", "contributionCount": 0 },
+              { "date": "2026-05-03", "contributionCount": 2 },
+              { "date": "2026-05-04", "contributionCount": 4 }
+            ] }
+          ]
+        }
+      },
+      "repositories": {
+        "totalCount": 2,
+        "nodes": [
+          { "name": "personal-website", "stargazerCount": 5, "isArchived": false, "url": "https://github.com/glockyco/personal-website" },
+          { "name": "old-project", "stargazerCount": 2, "isArchived": true, "url": "https://github.com/glockyco/old-project" }
+        ]
+      }
+    }
+  }
+}

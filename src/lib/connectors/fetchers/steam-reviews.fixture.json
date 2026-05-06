@@ -1,0 +1,37 @@
+{
+  "success": 1,
+  "query_summary": {
+    "num_reviews": 2,
+    "review_score": 8,
+    "total_positive": 1,
+    "total_negative": 1
+  },
+  "reviews": [
+    {
+      "recommendationid": "12345",
+      "author": { "steamid": "redacted-steam-id", "num_games_owned": 10, "playtime_forever": 500, "playtime_at_review": 450 },
+      "language": "english",
+      "review": "Great map support.",
+      "timestamp_created": 1777852800,
+      "voted_up": true,
+      "votes_up": 3,
+      "weighted_vote_score": "0.75",
+      "comment_count": 1,
+      "steam_purchase": true,
+      "received_for_free": false
+    },
+    {
+      "recommendationid": "12346",
+      "author": { "steamid": "redacted-steam-id-2", "playtime_forever": 20, "playtime_at_review": 20 },
+      "language": "english",
+      "review": "Needs work.",
+      "timestamp_created": 1777939200,
+      "voted_up": false,
+      "votes_up": 0,
+      "weighted_vote_score": "0",
+      "comment_count": 0,
+      "steam_purchase": false,
+      "received_for_free": true
+    }
+  ]
+}

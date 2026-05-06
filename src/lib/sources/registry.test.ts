@@ -4,8 +4,17 @@ import { SourceDef, sources } from './registry';
 const fetcher = async () => ({ metric_points: [], events: [] });
 
 describe('source registry', () => {
-  it('starts empty until real connectors are enabled in Phase 3', () => {
-    expect(sources).toEqual([]);
+  it('contains the seven Tier 1 source IDs with approved cadences', () => {
+    expect(sources.map((source) => source.id)).toEqual([
+      'github-glockyco',
+      'steam-guide-erenshor',
+      'steam-guide-ak',
+      'steam-reviews-erenshor',
+      'steam-reviews-ak',
+      'thunderstore-wowmuch',
+      'erenshor-wiki-recent'
+    ]);
+    expect(sources.every((source) => source.cadenceHours === 1)).toBe(true);
   });
 
   it('accepts a valid source shape', () => {

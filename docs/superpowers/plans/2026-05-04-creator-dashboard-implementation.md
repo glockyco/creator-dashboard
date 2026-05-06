@@ -1728,28 +1728,14 @@ Expected:
 6 test files passed
 ```
 
-- [ ] **Step 9: Local orchestration smoke with injected fixture source**
+- [ ] **Step 9: Local orchestration smoke boundary**
 
-Seed `.dev.vars` with non-production test tokens, then run:
-
-```bash
-pnpm build
-pnpm exec wrangler dev --test-scheduled
-curl "http://localhost:8787/__scheduled?cron=0+*+*+*+*"
-pnpm exec wrangler d1 execute creator-dashboard --local --command "SELECT source_id,last_status,consecutive_failures FROM fetcher_runs ORDER BY source_id"
-```
-
-Expected after one successful fixture-backed local fetch:
-
-```text
-last_status contains success for the exercised source
-consecutive_failures is 0
-```
+Do not run `pnpm exec wrangler dev --test-scheduled` as an automated Tier 1 smoke while the same `wrangler.toml` has active queue consumers. Local Wrangler consumes queued messages immediately, so a scheduled smoke would execute live Tier 1 connectors and can trigger permanent-failure Discord alerts when `.dev.vars` secrets are absent. For this task, verify scheduled dispatch with unit coverage plus `pnpm build`; defer live local queue smoke until real `.dev.vars` secrets are present and the run is an explicit manual decision.
 
 - [ ] **Step 10: Commit**
 
 ```bash
-git add src/lib/connectors/fetchers src/lib/sources/registry.ts src/lib/sources/registry.test.ts
+git add src/lib/connectors/fetchers src/lib/sources/registry.ts src/lib/sources/registry.test.ts docs/superpowers/plans/2026-05-04-creator-dashboard-implementation.md
 git commit -m "feat: add tier one source connectors"
 ```
 
