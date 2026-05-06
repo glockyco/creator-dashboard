@@ -25,6 +25,7 @@ declare global {
     DISCORD_ALERTS_WEBHOOK: string;
     ACCESS_TEAM_DOMAIN: string;
     ACCESS_AUD: string;
+    ACCESS_JWKS_URL?: string;
   }
 }
 

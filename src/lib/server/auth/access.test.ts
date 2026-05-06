@@ -1,8 +1,8 @@
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { assertAccessJwt } from './access';
+import { assertAccessJwt, resetAccessJwksCacheForTests } from './access';
 
-const env = { ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com', ACCESS_AUD: 'aud-test' } as Pick<Env, 'ACCESS_TEAM_DOMAIN' | 'ACCESS_AUD'>;
+const env = { ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com', ACCESS_AUD: 'aud-test' } as Pick<Env, 'ACCESS_TEAM_DOMAIN' | 'ACCESS_AUD' | 'ACCESS_JWKS_URL'>;
 
 let privateKey: Awaited<ReturnType<typeof generateKeyPair>>['privateKey'];
 let jwksBody: string;
@@ -15,6 +15,7 @@ beforeAll(async () => {
 });
 
 beforeEach(() => {
+  resetAccessJwksCacheForTests();
   vi.unstubAllGlobals();
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(jwksBody)));
 });
@@ -53,5 +54,28 @@ describe('assertAccessJwt', () => {
     await expect(
       assertAccessJwt(new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': 'not-a-jwt' } }), env)
     ).rejects.toMatchObject({ status: 401 });
+  });
+
+  it('uses an explicit JWKS URL without changing issuer validation', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response(jwksBody)));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const token = await signedToken();
+    const request = new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': token } });
+
+    await expect(assertAccessJwt(request, { ...env, ACCESS_JWKS_URL: 'http://127.0.0.1:9000/jwks' })).resolves.toMatchObject({ email: 'johann@example.com' });
+    expect(fetchMock).toHaveBeenCalledWith('http://127.0.0.1:9000/jwks', expect.anything());
+  });
+
+  it('caches JWKS by issuer and JWKS URL', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response(jwksBody)));
+    vi.stubGlobal('fetch', fetchMock);
+    const token = await signedToken();
+    const request = new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': token } });
+
+    await assertAccessJwt(request, { ...env, ACCESS_JWKS_URL: 'http://127.0.0.1:9000/a' });
+    await assertAccessJwt(request, { ...env, ACCESS_JWKS_URL: 'http://127.0.0.1:9000/b' });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

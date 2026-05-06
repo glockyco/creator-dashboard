@@ -17,6 +17,7 @@ describe('sync-posts', () => {
     expect(sql).toContain("INSERT INTO posts_sources (slug, source_id)");
     expect(sql).toContain("'2026-04-12-wow-much-040-release', 'thunderstore-wowmuch'");
     expect(sql.trim().endsWith('COMMIT;')).toBe(true);
+    expect(sql).toContain("'e4a8eafeebab0e2344728a92f49b0de674ac149d8e580484be39746706945022'");
   });
 
   it('escapes SQL strings without dropping content', () => {
@@ -31,5 +32,20 @@ describe('sync-posts', () => {
     );
 
     expect(buildSyncSql(posts)).toContain("Johann''s release");
+  });
+
+  it('hashes normalized body content only', () => {
+    const base = syncPostsFromEntries([{ path: 'posts/base.md', markdown: validPost }], knownSourceIds)[0];
+    const frontmatterChanged = syncPostsFromEntries(
+      [{ path: 'posts/frontmatter.md', markdown: validPost.replace('WoW_Much 0.4.0 release', 'Changed title') }],
+      knownSourceIds
+    )[0];
+    const bodyChanged = syncPostsFromEntries(
+      [{ path: 'posts/body.md', markdown: validPost.replace('More detail about the release.', 'Different body text.') }],
+      knownSourceIds
+    )[0];
+
+    expect(frontmatterChanged.body_hash).toBe(base.body_hash);
+    expect(bodyChanged.body_hash).not.toBe(base.body_hash);
   });
 });

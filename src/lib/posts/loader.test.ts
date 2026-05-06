@@ -7,7 +7,7 @@ import { normalizePost } from './normalize';
 const knownSourceIds = new Set(['thunderstore-wowmuch']);
 
 describe('normalizePost', () => {
-  it('normalizes markdown into SQL-ready metadata', () => {
+  it('normalizes markdown into Worker-safe runtime metadata', () => {
     const post = normalizePost({ path: '/posts/2026-04-12-wow-much-040-release.md', markdown: validPost, knownSourceIds });
 
     expect(post).toMatchObject({
@@ -22,7 +22,7 @@ describe('normalizePost', () => {
       body_excerpt: 'Release notes excerpt.'
     });
     expect(post.body).toContain('More detail');
-    expect(post.body_hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(post).not.toHaveProperty('body_hash');
   });
 
   it('rejects related source IDs outside the registry', () => {

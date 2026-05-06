@@ -1,16 +1,18 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sources } from '../src/lib/sources/registry';
 import { normalizePost, type NormalizedPost } from '../src/lib/posts/normalize';
 
 export type PostEntry = { path: string; markdown: string };
+export type SyncPost = NormalizedPost & { body_hash: string };
 
-export function syncPostsFromEntries(entries: PostEntry[], knownSourceIds: ReadonlySet<string>): NormalizedPost[] {
-  return entries.map((entry) => normalizePost({ path: entry.path, markdown: entry.markdown, knownSourceIds })).sort((a, b) => b.posted_at_ms - a.posted_at_ms);
+export function syncPostsFromEntries(entries: PostEntry[], knownSourceIds: ReadonlySet<string>): SyncPost[] {
+  return entries.map((entry) => withBodyHash(normalizePost({ path: entry.path, markdown: entry.markdown, knownSourceIds }))).sort((a, b) => b.posted_at_ms - a.posted_at_ms);
 }
 
-export function buildSyncSql(posts: NormalizedPost[]): string {
+export function buildSyncSql(posts: SyncPost[]): string {
   const lines = ['BEGIN;', 'DELETE FROM posts_sources;', 'DELETE FROM posts_index;'];
   for (const post of posts) {
     lines.push(
@@ -33,6 +35,10 @@ async function readPostEntries(postsDir: string): Promise<PostEntry[]> {
     entries.push({ path, markdown: await readFile(path, 'utf8') });
   }
   return entries;
+}
+
+function withBodyHash(post: NormalizedPost): SyncPost {
+  return { ...post, body_hash: createHash('sha256').update(post.body).digest('hex') };
 }
 
 function sqlString(value: string): string {

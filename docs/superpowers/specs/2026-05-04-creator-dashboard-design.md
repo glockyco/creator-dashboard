@@ -413,7 +413,7 @@ pnpm exec wrangler deploy && \
 node --experimental-strip-types scripts/sync-posts.ts
 ```
 
-`scripts/sync-posts.ts` shares the same frontmatter schema and normalization logic as the runtime loader, but uses Node filesystem reads instead of the runtime `import.meta.glob` loader. It generates a single transaction (`BEGIN; DELETE FROM posts_sources; DELETE FROM posts_index; INSERT ...; COMMIT;`) and runs it via `pnpm exec wrangler d1 execute --remote --file=<generated.sql>`.
+`scripts/sync-posts.ts` shares the same frontmatter schema and runtime-safe parsing/normalization logic as the runtime loader, but uses Node filesystem reads instead of the runtime `import.meta.glob` loader. The runtime normalizer does not import Node built-ins; the Node-only sync script adds `body_hash` as SHA-256 of the normalized body before generating SQL. It generates a single transaction (`BEGIN; DELETE FROM posts_sources; DELETE FROM posts_index; INSERT ...; COMMIT;`) and runs it via `pnpm exec wrangler d1 execute --remote --file=<generated.sql>`.
 
 Why deploy-time, not runtime: the deploy is when "publish" happens. Sync at deploy = code, files, and DB always reflect the same git SHA. No drift, no per-isolate sync race, no "first request after deploy is slow" problem.
 

@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import matter from 'gray-matter';
 import { PostFrontmatter } from './schema';
 
@@ -13,7 +12,6 @@ export type NormalizedPost = {
   related_sources: string[];
   body: string;
   body_excerpt: string;
-  body_hash: string;
 };
 
 export type NormalizePostInput = {
@@ -40,8 +38,7 @@ export function normalizePost(input: NormalizePostInput): NormalizedPost {
     tags: frontmatter.tags,
     related_sources: frontmatter.related_sources,
     body,
-    body_excerpt: excerpt(body),
-    body_hash: createHash('sha256').update(body).digest('hex')
+    body_excerpt: excerpt(body)
   };
 }
 

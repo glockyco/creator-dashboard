@@ -2075,12 +2075,11 @@ export type PostFrontmatter = z.infer<typeof PostFrontmatter>;
   tags: string[],
   related_sources: string[],
   body: string,
-  body_excerpt: string,
-  body_hash: string
+  body_excerpt: string
 }
 ```
 
-Use SHA-256 for `body_hash`.
+Runtime normalization is Worker-safe and does not import Node built-ins. `body_hash` is added by the Node-only sync script from the normalized body.
 
 - [ ] **Step 3: Add runtime loader**
 
