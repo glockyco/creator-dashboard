@@ -2461,6 +2461,7 @@ git commit -m "feat: add analytics backfill scripts"
 - Create: `src/routes/timeline/+page.server.ts`
 - Create: `src/routes/timeline/+page.svelte`
 - Create: `e2e/timeline.spec.ts`
+- Modify: `scripts/e2e-server.ts`
 
 - [ ] **Step 1: Validate URL filters**
 
@@ -2504,7 +2505,7 @@ Playwright confirms metric line, event marker, post marker, and chronological lo
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/lib/timeline src/lib/server/timeline.ts src/lib/server/timeline.test.ts src/lib/components/timeline src/routes/timeline e2e/timeline.spec.ts
+git add src/lib/timeline src/lib/server/timeline.ts src/lib/server/timeline.test.ts src/lib/components/timeline src/routes/timeline e2e/timeline.spec.ts scripts/e2e-server.ts
 git commit -m "feat: add timeline correlation view"
 ```
 
