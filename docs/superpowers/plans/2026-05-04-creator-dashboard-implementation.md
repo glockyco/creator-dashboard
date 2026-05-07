@@ -2387,6 +2387,17 @@ git commit -m "feat: add analytics backfill utilities"
 - Create: `scripts/backfill-bing.test.ts`
 - Create: `scripts/backfill-cf.ts`
 - Create: `scripts/backfill-cf.test.ts`
+- Modify: `src/lib/connectors/fetchers/gsc.ts`
+- Modify: `src/lib/connectors/fetchers/ga4.ts`
+- Modify: `src/lib/connectors/fetchers/bing-webmaster.ts`
+- Modify: `src/lib/connectors/fetchers/cf-analytics.ts`
+- Create: `src/lib/sources/registry-data.ts`
+- Modify: `src/lib/sources/registry.ts`
+- Modify: `src/lib/connectors/http.ts`
+- Modify: `scripts/backfill/lib/run.ts`
+- Modify: `package.json`
+- Modify: `tsconfig.json`
+- Modify tests for those connector date-range helpers as needed.
 
 - [ ] **Step 1: Implement backfill scripts with dry-run output**
 
@@ -2405,7 +2416,7 @@ pnpm exec wrangler d1 execute creator-dashboard --remote --file <generated.sql>
 
 - [ ] **Step 2: Use connector modules, not duplicated parsing**
 
-Each script calls the relevant connector date-range entrypoint and converts rows to SQL batches of roughly 500 rows per transaction.
+Each script calls the relevant connector date-range helper. Task 18 adds those helper exports where the scheduled connector currently only supports "yesterday", and keeps response schemas and metric mapping shared in the connector module. Scripts convert rows to SQL batches of roughly 500 rows per transaction.
 
 - [ ] **Step 3: Verify script tests and dry-runs**
 

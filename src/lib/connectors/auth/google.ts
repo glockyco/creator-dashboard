@@ -1,6 +1,6 @@
 import { importPKCS8, SignJWT } from 'jose';
 import { z } from 'zod';
-import { fetchJson } from '../http';
+import { fetchJson } from '../http.ts';
 
 const ServiceAccount = z.object({
   client_email: z.string().email(),

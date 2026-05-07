@@ -1,7 +1,8 @@
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { dirname } from 'node:path';
 import type { MetricPoint } from '../../../src/lib/types/domain';
-import { metricInsertSql, transaction } from './sql';
+import { metricInsertSql, transaction } from './sql.ts';
 
 export type BackfillArgs = { dryRun: boolean; executeRemote: boolean; out: string };
 
@@ -28,6 +29,7 @@ export async function writeMetricBackfill(rows: MetricPoint[], out: string, batc
     chunks.push(metricInsertSql(rows.slice(index, index + batchSize)));
   }
   const sql = transaction(chunks);
+  await mkdir(dirname(out), { recursive: true });
   await writeFile(out, sql);
   return sql;
 }

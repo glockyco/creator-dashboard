@@ -1,13 +1,14 @@
 import type { z } from 'zod';
 
 export class FetchError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-    public headers: Headers = new Headers()
-  ) {
+  status: number;
+  headers: Headers;
+
+  constructor(status: number, message: string, headers: Headers = new Headers()) {
     super(message);
     this.name = 'FetchError';
+    this.status = status;
+    this.headers = headers;
   }
 }
 

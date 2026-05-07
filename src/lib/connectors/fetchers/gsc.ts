@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { getGoogleAccessToken } from '../auth/google';
-import { fetchJson } from '../http';
+import { getGoogleAccessToken } from '../auth/google.ts';
+import { fetchJson } from '../http.ts';
 import type { FetcherInput, FetcherOutput, JsonRecord, MetricPoint } from '$lib/types/domain';
 
 const GscConfig = z.object({ siteUrl: z.string().min(1) });
 const GscRow = z.object({
-  keys: z.tuple([z.string(), z.string()]),
+  keys: z.union([z.tuple([z.string(), z.string()]), z.tuple([z.string(), z.string(), z.string()])]),
   clicks: z.number(),
   impressions: z.number(),
   ctr: z.number(),
@@ -13,28 +13,68 @@ const GscRow = z.object({
 });
 const GscResponse = z.object({ rows: z.array(GscRow).default([]) });
 const metrics = ['clicks', 'impressions', 'ctr', 'position'] as const;
+const rowLimit = 25_000;
+
+type GscRow = z.infer<typeof GscRow>;
+type NormalizedRow = { date: string; query: string; page: string; clicks: number; impressions: number; ctr: number; position: number };
+export type GscRangeInput = { source: FetcherInput['source']; env: FetcherInput['env']; startDate: string; endDate: string };
 
 export async function fetchGsc({ source, env, now }: FetcherInput): Promise<FetcherOutput> {
-  const config = GscConfig.parse(source.config);
-  const token = await getGoogleAccessToken(env, ['https://www.googleapis.com/auth/webmasters.readonly']);
   const date = day(now - 86_400_000);
-  const response = await fetchJson(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(config.siteUrl)}/searchAnalytics/query`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ startDate: date, endDate: date, dimensions: ['query', 'page'], rowLimit: 250 }),
-    schema: GscResponse
-  });
-
-  const ts = Date.parse(`${date}T00:00:00.000Z`);
-  const metric_points: MetricPoint[] = aggregatePoints(source.id, ts, response.rows);
-  for (const row of response.rows) {
-    const dimensions = { query: row.keys[0], page: row.keys[1] };
-    for (const metric of metrics) metric_points.push(point(source.id, metric, ts, row[metric], dimensions));
-  }
-  return { metric_points, events: [] };
+  return fetchGscRange({ source, env, startDate: date, endDate: date });
 }
 
-function aggregatePoints(sourceId: string, ts: number, rows: z.infer<typeof GscRow>[]): MetricPoint[] {
+export async function fetchGscRange({ source, env, startDate, endDate }: GscRangeInput): Promise<FetcherOutput> {
+  const config = GscConfig.parse(source.config);
+  const token = await getGoogleAccessToken(env, ['https://www.googleapis.com/auth/webmasters.readonly']);
+  const rows: GscRow[] = [];
+
+  for (let startRow = 0; ; startRow += rowLimit) {
+    const response = await fetchJson(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(config.siteUrl)}/searchAnalytics/query`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ startDate, endDate, dimensions: ['date', 'query', 'page'], rowLimit, startRow }),
+      schema: GscResponse
+    });
+    rows.push(...response.rows);
+    if (response.rows.length < rowLimit) break;
+  }
+
+  return { metric_points: pointsFromRows(source.id, rows.map((row) => normalizeRow(row, startDate))), events: [] };
+}
+
+function pointsFromRows(sourceId: string, rows: NormalizedRow[]): MetricPoint[] {
+  const points: MetricPoint[] = [];
+  const rowsByDate = new Map<string, NormalizedRow[]>();
+  for (const row of rows) rowsByDate.set(row.date, [...(rowsByDate.get(row.date) ?? []), row]);
+
+  for (const [date, dateRows] of [...rowsByDate.entries()].sort(([left], [right]) => left.localeCompare(right))) {
+    const ts = Date.parse(`${date}T00:00:00.000Z`);
+    points.push(...aggregatePoints(sourceId, ts, dateRows));
+    for (const row of dateRows) {
+      const dimensions = { query: row.query, page: row.page };
+      for (const metric of metrics) points.push(point(sourceId, metric, ts, row[metric], dimensions));
+    }
+  }
+
+  return points;
+}
+
+function normalizeRow(row: GscRow, defaultDate: string): NormalizedRow {
+  const [first, second, third] = row.keys;
+  const hasDate = third !== undefined;
+  return {
+    date: hasDate ? first : defaultDate,
+    query: hasDate ? second : first,
+    page: hasDate ? third : second,
+    clicks: row.clicks,
+    impressions: row.impressions,
+    ctr: row.ctr,
+    position: row.position
+  };
+}
+
+function aggregatePoints(sourceId: string, ts: number, rows: NormalizedRow[]): MetricPoint[] {
   const clicks = rows.reduce((sum, row) => sum + row.clicks, 0);
   const impressions = rows.reduce((sum, row) => sum + row.impressions, 0);
   const weightedPosition = impressions === 0 ? 0 : rows.reduce((sum, row) => sum + row.position * row.impressions, 0) / impressions;

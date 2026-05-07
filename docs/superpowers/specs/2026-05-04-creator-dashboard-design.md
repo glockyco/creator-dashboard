@@ -1018,7 +1018,7 @@ scripts/
 Each script:
 
 1. Reads the source registry (filters to its category).
-2. Runs the same fetcher modules from `src/lib/connectors/fetchers/`, but parameterized to a date range instead of "now".
+2. Runs the same fetcher modules from `src/lib/connectors/fetchers/`, via exported date-range helpers that share the scheduled connector response schemas and row-to-metric mapping instead of duplicating parsing in scripts.
 3. Pages through historical windows (GSC max 25k rows per query, paginate via `startRow`).
 4. Writes to D1 via `pnpm exec wrangler d1 execute --remote --file=<generated.sql>` in batches of ~500 rows per transaction.
 
@@ -1026,7 +1026,7 @@ Each script:
 
 - **No 15-min wall-clock ceiling.** A full GSC backfill across 3 properties × 16 months could run for tens of minutes.
 - **Easy to retry on failure.** Idempotent inserts mean previous progress is preserved.
-- **Same connector code.** The fetcher modules are pure functions parameterized by `{source, env, now}`. The backfill script swaps `now` for a date-range loop. No duplicated parsing logic.
+- **Same connector code.** The fetcher modules expose scheduled fetchers plus date-range helpers for backfill. Backfill loops over historical windows while preserving the same response schemas and metric mapping. No duplicated parsing logic.
 
 ### 4.7 Concurrency & rate limits
 

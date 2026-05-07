@@ -17,7 +17,7 @@
     "migrate:remote": "wrangler d1 migrations apply creator-dashboard --remote",
     "sync-posts": "node --experimental-strip-types scripts/sync-posts.ts",
     "deploy": "pnpm migrate:remote && pnpm build && wrangler deploy && pnpm sync-posts",
-    "backfill": "node --experimental-strip-types scripts/backfill-gsc.ts && node --experimental-strip-types scripts/backfill-bing.ts && node --experimental-strip-types scripts/backfill-cf.ts && node --experimental-strip-types scripts/backfill-ga4.ts"
+    "backfill": "node --experimental-strip-types scripts/backfill-gsc.ts --execute-remote && node --experimental-strip-types scripts/backfill-bing.ts --execute-remote && node --experimental-strip-types scripts/backfill-cf.ts --execute-remote && node --experimental-strip-types scripts/backfill-ga4.ts --execute-remote"
   },
   "dependencies": {
     "@observablehq/plot": "latest",
