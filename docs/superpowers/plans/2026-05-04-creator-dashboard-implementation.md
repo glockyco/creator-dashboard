@@ -2509,6 +2509,50 @@ git add src/lib/timeline src/lib/server/timeline.ts src/lib/server/timeline.test
 git commit -m "feat: add timeline correlation view"
 ```
 
+### Task 19.5: Add real-world connector smoke verification
+
+**Reason:** Unit tests and fixture tests verify parser intent, but they do not prove current upstream schemas, URLs, credentials, or runtime imports work. Before adding digest logic, add a live smoke harness and run public sources.
+
+**Files:**
+- Create: `scripts/smoke-connectors.ts`
+- Create: `scripts/smoke-connectors.test.ts`
+- Modify: `package.json`
+- Modify live-drifted public connectors/tests as smoke evidence requires.
+
+- [ ] **Step 1: Add smoke harness**
+
+`scripts/smoke-connectors.ts` loads the real source registry through Vite SSR, reads `.dev.vars` plus process env, runs selected source fetchers sequentially, prints sanitized metric/event counts and small samples, and never writes D1, sends queue jobs, or alerts.
+
+Commands:
+
+```bash
+pnpm smoke:public
+pnpm smoke:authenticated
+pnpm smoke:connectors -- --source github-glockyco --strict
+```
+
+- [ ] **Step 2: Run real public smoke and fix observed schema drift**
+
+Run `pnpm smoke:public`. If a public connector fails against live upstream JSON, add a targeted failing fixture test for that live shape, fix the connector schema/mapping, and rerun smoke.
+
+Observed first smoke drift:
+- Steam reviews can return `weighted_vote_score` as either number or string.
+- Thunderstore `/api/experimental/package/` is paginated and uses `total_downloads`; v1 package list remains more suitable for team aggregate metrics.
+- MediaWiki flag fields can be empty strings when flags are present.
+
+- [ ] **Step 3: Verify and commit**
+
+```bash
+pnpm vitest run scripts/smoke-connectors.test.ts src/lib/connectors/fetchers/steam-reviews.test.ts src/lib/connectors/fetchers/thunderstore-team.test.ts src/lib/connectors/fetchers/mediawiki-recent-changes.test.ts
+pnpm smoke:public
+pnpm smoke:authenticated
+pnpm check
+git add package.json scripts/smoke-connectors.ts scripts/smoke-connectors.test.ts src/lib/connectors/fetchers/steam-reviews.ts src/lib/connectors/fetchers/steam-reviews.test.ts src/lib/connectors/fetchers/thunderstore-team.ts src/lib/connectors/fetchers/thunderstore-team.test.ts src/lib/connectors/fetchers/mediawiki-recent-changes.ts src/lib/connectors/fetchers/mediawiki-recent-changes.test.ts docs/superpowers
+git commit -m "test: add real connector smoke checks"
+```
+
+
+
 ### Task 20: Add daily digest with Vienna guard and dedupe
 
 **Files:**

@@ -3,6 +3,7 @@ import { fetchJson } from '../http';
 import type { FetcherInput, FetcherOutput } from '../types';
 
 const Config = z.object({ wiki: z.string() });
+const WikiFlag = z.union([z.boolean(), z.literal('')]);
 const Change = z.object({
   type: z.string(),
   ns: z.number(),
@@ -13,8 +14,8 @@ const Change = z.object({
   user: z.string().optional(),
   timestamp: z.string(),
   comment: z.string().optional(),
-  minor: z.boolean().optional(),
-  bot: z.boolean().optional(),
+  minor: WikiFlag.optional(),
+  bot: WikiFlag.optional(),
   oldlen: z.number().optional(),
   newlen: z.number().optional()
 });
@@ -46,10 +47,14 @@ export async function fetchMediaWikiRecentChanges({ source }: FetcherInput): Pro
         revid: change.revid ?? null,
         old_revid: change.old_revid ?? null,
         namespace: change.ns,
-        minor: change.minor ?? false,
-        bot: change.bot ?? false,
+        minor: flag(change.minor),
+        bot: flag(change.bot),
         size_delta: change.newlen != null && change.oldlen != null ? change.newlen - change.oldlen : null
       }
     }))
   };
+}
+
+function flag(value: z.infer<typeof WikiFlag> | undefined): boolean {
+  return value === '' || value === true;
 }

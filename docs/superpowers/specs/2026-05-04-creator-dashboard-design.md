@@ -1235,6 +1235,7 @@ Dark by default. Light mode toggle in Settings. Tailwind 4 `@theme` block:
 | **Posts sync**            | vitest     | `scripts/sync-posts.ts` against fixture `posts/` produces expected SQL transcript           | Pre-commit + CI    |
 | **Auth helper**           | vitest     | Access JWT verification accepts valid token, rejects expired/wrong-AUD/wrong-issuer         | Pre-commit + CI    |
 | **Worker integration**    | Wrangler   | `pnpm exec wrangler dev --test-scheduled` + scripted HTTP calls: scheduled handler reachable; fixture source can prove cron → queue → D1 row once Phase 2 test wiring exists | Pre-deploy         |
+| **Live connector smoke**  | Node/Vite   | `scripts/smoke-connectors.ts` runs real source fetchers sequentially against live upstream APIs, reads `.dev.vars`, prints sanitized counts/samples, skips missing credentials, and never writes D1/enqueues/alerts | Before digest/deploy |
 | **End-to-end UI**         | Playwright | Wrangler Worker behind local Access/JWKS harness; local D1 migrations and deterministic seed data let UI specs assert dashboard/timeline/source/posts rendering without auth bypasses | Pre-deploy         |
 | **D1 migration replay**   | Wrangler   | Apply migrations to a fresh local DB; assert all tables and indexes exist                   | Pre-deploy         |
 

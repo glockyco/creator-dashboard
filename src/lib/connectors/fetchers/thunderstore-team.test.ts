@@ -22,6 +22,26 @@ describe('fetchThunderstoreTeam', () => {
     expect(out.events).toEqual([]);
   });
 
+  it('accepts live paginated Thunderstore responses', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            next: null,
+            previous: null,
+            results: [{ namespace: 'WoW_Much', name: 'LivePackage', download_count: 9 }]
+          }),
+          { status: 200 }
+        )
+      )
+    );
+
+    const out = await fetchThunderstoreTeam({ source, env, now });
+
+    expect(out.metric_points.find((point) => point.metric === 'total_downloads')?.value).toBe(9);
+  });
+
   it('throws ZodError on schema drift', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{ namespace: 'WoW_Much' }]), { status: 200 })));
     await expect(fetchThunderstoreTeam({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);

@@ -21,6 +21,27 @@ describe('fetchMediaWikiRecentChanges', () => {
     expect(out.events[0].metadata).toMatchObject({ type: 'edit', revid: 1002, old_revid: 1001, namespace: 0, minor: false, bot: false, size_delta: 125 });
   });
 
+  it('accepts live MediaWiki flag fields represented as empty strings', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            query: {
+              recentchanges: [{ type: 'edit', ns: 14, title: 'Category:Charms', revid: 40025, old_revid: 32376, rcid: 44709, user: 'Dagarxji', minor: '', oldlen: 352, newlen: 352, timestamp: '2026-05-07T03:54:26Z', comment: 'fixed the link' }]
+            }
+          }),
+          { status: 200 }
+        )
+      )
+    );
+
+    const out = await fetchMediaWikiRecentChanges({ source, env, now });
+
+    expect(out.events[0].metadata?.minor).toBe(true);
+    expect(out.events[0].metadata?.bot).toBe(false);
+  });
+
   it('throws ZodError on schema drift', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ query: { recentchanges: [null] } }), { status: 200 })));
     await expect(fetchMediaWikiRecentChanges({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);

@@ -3,12 +3,21 @@ import { fetchJson } from '../http';
 import type { FetcherInput, FetcherOutput } from '../types';
 
 const Config = z.object({ namespace: z.string() });
-const Package = z.object({ namespace: z.string(), name: z.string(), download_count: z.number() }).passthrough();
-const Response = z.array(Package);
+const Package = z
+  .object({
+    namespace: z.string().optional(),
+    owner: z.string().optional(),
+    name: z.string(),
+    download_count: z.number().optional(),
+    total_downloads: z.number().optional(),
+    versions: z.array(z.object({ downloads: z.number() })).optional()
+  })
+  .transform((pkg) => ({ namespace: pkg.namespace ?? pkg.owner ?? '', name: pkg.name, download_count: pkg.download_count ?? (pkg.total_downloads != null && pkg.total_downloads >= 0 ? pkg.total_downloads : undefined) ?? pkg.versions?.reduce((sum, version) => sum + version.downloads, 0) ?? 0 }));
+const Response = z.union([z.array(Package), z.object({ results: z.array(Package) }).transform((response) => response.results)]);
 
 export async function fetchThunderstoreTeam({ source, now }: FetcherInput): Promise<FetcherOutput> {
   const config = Config.parse(source.config);
-  const url = new URL('https://thunderstore.io/api/experimental/package/');
+  const url = new URL('https://thunderstore.io/api/v1/package/');
   const data = await fetchJson(url, { schema: Response });
   const packages = data.filter((pkg) => pkg.namespace === config.namespace);
 

@@ -11,7 +11,7 @@ const Review = z.object({
   timestamp_created: z.number(),
   voted_up: z.boolean(),
   votes_up: z.number().optional(),
-  weighted_vote_score: z.string().optional(),
+  weighted_vote_score: z.union([z.string(), z.number()]).optional(),
   comment_count: z.number().optional(),
   steam_purchase: z.boolean().optional(),
   received_for_free: z.boolean().optional()

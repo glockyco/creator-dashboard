@@ -21,6 +21,26 @@ describe('fetchSteamReviews', () => {
     expect(out.events[0].metadata).toMatchObject({ voted_up: true, votes_up: 3, playtime_forever: 500 });
   });
 
+  it('accepts live Steam weighted vote scores as either numbers or strings', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: 1,
+            query_summary: { num_reviews: 1, review_score: 8, total_positive: 1, total_negative: 0 },
+            reviews: [{ recommendationid: 'live-1', author: {}, review: 'Mixed live shape.', timestamp_created: 1778002566, voted_up: true, weighted_vote_score: 0.5 }]
+          }),
+          { status: 200 }
+        )
+      )
+    );
+
+    const out = await fetchSteamReviews({ source, env, now });
+
+    expect(out.events[0].metadata?.weighted_vote_score).toBe(0.5);
+  });
+
   it('throws ZodError on schema drift', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: 1, reviews: [null] }), { status: 200 })));
     await expect(fetchSteamReviews({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);
