@@ -1711,7 +1711,7 @@ export const sources: SourceDef[] = z.array(SourceDef).parse([
   { id: 'steam-guide-ak', identity: 'WoW_Much', name: 'Steam Guide: AK Compendium', category: 'platform', cadenceHours: 1, fetcher: fetchers.steamGuide, config: { publishedfileid: '3616580411' } },
   { id: 'steam-reviews-erenshor', identity: 'WoW_Much', name: 'Steam Reviews: Erenshor', category: 'event_feed', cadenceHours: 1, fetcher: fetchers.steamReviews, config: { appid: '2382520' } },
   { id: 'steam-reviews-ak', identity: 'WoW_Much', name: 'Steam Reviews: Ancient Kingdoms', category: 'event_feed', cadenceHours: 1, fetcher: fetchers.steamReviews, config: { appid: '2241380' } },
-  { id: 'thunderstore-wowmuch', identity: 'WoW_Much', name: 'Thunderstore: WoW_Much', category: 'platform', cadenceHours: 1, fetcher: fetchers.thunderstoreTeam, config: { namespace: 'WoW_Much' } },
+  { id: 'thunderstore-wowmuch', identity: 'WoW_Much', name: 'Thunderstore: WoW_Much', category: 'platform', cadenceHours: 1, fetcher: fetchers.thunderstoreTeam, config: { namespace: 'WoW_Much', community: 'erenshor' } },
   { id: 'erenshor-wiki-recent', identity: 'WoW_Much', name: 'Erenshor Wiki: Recent Changes', category: 'event_feed', cadenceHours: 1, fetcher: fetchers.mediaWikiRecentChanges, config: { wiki: 'erenshor.wiki.gg' } }
 ]);
 ```
@@ -2537,7 +2537,7 @@ Run `pnpm smoke:public`. If a public connector fails against live upstream JSON,
 
 Observed first smoke drift:
 - Steam reviews can return `weighted_vote_score` as either number or string.
-- Thunderstore `/api/experimental/package/` is paginated and uses `total_downloads`; v1 package list remains more suitable for team aggregate metrics.
+- Thunderstore `/api/experimental/package/` is paginated and uses `total_downloads`; community-scoped v1 package lists remain more suitable for team aggregate metrics.
 - MediaWiki flag fields can be empty strings when flags are present.
 
 - [ ] **Step 3: Verify and commit**

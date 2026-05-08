@@ -25,6 +25,7 @@ describe('smoke connector harness', () => {
   it('parses CLI source filters and output flags', () => {
     expect(parseSmokeArgs(['--public', '--source', 'steam-reviews-erenshor', '--json'])).toEqual({ mode: 'public', sourceIds: ['steam-reviews-erenshor'], json: true, strict: false });
     expect(parseSmokeArgs(['--authenticated', '--strict'])).toMatchObject({ mode: 'authenticated', strict: true });
+    expect(parseSmokeArgs(['--', '--source', 'steam-reviews-erenshor'])).toMatchObject({ sourceIds: ['steam-reviews-erenshor'] });
     expect(() => parseSmokeArgs(['--source'])).toThrow('--source requires a value');
   });
 

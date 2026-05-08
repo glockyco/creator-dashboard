@@ -42,6 +42,16 @@ describe('fetchThunderstoreTeam', () => {
     expect(out.metric_points.find((point) => point.metric === 'total_downloads')?.value).toBe(9);
   });
 
+  it('uses the configured Thunderstore community endpoint', async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify([{ owner: 'WoW_Much', name: 'Sprint', versions: [{ downloads: 291 }] }]), { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+
+    const out = await fetchThunderstoreTeam({ source: { ...source, config: { namespace: 'WoW_Much', community: 'erenshor' } }, env, now });
+
+    expect(fetch).toHaveBeenCalledWith(new URL('https://thunderstore.io/c/erenshor/api/v1/package/'), expect.any(Object));
+    expect(out.metric_points.find((point) => point.metric === 'total_downloads')?.value).toBe(291);
+  });
+
   it('throws ZodError on schema drift', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{ namespace: 'WoW_Much' }]), { status: 200 })));
     await expect(fetchThunderstoreTeam({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);

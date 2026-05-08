@@ -28,7 +28,7 @@ Sources, posts, dashboard tabs, and digest sections are all keyed by identity. A
 | `steam-guide-ak`                 | WoW_Much   | platform    | 1h      | publishedfileid `3616580411`                       |
 | `steam-reviews-erenshor`         | WoW_Much   | event_feed  | 1h      | appid `2382520`                                    |
 | `steam-reviews-ak`               | WoW_Much   | event_feed  | 1h      | appid `2241380`                                    |
-| `thunderstore-wowmuch`           | WoW_Much   | platform    | 1h      | namespace `WoW_Much`, multiple packages auto-discovered |
+| `thunderstore-wowmuch`           | WoW_Much   | platform    | 1h      | community `erenshor`, namespace `WoW_Much`, multiple packages auto-discovered |
 | `erenshor-wiki-recent`           | WoW_Much   | event_feed  | 1h      | MediaWiki recent changes feed                      |
 | `gsc-ak-compendium`              | WoW_Much   | analytics   | 24h     | URL-prefix property                                |
 | `gsc-erenshor-maps`              | WoW_Much   | analytics   | 24h     | URL-prefix property                                |
@@ -326,7 +326,7 @@ export const sources: SourceDef[] = z.array(SourceDef).parse([
   { id: 'steam-guide-ak',          identity: 'WoW_Much', name: 'Steam Guide: AK Compendium',      category: 'platform',   cadenceHours: 1,  fetcher: fetchers.steamGuide,             config: { publishedfileid: '3616580411' } },
   { id: 'steam-reviews-erenshor',  identity: 'WoW_Much', name: 'Steam Reviews: Erenshor',         category: 'event_feed', cadenceHours: 1,  fetcher: fetchers.steamReviews,           config: { appid: '2382520' } },
   { id: 'steam-reviews-ak',        identity: 'WoW_Much', name: 'Steam Reviews: Ancient Kingdoms', category: 'event_feed', cadenceHours: 1,  fetcher: fetchers.steamReviews,           config: { appid: '2241380' } },
-  { id: 'thunderstore-wowmuch',    identity: 'WoW_Much', name: 'Thunderstore: WoW_Much',          category: 'platform',   cadenceHours: 1,  fetcher: fetchers.thunderstoreTeam,       config: { namespace: 'WoW_Much' } },
+  { id: 'thunderstore-wowmuch',    identity: 'WoW_Much', name: 'Thunderstore: WoW_Much',          category: 'platform',   cadenceHours: 1,  fetcher: fetchers.thunderstoreTeam,       config: { namespace: 'WoW_Much', community: 'erenshor' } },
   { id: 'erenshor-wiki-recent',    identity: 'WoW_Much', name: 'Erenshor Wiki: Recent Changes',   category: 'event_feed', cadenceHours: 1,  fetcher: fetchers.mediaWikiRecentChanges, config: { wiki: 'erenshor.wiki.gg' } },
   { id: 'gsc-ak-compendium',       identity: 'WoW_Much', name: 'GSC: AK Compendium',              category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,                    config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' } },
   { id: 'gsc-erenshor-maps',       identity: 'WoW_Much', name: 'GSC: Erenshor Maps',              category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,                    config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' } },

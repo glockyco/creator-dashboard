@@ -149,8 +149,8 @@ const defaultSources: CaptureSource[] = [
   source('steam-guide-ak', 'steam-guide', { publishedfileid: '3616580411' }, captureSteamGuide),
   source('steam-reviews-erenshor', 'steam-reviews', { appid: '2382520' }, captureSteamReviews),
   source('steam-reviews-ak', 'steam-reviews', { appid: '2241380' }, captureSteamReviews),
-  source('thunderstore-wowmuch', 'thunderstore-team', { namespace: 'WoW_Much' }, async () => {
-    await fetch('https://thunderstore.io/api/experimental/package/');
+  source('thunderstore-wowmuch', 'thunderstore-team', { namespace: 'WoW_Much', community: 'erenshor' }, async () => {
+    await fetch('https://thunderstore.io/c/erenshor/api/v1/package/');
   }),
   source('erenshor-wiki-recent', 'mediawiki-recent-changes', { wiki: 'erenshor.wiki.gg' }, async ({ source }) => {
     await fetch(`https://${String(source.config?.wiki)}/api.php?action=query&list=recentchanges&rcprop=ids|title|timestamp|user|comment|sizes|flags&format=json`);

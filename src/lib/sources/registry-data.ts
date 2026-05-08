@@ -19,7 +19,7 @@ export const sourceRecords: SourceRecord[] = [
   { id: 'steam-guide-ak', identity: 'WoW_Much', name: 'Steam Guide: AK Compendium', category: 'platform', cadenceHours: 1, connector: 'steamGuide', config: { publishedfileid: '3616580411' } },
   { id: 'steam-reviews-erenshor', identity: 'WoW_Much', name: 'Steam Reviews: Erenshor', category: 'event_feed', cadenceHours: 1, connector: 'steamReviews', config: { appid: '2382520' } },
   { id: 'steam-reviews-ak', identity: 'WoW_Much', name: 'Steam Reviews: Ancient Kingdoms', category: 'event_feed', cadenceHours: 1, connector: 'steamReviews', config: { appid: '2241380' } },
-  { id: 'thunderstore-wowmuch', identity: 'WoW_Much', name: 'Thunderstore: WoW_Much', category: 'platform', cadenceHours: 1, connector: 'thunderstoreTeam', config: { namespace: 'WoW_Much' } },
+  { id: 'thunderstore-wowmuch', identity: 'WoW_Much', name: 'Thunderstore: WoW_Much', category: 'platform', cadenceHours: 1, connector: 'thunderstoreTeam', config: { namespace: 'WoW_Much', community: 'erenshor' } },
   { id: 'erenshor-wiki-recent', identity: 'WoW_Much', name: 'Erenshor Wiki: Recent Changes', category: 'event_feed', cadenceHours: 1, connector: 'mediaWikiRecentChanges', config: { wiki: 'erenshor.wiki.gg' } },
   { id: 'gsc-glockyco-com', identity: 'glockyco', name: 'GSC: glockyco.com', category: 'analytics', cadenceHours: 24, connector: 'gsc', config: { siteUrl: 'sc-domain:glockyco.com' } },
   { id: 'gsc-ak-compendium', identity: 'WoW_Much', name: 'GSC: AK Compendium', category: 'analytics', cadenceHours: 24, connector: 'gsc', config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' } },

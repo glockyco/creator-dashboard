@@ -41,6 +41,7 @@ export function parseSmokeArgs(argv: string[]): SmokeArgs {
   const parsed: SmokeArgs = { mode: 'public', sourceIds: [], json: false, strict: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
+    if (arg === '--') continue;
     if (arg === '--public') parsed.mode = 'public';
     else if (arg === '--authenticated') parsed.mode = 'authenticated';
     else if (arg === '--all') parsed.mode = 'all';

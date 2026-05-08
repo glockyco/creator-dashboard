@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { fetchJson } from '../http';
 import type { FetcherInput, FetcherOutput } from '../types';
 
-const Config = z.object({ namespace: z.string() });
+const Config = z.object({ namespace: z.string(), community: z.string().optional() });
 const Package = z
   .object({
     namespace: z.string().optional(),
@@ -17,7 +17,7 @@ const Response = z.union([z.array(Package), z.object({ results: z.array(Package)
 
 export async function fetchThunderstoreTeam({ source, now }: FetcherInput): Promise<FetcherOutput> {
   const config = Config.parse(source.config);
-  const url = new URL('https://thunderstore.io/api/v1/package/');
+  const url = new URL(config.community ? `https://thunderstore.io/c/${config.community}/api/v1/package/` : 'https://thunderstore.io/api/v1/package/');
   const data = await fetchJson(url, { schema: Response });
   const packages = data.filter((pkg) => pkg.namespace === config.namespace);
 
