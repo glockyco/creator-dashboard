@@ -19,9 +19,9 @@ const Response = z.object({
 
 export async function fetchSteamGuide({ source, env, now }: FetcherInput): Promise<FetcherOutput> {
   const config = Config.parse(source.config);
-  const url = withSteamKey(new URL('https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/'), env);
-  url.searchParams.set('itemcount', '1');
+  const url = withSteamKey(new URL('https://api.steampowered.com/IPublishedFileService/GetDetails/v1/'), env);
   url.searchParams.set('publishedfileids[0]', config.publishedfileid);
+  url.searchParams.set('includevotes', 'true');
 
   const data = await fetchJson(url, { method: 'GET', schema: Response });
   const detail = data.response.publishedfiledetails[0];

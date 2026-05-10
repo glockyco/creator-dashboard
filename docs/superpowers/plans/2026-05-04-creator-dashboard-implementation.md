@@ -2539,6 +2539,7 @@ Observed first smoke drift:
 - Steam reviews can return `weighted_vote_score` as either number or string.
 - Thunderstore `/api/experimental/package/` is paginated and uses `total_downloads`; community-scoped v1 package lists remain more suitable for team aggregate metrics.
 - MediaWiki flag fields can be empty strings when flags are present.
+- Steam guide stats moved to `IPublishedFileService/GetDetails/v1` (GET, key required, `includevotes=true`); the legacy `ISteamRemoteStorage/GetPublishedFileDetails/v1` is POST-only and returns `result: k_EResultFileNotFound` for current guide IDs.
 
 - [ ] **Step 3: Verify and commit**
 

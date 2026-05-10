@@ -22,6 +22,19 @@ describe('fetchSteamGuide', () => {
     expect(out.events).toEqual([]);
   });
 
+  it('calls IPublishedFileService.GetDetails with the key and includevotes', async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+
+    await fetchSteamGuide({ source, env, now });
+
+    const calledUrl = fetch.mock.calls[0]?.[0] as URL;
+    expect(calledUrl.origin + calledUrl.pathname).toBe('https://api.steampowered.com/IPublishedFileService/GetDetails/v1/');
+    expect(calledUrl.searchParams.get('key')).toBe('steam-test');
+    expect(calledUrl.searchParams.get('publishedfileids[0]')).toBe('3500398991');
+    expect(calledUrl.searchParams.get('includevotes')).toBe('true');
+  });
+
   it('throws ZodError on schema drift', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ response: {} }), { status: 200 })));
     await expect(fetchSteamGuide({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);
