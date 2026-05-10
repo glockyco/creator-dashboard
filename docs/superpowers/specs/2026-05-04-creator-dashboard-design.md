@@ -172,7 +172,8 @@ GSC_PROPERTIES              JSON list — sites to query (matches registry, redu
 GA4_PROPERTY_ID             single property ID
 BING_WEBMASTER_API_KEY      bing.com/webmasters API key
 BING_PROPERTIES             JSON list — site URLs to query (matches registry, redundant guard)
-CF_API_TOKEN                Account Analytics:Read (Web Analytics)
+CF_API_TOKEN                Account Analytics:Read (Web Analytics) — `cfut_` user token works
+CF_ACCOUNT_ID               Account ID containing the Web Analytics sites — required because user tokens are evaluated per-account
 CF_ANALYTICS_SITE_TAGS      JSON map — registry source-id → Web Analytics site_tag (one per tracked site)
 DISCORD_DIGEST_WEBHOOK      daily 06:00 Vienna summary
 DISCORD_ALERTS_WEBHOOK      permanent + DLQ alerts

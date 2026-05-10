@@ -33,12 +33,14 @@ export async function fetchCfAnalytics({ source, env, now }: FetcherInput): Prom
 export async function fetchCfAnalyticsRange({ source, env, startDate, endDate }: CfAnalyticsRangeInput): Promise<FetcherOutput> {
   const siteTag = SiteTags.parse(JSON.parse(env.CF_ANALYTICS_SITE_TAGS))[source.id];
   if (!siteTag) throw new Error(`missing Cloudflare Web Analytics site tag for ${source.id}`);
+  const accountTag = env.CF_ACCOUNT_ID;
+  if (!accountTag) throw new Error(`missing Cloudflare account id (CF_ACCOUNT_ID) for ${source.id}`);
   const response = await fetchJson('https://api.cloudflare.com/client/v4/graphql', {
     method: 'POST',
     headers: cfHeaders(env),
     body: JSON.stringify({
-      query: `query WebAnalytics($siteTag: string, $startDate: Date, $endDate: Date) { viewer { accounts { rumPageloadEventsAdaptiveGroups(limit: 1000, filter: { siteTag: $siteTag, date_geq: $startDate, date_leq: $endDate }) { dimensions { date } sum { visits } count } } } }`,
-      variables: { siteTag, startDate, endDate }
+      query: `query WebAnalytics($accountTag: string, $siteTag: string, $startDate: Date, $endDate: Date) { viewer { accounts(filter: { accountTag: $accountTag }) { rumPageloadEventsAdaptiveGroups(limit: 1000, filter: { siteTag: $siteTag, date_geq: $startDate, date_leq: $endDate }) { dimensions { date } sum { visits } count } } } }`,
+      variables: { accountTag, siteTag, startDate, endDate }
     }),
     schema: CfResponse
   });

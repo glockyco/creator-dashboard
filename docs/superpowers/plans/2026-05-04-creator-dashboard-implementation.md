@@ -519,6 +519,7 @@ declare global {
     BING_WEBMASTER_API_KEY: string;
     BING_PROPERTIES: string;
     CF_API_TOKEN: string;
+    CF_ACCOUNT_ID: string;
     CF_ANALYTICS_SITE_TAGS: string;
     DISCORD_DIGEST_WEBHOOK: string;
     DISCORD_ALERTS_WEBHOOK: string;
@@ -2333,7 +2334,7 @@ git commit -m "feat: add authenticated analytics connectors"
 `env.ts` reads local process env names matching Worker secrets:
 
 ```ts
-const required = ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GSC_PROPERTIES', 'BING_WEBMASTER_API_KEY', 'BING_PROPERTIES', 'CF_API_TOKEN', 'CF_ANALYTICS_SITE_TAGS'];
+const required = ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GSC_PROPERTIES', 'BING_WEBMASTER_API_KEY', 'BING_PROPERTIES', 'CF_API_TOKEN', 'CF_ACCOUNT_ID', 'CF_ANALYTICS_SITE_TAGS'];
 ```
 
 Include `GA4_PROPERTY_ID` only for GA4 backfill.
@@ -2544,6 +2545,7 @@ Observed first smoke drift:
 - MediaWiki flag fields can be empty strings when flags are present.
 - Steam guide stats moved to `IPublishedFileService/GetDetails/v1` (GET, key required, `includevotes=true`); the legacy `ISteamRemoteStorage/GetPublishedFileDetails/v1` is POST-only and returns `result: k_EResultFileNotFound` for current guide IDs.
 - GSC migrated off service-account auth: Google's "Add user" UI and Site Verification -> Search Console permission propagation are both broken (acknowledged April 23, 2026; no fix as of May 1, 2026). Switched to OAuth refresh-token flow bound to `jaichberg@gmail.com`, who is already verified owner of all three GSC properties. Connector also moved from `https://www.googleapis.com/webmasters/v3/...` to `https://searchconsole.googleapis.com/webmasters/v3/...` and now passes `dataState: 'all'` for fresh/unfinalized data. Service-account credential retained for future GA4 use.
+- Cloudflare Web Analytics GraphQL needs `accounts(filter: {accountTag: $accountTag})` even when the API token is scoped "All accounts". `cfut_` user tokens evaluate per-account authz at query time, so the unfiltered `viewer { accounts { ... } }` shape returns `not authorized for that account` when any account in the user's set is unreachable. Connector now reads `CF_ACCOUNT_ID` and passes it as the `$accountTag` variable.
 
 - [ ] **Step 3: Verify and commit**
 

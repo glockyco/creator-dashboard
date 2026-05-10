@@ -5,7 +5,7 @@ import fixture from './cf-analytics.fixture.json';
 import { fetchCfAnalytics } from './cf-analytics';
 
 const source = { id: 'cf-analytics-erenshor-maps', name: 'Cloudflare Analytics: Erenshor Maps', identity: 'WoW_Much', category: 'analytics', cadenceHours: 24, fetcher: fetchCfAnalytics, config: {} } as const;
-const env = { CF_API_TOKEN: 'cf-test', CF_ANALYTICS_SITE_TAGS: '{"cf-analytics-erenshor-maps":"site-tag-test"}' } as Env;
+const env = { CF_API_TOKEN: 'cf-test', CF_ACCOUNT_ID: 'acct-test', CF_ANALYTICS_SITE_TAGS: '{"cf-analytics-erenshor-maps":"site-tag-test"}' } as Env;
 const now = Date.UTC(2026, 4, 2);
 
 beforeEach(() => vi.unstubAllGlobals());
@@ -20,6 +20,18 @@ describe('fetchCfAnalytics', () => {
       ['visits', 42],
       ['pageviews', 64]
     ]);
+  });
+
+  it('filters the GraphQL query by accountTag using CF_ACCOUNT_ID', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    await fetchCfAnalytics({ source, env, now });
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const [, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+    const payload = JSON.parse(init.body) as { query: string; variables: Record<string, unknown> };
+    expect(payload.query).toMatch(/accounts\(filter:\s*\{\s*accountTag:\s*\$accountTag\s*\}\)/);
+    expect(payload.variables).toMatchObject({ accountTag: 'acct-test', siteTag: 'site-tag-test' });
   });
 
   it('throws ZodError on schema drift', async () => {

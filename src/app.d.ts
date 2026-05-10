@@ -23,6 +23,7 @@ declare global {
     BING_WEBMASTER_API_KEY: string;
     BING_PROPERTIES: string;
     CF_API_TOKEN: string;
+    CF_ACCOUNT_ID: string;
     CF_ANALYTICS_SITE_TAGS: string;
     DISCORD_DIGEST_WEBHOOK: string;
     DISCORD_ALERTS_WEBHOOK: string;

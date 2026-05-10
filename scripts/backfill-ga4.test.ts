@@ -22,6 +22,7 @@ const env = {
   BING_WEBMASTER_API_KEY: 'bing-key',
   BING_PROPERTIES: '[]',
   CF_API_TOKEN: 'cf-token',
+  CF_ACCOUNT_ID: 'acct-test',
   CF_ANALYTICS_SITE_TAGS: '{}'
 } as Env;
 

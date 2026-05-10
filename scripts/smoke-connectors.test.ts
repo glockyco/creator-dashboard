@@ -43,7 +43,7 @@ describe('smoke connector harness', () => {
     expect(secretRequirements('github-glockyco')).toEqual(['GITHUB_PAT']);
     expect(secretRequirements('gsc-glockyco-com')).toEqual(['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN']);
     expect(secretRequirements('bing-glockyco-com')).toEqual(['BING_WEBMASTER_API_KEY']);
-    expect(secretRequirements('cf-analytics-glockyco-com')).toEqual(['CF_API_TOKEN', 'CF_ANALYTICS_SITE_TAGS']);
+    expect(secretRequirements('cf-analytics-glockyco-com')).toEqual(['CF_API_TOKEN', 'CF_ACCOUNT_ID', 'CF_ANALYTICS_SITE_TAGS']);
   });
 
   it('runs configured sources sequentially and skips missing secrets', async () => {
