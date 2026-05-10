@@ -1,9 +1,10 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sources } from '../src/lib/sources/registry';
-import { normalizePost, type NormalizedPost } from '../src/lib/posts/normalize';
+import { sourceRecords } from '../src/lib/sources/registry-data.ts';
+import { normalizePost, type NormalizedPost } from '../src/lib/posts/normalize.ts';
+import { executeRemote } from './backfill/lib/run.ts';
 
 export type PostEntry = { path: string; markdown: string };
 export type SyncPost = NormalizedPost & { body_hash: string };
@@ -12,18 +13,47 @@ export function syncPostsFromEntries(entries: PostEntry[], knownSourceIds: Reado
   return entries.map((entry) => withBodyHash(normalizePost({ path: entry.path, markdown: entry.markdown, knownSourceIds }))).sort((a, b) => b.posted_at_ms - a.posted_at_ms);
 }
 
+export type SyncPostsArgs = { out: string; executeRemote: boolean };
+
+export function parseSyncPostsArgs(args: string[]): SyncPostsArgs {
+  const parsed: SyncPostsArgs = { out: '.tmp/sync-posts.sql', executeRemote: false };
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '--execute-remote') parsed.executeRemote = true;
+    else if (arg === '--out') {
+      const value = args[index + 1];
+      if (!value) throw new Error('--out requires a value');
+      parsed.out = value;
+      index += 1;
+    } else throw new Error(`unknown argument: ${arg}`);
+  }
+  return parsed;
+}
+
 export function buildSyncSql(posts: SyncPost[]): string {
-  const lines = ['BEGIN;', 'DELETE FROM posts_sources;', 'DELETE FROM posts_index;'];
+  const lines: string[] = [];
+  const sourceLinks: Array<{ slug: string; sourceId: string }> = [];
   for (const post of posts) {
     lines.push(
-      `INSERT INTO posts_index (slug, posted_at, author, platform, url, title, tags, body_excerpt, body_hash)`,
+      `INSERT OR REPLACE INTO posts_index (slug, posted_at, author, platform, url, title, tags, body_excerpt, body_hash)`,
       `VALUES (${sqlString(post.slug)}, ${post.posted_at_ms}, ${sqlString(post.author)}, ${sqlString(post.platform)}, ${sqlString(post.url)}, ${sqlString(post.title)}, ${sqlString(JSON.stringify(post.tags))}, ${sqlString(post.body_excerpt)}, ${sqlString(post.body_hash)});`
     );
     for (const sourceId of post.related_sources) {
-      lines.push('INSERT INTO posts_sources (slug, source_id)', `VALUES (${sqlString(post.slug)}, ${sqlString(sourceId)});`);
+      sourceLinks.push({ slug: post.slug, sourceId });
+      lines.push('INSERT OR IGNORE INTO posts_sources (slug, source_id)', `VALUES (${sqlString(post.slug)}, ${sqlString(sourceId)});`);
     }
   }
-  lines.push('COMMIT;');
+  if (sourceLinks.length > 0) {
+    const keepLinks = sourceLinks.map((link) => `(slug = ${sqlString(link.slug)} AND source_id = ${sqlString(link.sourceId)})`).join(' OR ');
+    lines.push(`DELETE FROM posts_sources WHERE NOT (${keepLinks});`);
+  } else {
+    lines.push('DELETE FROM posts_sources;');
+  }
+  if (posts.length > 0) {
+    lines.push(`DELETE FROM posts_index WHERE slug NOT IN (${posts.map((post) => sqlString(post.slug)).join(', ')});`);
+  } else {
+    lines.push('DELETE FROM posts_index;');
+  }
   return `${lines.join('\n')}\n`;
 }
 
@@ -46,13 +76,13 @@ function sqlString(value: string): string {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const outPath = process.argv[2] ?? '.tmp/sync-posts.sql';
-  const postsDir = 'posts';
   try {
-    const posts = syncPostsFromEntries(await readPostEntries(postsDir), new Set(sources.map((source) => source.id)));
-    await mkdir('.tmp', { recursive: true });
-    await writeFile(outPath, buildSyncSql(posts));
-    console.log(`wrote ${outPath}`);
+    const parsed = parseSyncPostsArgs(process.argv.slice(2));
+    const posts = syncPostsFromEntries(await readPostEntries('posts'), new Set(sourceRecords.map((source) => source.id)));
+    await mkdir(dirname(parsed.out), { recursive: true });
+    await writeFile(parsed.out, buildSyncSql(posts));
+    console.log(`wrote ${parsed.out}`);
+    if (parsed.executeRemote) executeRemote(parsed.out);
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = 1;

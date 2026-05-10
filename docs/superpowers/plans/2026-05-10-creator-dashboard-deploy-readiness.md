@@ -364,7 +364,8 @@ Modify `package.json` scripts:
 {
   "deploy:preflight": "node --experimental-strip-types scripts/deploy-preflight.ts",
   "deploy:worker": "pnpm migrate:remote && pnpm build && wrangler deploy",
-  "deploy": "pnpm deploy:preflight && pnpm deploy:worker && pnpm sync-posts",
+  "sync-posts:remote": "node --experimental-strip-types scripts/sync-posts.ts --execute-remote",
+  "deploy": "pnpm deploy:preflight && pnpm deploy:worker && pnpm sync-posts:remote",
   "smoke:ingest": "node --experimental-strip-types scripts/smoke-ingest.ts",
   "smoke:cron": "node --experimental-strip-types scripts/smoke-cron.ts",
   "verify:deploy": "node --experimental-strip-types scripts/verify-deploy.ts"

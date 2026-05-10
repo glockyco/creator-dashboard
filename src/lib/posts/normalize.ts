@@ -1,5 +1,5 @@
 import matter from 'gray-matter';
-import { PostFrontmatter } from './schema';
+import { PostFrontmatter } from './schema.ts';
 
 export type NormalizedPost = {
   slug: string;

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Identity } from '$lib/identities';
+import { Identity } from '../identities.ts';
 
 export const PostFrontmatter = z.object({
   posted_at: z.string().datetime(),
