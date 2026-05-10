@@ -2563,20 +2563,22 @@ git commit -m "test: add real connector smoke checks"
 ### Task 20: Add daily digest with Vienna guard and dedupe
 
 **Files:**
-- Create: `src/lib/digest/types.ts`
 - Create: `src/lib/digest/vienna.ts`
 - Create: `src/lib/digest/vienna.test.ts`
 - Create: `src/lib/digest/query.ts`
 - Create: `src/lib/digest/query.test.ts`
 - Create: `src/lib/digest/format.ts`
 - Create: `src/lib/digest/format.test.ts`
+- Create: `src/lib/digest/send.ts`
+- Create: `src/lib/digest/send.test.ts`
+- Create: `src/lib/server/worker/scheduled.test.ts`
 - Modify: `src/lib/server/worker/scheduled.ts`
 
-- [ ] **Step 1: Confirm digest dedupe table exists**
+- [x] **Step 1: Confirm digest dedupe table exists**
 
 `migrations/0001_initial_schema.sql` already creates `digest_sent (digest_date TEXT PRIMARY KEY, sent_at INTEGER NOT NULL)`. Do not add a second migration for this table.
 
-- [ ] **Step 2: Implement Vienna guard**
+- [x] **Step 2: Implement Vienna guard**
 
 `src/lib/digest/vienna.ts`:
 
@@ -2593,11 +2595,11 @@ export function isViennaDigestHour(now: Date): boolean {
 }
 ```
 
-- [ ] **Step 3: Implement digest query and format**
+- [x] **Step 3: Implement digest query and format**
 
-`query.ts` reads scalar deltas, event counts, posts, and failure counts since `now - 24h`. `format.ts` produces sections in this order: `glockyco`, `WoW_Much`, `Posts`, `Health`. Do not use emoji in code comments or commit messages; Discord message content may be plain text with no emoji to keep logs portable.
+`query.ts` reads scalar metric rows (`dimensions IS NULL`), event rows, posts, fetcher runs, and failures over the half-open rolling window `now - 24h <= ts < now`. `format.ts` produces rich Discord embeds in this order: `glockyco`, `WoW_Much`, `Posts`, `Health`. Do not use emoji in code comments or commit messages; digest message content uses plain text plus Discord embeds.
 
-- [ ] **Step 4: Wire scheduled handler**
+- [x] **Step 4: Wire scheduled handler**
 
 For cron `0 4,5 * * *`:
 
@@ -2609,10 +2611,10 @@ if (controller.cron === '0 4,5 * * *') {
 
 `maybeDailyDigest` checks `isViennaDigestHour`, then `digest_sent`, then posts Discord, then inserts `digest_sent`.
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 ```bash
-pnpm vitest run src/lib/digest/vienna.test.ts src/lib/digest/query.test.ts src/lib/digest/format.test.ts
+pnpm vitest run src/lib/digest/vienna.test.ts src/lib/digest/query.test.ts src/lib/digest/format.test.ts src/lib/digest/send.test.ts src/lib/server/worker/scheduled.test.ts
 ```
 
 Expected:
