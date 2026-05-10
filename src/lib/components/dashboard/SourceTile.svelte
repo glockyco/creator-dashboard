@@ -14,7 +14,7 @@
   }
 </script>
 
-<article class="rounded-xl border border-border bg-bg-secondary p-5 shadow-sm" data-source-id={snapshot.source.id}>
+<article class="rounded-xl border border-border bg-bg-secondary p-4 shadow-sm sm:p-5" data-source-id={snapshot.source.id}>
   <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
     <div>
       <div class="flex items-center gap-2">

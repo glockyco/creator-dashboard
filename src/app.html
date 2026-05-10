@@ -1,8 +1,18 @@
 <!doctype html>
-<html lang="en" style="color-scheme: dark">
+<html lang="en" data-theme="dark" style="color-scheme: dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      try {
+        const settings = JSON.parse(localStorage.getItem('creator-dashboard-settings') || 'null');
+        if (settings && settings.theme) document.documentElement.dataset.theme = settings.theme;
+        if (settings && settings.identityColors) {
+          if (settings.identityColors.glockyco) document.documentElement.style.setProperty('--color-glockyco', settings.identityColors.glockyco);
+          if (settings.identityColors.WoW_Much) document.documentElement.style.setProperty('--color-wowmuch', settings.identityColors.WoW_Much);
+        }
+      } catch {}
+    </script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">

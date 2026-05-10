@@ -48,7 +48,7 @@
   }
 </script>
 
-<section class="rounded-xl border border-border bg-bg-secondary p-5">
+<section class="rounded-xl border border-border bg-bg-secondary p-4 sm:p-5">
   <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h2 class="text-lg font-semibold">Metric correlation</h2>

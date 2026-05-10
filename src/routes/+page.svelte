@@ -23,7 +23,7 @@
 
   <IdentityTabs active={data.identity} url={new URL(data.url)} />
 
-  <div class="grid gap-4 xl:grid-cols-2">
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
     {#each data.snapshots as snapshot (snapshot.source.id)}
       <SourceTile {snapshot} />
     {:else}

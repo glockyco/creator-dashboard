@@ -27,7 +27,7 @@
 
   <div class="divide-y divide-border md:hidden">
     {#each posts as post}
-      <a class="block p-4" href={`/posts/${post.slug}`}>
+      <a class="block min-h-11 p-4" href={`/posts/${post.slug}`}>
         <p class="text-xs text-fg-muted">{post.author} · {post.platform}</p>
         <h2 class="mt-1 font-medium">{post.title}</h2>
         {#if post.body_excerpt}<p class="mt-2 text-sm text-fg-muted">{post.body_excerpt}</p>{/if}

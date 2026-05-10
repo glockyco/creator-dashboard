@@ -2652,7 +2652,7 @@ git commit -m "feat: add daily digest"
 - Create: `e2e/settings.spec.ts`
 - Create: `e2e/mobile.spec.ts`
 
-- [ ] **Step 1: Add client settings schema**
+- [x] **Step 1: Add client settings schema**
 
 Settings shape:
 
@@ -2677,15 +2677,15 @@ Defaults:
 }
 ```
 
-- [ ] **Step 2: Implement localStorage store**
+- [x] **Step 2: Implement localStorage store**
 
 `store.svelte.ts` validates stored data with Zod, falls back to defaults on invalid storage, sets `color-scheme` and identity CSS custom properties on `<html>`.
 
-- [ ] **Step 3: Implement settings UI**
+- [x] **Step 3: Implement settings UI**
 
 Settings are client-only. Do not add a server load or D1 table for preferences.
 
-- [ ] **Step 4: Implement mobile polish**
+- [x] **Step 4: Implement mobile polish**
 
 Required assertions:
 
@@ -2697,7 +2697,7 @@ touch targets for nav, refresh, filters, and settings controls are at least 44px
 posts list renders cards below md
 ```
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 ```bash
 pnpm vitest run src/lib/settings/settings.test.ts

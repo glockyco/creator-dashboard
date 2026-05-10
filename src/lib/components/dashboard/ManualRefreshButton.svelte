@@ -34,7 +34,7 @@
 </script>
 
 <div class="flex items-center gap-2">
-  <button class="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-fg-muted hover:bg-bg-primary hover:text-fg-primary disabled:opacity-50" type="button" disabled={busy} onclick={refresh}>
+  <button class="min-h-11 rounded-full border border-border px-4 py-2 text-xs font-medium text-fg-muted hover:bg-bg-primary hover:text-fg-primary disabled:opacity-50" type="button" disabled={busy} onclick={refresh}>
     {busy ? 'Refreshing…' : 'Refresh'}
   </button>
   {#if message}<span class="text-xs text-fg-muted">{message}</span>{/if}
