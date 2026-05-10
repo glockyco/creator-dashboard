@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseWranglerPreflight, requiredProductionSecrets } from './deploy-preflight';
+import { missingProductionSecrets, parseDevVars, parseWranglerPreflight, requiredProductionSecrets } from './deploy-preflight';
 
 describe('deploy preflight', () => {
   it('rejects the placeholder D1 database id', () => {
@@ -45,5 +45,31 @@ crons = ["0 * * * *", "0 4,5 * * *"]
       'CF_ACCOUNT_ID',
       'CF_ANALYTICS_SITE_TAGS'
     ]);
+  });
+
+  it('accepts production secrets from a parsed env source', () => {
+    const source = Object.fromEntries(requiredProductionSecrets().map((name) => [name, 'set']));
+
+    expect(missingProductionSecrets(source)).toEqual([]);
+  });
+
+  it('treats blank and placeholder production secrets as missing', () => {
+    const source = {
+      ...Object.fromEntries(requiredProductionSecrets().map((name) => [name, 'set'])),
+      ACCESS_TEAM_DOMAIN: 'example.cloudflareaccess.com',
+      ACCESS_AUD: 'replace-with-access-application-aud',
+      DISCORD_ALERTS_WEBHOOK: 'https://discord.com/api/webhooks/example/alerts',
+      DISCORD_DIGEST_WEBHOOK: ''
+    };
+
+    expect(missingProductionSecrets(source)).toEqual(['ACCESS_TEAM_DOMAIN', 'ACCESS_AUD', 'DISCORD_ALERTS_WEBHOOK', 'DISCORD_DIGEST_WEBHOOK']);
+  });
+
+  it('parses local dev vars for deploy preflight without comments or quotes', () => {
+    expect(parseDevVars('ACCESS_TEAM_DOMAIN="team.cloudflareaccess.com"\n# comment\nACCESS_AUD=aud-value\nDISCORD_DIGEST_WEBHOOK=https://discord.com/api/webhooks/id/token\n')).toEqual({
+      ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com',
+      ACCESS_AUD: 'aud-value',
+      DISCORD_DIGEST_WEBHOOK: 'https://discord.com/api/webhooks/id/token'
+    });
   });
 });

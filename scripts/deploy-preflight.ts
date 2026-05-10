@@ -23,6 +23,24 @@ export function requiredProductionSecrets(): string[] {
   ];
 }
 
+export function parseDevVars(text: string): Record<string, string> {
+  const vars: Record<string, string> = {};
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const equals = line.indexOf('=');
+    if (equals <= 0) continue;
+    const key = line.slice(0, equals).trim();
+    vars[key] = stripQuotes(line.slice(equals + 1).trim());
+  }
+  return vars;
+}
+
+export function missingProductionSecrets(source: Record<string, string | undefined>): string[] {
+  return requiredProductionSecrets().filter((name) => isMissingOrPlaceholder(source[name]));
+}
+
+
 export function parseWranglerPreflight(text: string): { errors: string[] } {
   const errors: string[] = [];
   if (text.includes(D1_PLACEHOLDER)) errors.push('wrangler.toml still contains the placeholder D1 database_id');
@@ -35,10 +53,32 @@ export function parseWranglerPreflight(text: string): { errors: string[] } {
   return { errors };
 }
 
+async function readDevVarsIfPresent(path = '.dev.vars'): Promise<Record<string, string>> {
+  try {
+    return parseDevVars(await readFile(path, 'utf8'));
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return {};
+    throw error;
+  }
+}
+
+function isMissingOrPlaceholder(value: string | undefined): boolean {
+  if (!value) return true;
+  return /(?:replace|example\.|\/example\/|<replace)/i.test(value);
+}
+
+function stripQuotes(value: string): string {
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) return value.slice(1, -1);
+  return value;
+}
+
+
 async function main(): Promise<void> {
   const wrangler = await readFile('wrangler.toml', 'utf8');
+  const localVars = await readDevVarsIfPresent();
+  const source = { ...localVars, ...process.env } as Record<string, string | undefined>;
   const errors = parseWranglerPreflight(wrangler).errors;
-  const missingSecrets = requiredProductionSecrets().filter((name) => !process.env[name]);
+  const missingSecrets = missingProductionSecrets(source);
   for (const secret of missingSecrets) errors.push(`missing production env var ${secret}`);
   if (errors.length > 0) throw new Error(errors.join('\n'));
   console.log('deploy preflight passed');
