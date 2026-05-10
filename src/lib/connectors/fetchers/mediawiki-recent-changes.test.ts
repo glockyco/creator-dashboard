@@ -21,6 +21,17 @@ describe('fetchMediaWikiRecentChanges', () => {
     expect(out.events[0].metadata).toMatchObject({ type: 'edit', revid: 1002, old_revid: 1001, namespace: 0, minor: false, bot: false, size_delta: 125 });
   });
 
+  it('identifies itself with a contact-URL User-Agent so Cloudflare-fronted wikis like wiki.gg do not 403', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 }));
+    vi.stubGlobal('fetch', fetchSpy);
+
+    await fetchMediaWikiRecentChanges({ source, env, now });
+
+    const init = fetchSpy.mock.calls[0]?.[1] as RequestInit | undefined;
+    const headers = new Headers(init?.headers ?? {});
+    expect(headers.get('user-agent')).toMatch(/creator-dashboard\/[0-9]+\.[0-9]+ \(\+https?:\/\/[^)]+\)/);
+  });
+
   it('accepts live MediaWiki flag fields represented as empty strings', async () => {
     vi.stubGlobal(
       'fetch',

@@ -29,7 +29,10 @@ export async function fetchMediaWikiRecentChanges({ source }: FetcherInput): Pro
   url.searchParams.set('rcprop', 'ids|title|timestamp|user|comment|sizes|flags');
   url.searchParams.set('format', 'json');
 
-  const data = await fetchJson(url, { schema: Response });
+  const data = await fetchJson(url, {
+    schema: Response,
+    headers: { 'User-Agent': 'creator-dashboard/1.0 (+https://dashboard.glockyco.com)' }
+  });
 
   return {
     metric_points: [],
