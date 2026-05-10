@@ -64,7 +64,9 @@ const wrangler = spawn(
     '--var',
     `ACCESS_AUD:${audience}`,
     '--var',
-    `ACCESS_JWKS_URL:http://127.0.0.1:${jwksPort}/jwks`
+    `ACCESS_JWKS_URL:http://127.0.0.1:${jwksPort}/jwks`,
+    '--var',
+    'SMOKE_ENDPOINTS_ENABLED:true',
   ],
   { stdio: 'inherit' }
 );

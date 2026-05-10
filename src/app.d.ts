@@ -30,6 +30,7 @@ declare global {
     ACCESS_TEAM_DOMAIN: string;
     ACCESS_AUD: string;
     ACCESS_JWKS_URL?: string;
+    SMOKE_ENDPOINTS_ENABLED?: string;
   }
 }
 

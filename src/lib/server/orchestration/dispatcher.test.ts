@@ -20,4 +20,14 @@ describe('dispatchDueSources', () => {
       { body: { source_id: 'source-b', dispatch_ts: 1714838400000, force: false } }
     ]);
   });
+
+  it('can dispatch only selected sources for smoke verification', async () => {
+    const sendBatch = vi.fn().mockResolvedValue(undefined);
+    const env = { FETCHER_QUEUE: { sendBatch } } as unknown as Env;
+
+    const count = await dispatchDueSources(env, 123, { sourceIds: ['source-b'] });
+
+    expect(count).toBe(1);
+    expect(sendBatch).toHaveBeenCalledWith([{ body: { source_id: 'source-b', dispatch_ts: 123, force: false } }]);
+  });
 });
