@@ -1,7 +1,7 @@
 # Creator Dashboard — Design Spec
 
-> **Status:** Working draft, brainstorming in progress (2026-05-04). Uncommitted.
-> **Hard gate:** No implementation begins until this spec is approved end-to-end and an implementation plan is written via the `writing-plans` skill.
+> **Status:** Implementation snapshot after Phase 8 Task 21 (2026-05-10). Keep this spec synchronized with the worktree plan before deploy-readiness work.
+> **Current gate:** Feature implementation is complete through daily digest, settings, and mobile polish. First manual deploy is blocked on deployment-readiness planning, remote D1/Queues/secrets provisioning, and local/remote ingest smoke verification.
 
 ---
 
@@ -30,15 +30,17 @@ Sources, posts, dashboard tabs, and digest sections are all keyed by identity. A
 | `steam-reviews-ak`               | WoW_Much   | event_feed  | 1h      | appid `2241380`                                    |
 | `thunderstore-wowmuch`           | WoW_Much   | platform    | 1h      | community `erenshor`, namespace `WoW_Much`, multiple packages auto-discovered |
 | `erenshor-wiki-recent`           | WoW_Much   | event_feed  | 1h      | MediaWiki recent changes feed                      |
-| `gsc-ak-compendium`              | WoW_Much   | analytics   | 24h     | URL-prefix property                                |
-| `gsc-erenshor-maps`              | WoW_Much   | analytics   | 24h     | URL-prefix property                                |
+| `gsc-ak-compendium`              | WoW_Much   | analytics   | 24h     | `https://ancient-kingdoms-compendium.wowmuch1.workers.dev/` |
+| `gsc-ak-compendium-org`          | WoW_Much   | analytics   | 24h     | `sc-domain:ancient-kingdoms.compendiums.org` during AK `.org` migration |
+| `gsc-erenshor-maps`              | WoW_Much   | analytics   | 24h     | `https://erenshor-maps.wowmuch1.workers.dev/`      |
 | `bing-glockyco-com`              | glockyco   | analytics   | 24h     | `https://glockyco.com/`                            |
-| `bing-ak-compendium`             | WoW_Much   | analytics   | 24h     | `https://ancient-kingdoms-compendium.wowmuch1.workers.dev/`  |
+| `bing-ak-compendium`             | WoW_Much   | analytics   | 24h     | `https://ancient-kingdoms-compendium.wowmuch1.workers.dev/` |
+| `bing-ak-compendium-org`         | WoW_Much   | analytics   | 24h     | `https://ancient-kingdoms.compendiums.org/` during AK `.org` migration |
 | `bing-erenshor-maps`             | WoW_Much   | analytics   | 24h     | `https://erenshor-maps.wowmuch1.workers.dev/`      |
-| `cf-analytics-glockyco-com`      | glockyco   | analytics   | 1h      | Auto Web Analytics (proxied zone)                  |
-| `cf-analytics-ak-compendium`     | WoW_Much   | analytics   | 1h      | Web Analytics JS snippet (Worker)                  |
-| `cf-analytics-erenshor-maps`     | WoW_Much   | analytics   | 1h      | Web Analytics JS snippet (Worker)                  |
-| `ga4` (TBD property ID)          | glockyco   | analytics   | 24h     | Property covers ko-fi.com page traffic; identity assignment finalized when property scope is confirmed |
+| `cf-analytics-glockyco-com`      | glockyco   | analytics   | 24h     | Auto Web Analytics (proxied zone)                  |
+| `cf-analytics-ak-compendium`     | WoW_Much   | analytics   | 24h     | Same Web Analytics beacon covers workers.dev + `.org` |
+| `cf-analytics-erenshor-maps`     | WoW_Much   | analytics   | 24h     | Web Analytics JS snippet (Worker)                  |
+| `ga4` (deferred)                 | glockyco   | analytics   | 24h     | Disabled until `GA4_PROPERTY_ID` and Google permission path are confirmed |
 
 **Out of scope:**
 
@@ -169,7 +171,7 @@ GOOGLE_OAUTH_CLIENT_SECRET  OAuth Web client secret, used by GSC
 GOOGLE_OAUTH_REFRESH_TOKEN  Long-lived refresh token for jaichberg@gmail.com (webmasters.readonly)
 GOOGLE_SERVICE_ACCOUNT      JSON service-account credential, retained for future GA4 use
 GSC_PROPERTIES              JSON list — sites to query (matches registry, redundant guard)
-GA4_PROPERTY_ID             single property ID
+GA4_PROPERTY_ID             optional/deferred property ID; GA4 source remains disabled until scope and permission path are confirmed
 BING_WEBMASTER_API_KEY      bing.com/webmasters API key
 BING_PROPERTIES             JSON list — site URLs to query (matches registry, redundant guard)
 CF_API_TOKEN                Account Analytics:Read (Web Analytics) — `cfut_` user token works
@@ -332,15 +334,17 @@ export const sources: SourceDef[] = z.array(SourceDef).parse([
   { id: 'steam-reviews-ak',        identity: 'WoW_Much', name: 'Steam Reviews: Ancient Kingdoms', category: 'event_feed', cadenceHours: 1,  fetcher: fetchers.steamReviews,           config: { appid: '2241380' } },
   { id: 'thunderstore-wowmuch',    identity: 'WoW_Much', name: 'Thunderstore: WoW_Much',          category: 'platform',   cadenceHours: 1,  fetcher: fetchers.thunderstoreTeam,       config: { namespace: 'WoW_Much', community: 'erenshor' } },
   { id: 'erenshor-wiki-recent',    identity: 'WoW_Much', name: 'Erenshor Wiki: Recent Changes',   category: 'event_feed', cadenceHours: 1,  fetcher: fetchers.mediaWikiRecentChanges, config: { wiki: 'erenshor.wiki.gg' } },
-  { id: 'gsc-ak-compendium',       identity: 'WoW_Much', name: 'GSC: AK Compendium',              category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,                    config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' } },
-  { id: 'gsc-erenshor-maps',       identity: 'WoW_Much', name: 'GSC: Erenshor Maps',              category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,                    config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' } },
-  { id: 'bing-glockyco-com',        identity: 'glockyco', name: 'Bing: glockyco.com',              category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster,         config: { siteUrl: 'https://glockyco.com/' } },
-  { id: 'bing-ak-compendium',       identity: 'WoW_Much', name: 'Bing: AK Compendium',             category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster,         config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' } },
-  { id: 'bing-erenshor-maps',       identity: 'WoW_Much', name: 'Bing: Erenshor Maps',             category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster,         config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' } },
-  { id: 'cf-analytics-glockyco-com',   identity: 'glockyco', name: 'CF Analytics: glockyco.com',      category: 'analytics',  cadenceHours: 1,  fetcher: fetchers.cfAnalytics,           config: { /* site_tag from CF_ANALYTICS_SITE_TAGS */ } },
-  { id: 'cf-analytics-ak-compendium',  identity: 'WoW_Much', name: 'CF Analytics: AK Compendium',     category: 'analytics',  cadenceHours: 1,  fetcher: fetchers.cfAnalytics,           config: { /* site_tag from CF_ANALYTICS_SITE_TAGS */ } },
-  { id: 'cf-analytics-erenshor-maps',  identity: 'WoW_Much', name: 'CF Analytics: Erenshor Maps',     category: 'analytics',  cadenceHours: 1,  fetcher: fetchers.cfAnalytics,           config: { /* site_tag from CF_ANALYTICS_SITE_TAGS */ } },
-  // ga4 — added once property ID is known (see §7.2).
+  { id: 'gsc-ak-compendium',          identity: 'WoW_Much', name: 'GSC: AK Compendium (workers.dev)',      category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,            config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' } },
+  { id: 'gsc-ak-compendium-org',      identity: 'WoW_Much', name: 'GSC: AK Compendium (compendiums.org)',  category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,            config: { siteUrl: 'sc-domain:ancient-kingdoms.compendiums.org' } },
+  { id: 'gsc-erenshor-maps',          identity: 'WoW_Much', name: 'GSC: Erenshor Maps',                    category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,            config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' } },
+  { id: 'bing-glockyco-com',          identity: 'glockyco', name: 'Bing: glockyco.com',                    category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster, config: { siteUrl: 'https://glockyco.com/' } },
+  { id: 'bing-ak-compendium',         identity: 'WoW_Much', name: 'Bing: AK Compendium (workers.dev)',     category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster, config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' } },
+  { id: 'bing-ak-compendium-org',     identity: 'WoW_Much', name: 'Bing: AK Compendium (compendiums.org)', category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster, config: { siteUrl: 'https://ancient-kingdoms.compendiums.org/' } },
+  { id: 'bing-erenshor-maps',         identity: 'WoW_Much', name: 'Bing: Erenshor Maps',                   category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster, config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' } },
+  { id: 'cf-analytics-glockyco-com',  identity: 'glockyco', name: 'Cloudflare Analytics: glockyco.com',    category: 'analytics',  cadenceHours: 24, fetcher: fetchers.cfAnalytics,   config: {} },
+  { id: 'cf-analytics-ak-compendium', identity: 'WoW_Much', name: 'Cloudflare Analytics: AK Compendium',   category: 'analytics',  cadenceHours: 24, fetcher: fetchers.cfAnalytics,   config: {} },
+  { id: 'cf-analytics-erenshor-maps', identity: 'WoW_Much', name: 'Cloudflare Analytics: Erenshor Maps',   category: 'analytics',  cadenceHours: 24, fetcher: fetchers.cfAnalytics,   config: {} },
+  // ga4 — deferred until property ID and Google permission path are confirmed (see §7.2).
 ]);
 ```
 
@@ -626,67 +630,47 @@ await fetch(`/api/refresh/${sourceId}`, {
 
 ### 3.8 Daily digest (Vienna-DST aware)
 
+`maybeDailyDigest(env, now)` is called only from the digest cron (`0 4,5 * * *`). It first checks the Vienna-local hour, then checks `digest_sent`, then reads a half-open rolling 24h window (`now - 24h <= ts < now`), posts rich Discord embeds, and only then inserts the `digest_sent` marker.
+
 ```typescript
-async function maybeDailyDigest(env: Env) {
-  const viennaHour = parseInt(
-    new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Vienna', hour: 'numeric', hour12: false }).format(new Date())
-  );
-  if (viennaHour !== 6) return;                    // wrong cron half (DST other side)
+export async function maybeDailyDigest(env: Env, now: Date) {
+  if (!isViennaDigestHour(now)) return { sent: false, reason: 'outside_digest_hour' };
 
-  const digestDate = viennaDateKey(new Date());    // Europe/Vienna YYYY-MM-DD
+  const dateKey = viennaDateKey(now);
   const existing = await env.DB.prepare(
-    'SELECT sent_at FROM digest_sent WHERE digest_date = ?'
-  ).bind(digestDate).first<{ sent_at: number }>();
-  if (existing) return;                            // replay/retry-safe external side effect
+    'SELECT digest_date FROM digest_sent WHERE digest_date = ?'
+  ).bind(dateKey).first<{ digest_date: string }>();
+  if (existing) return { sent: false, reason: 'already_sent' };
 
-  const since = Date.now() - 24 * 3_600_000;
-  const [scalarDeltas, eventCount, posts, failureCount] = await Promise.all([
-    computeScalarDeltas(env, since),
-    env.DB.prepare('SELECT source_id, kind, count(*) AS n FROM events WHERE ts > ? GROUP BY source_id, kind').bind(since).all(),
-    env.DB.prepare('SELECT slug, title, author, posted_at, url FROM posts_index WHERE posted_at > ? ORDER BY posted_at DESC').bind(since).all(),
-    env.DB.prepare('SELECT source_id, tier, count(*) AS n FROM fetcher_failures WHERE ts > ? GROUP BY source_id, tier').bind(since).all(),
-  ]);
-
-  const message = formatDigest({ scalarDeltas, eventCount, posts, failureCount });
-  await postDiscord(env.DISCORD_DIGEST_WEBHOOK, message);
+  const data = await getDigestData(env.DB, now);
+  const message = formatDigest(data, dateKey);
+  await fetch(env.DISCORD_DIGEST_WEBHOOK, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(message)
+  });
   await env.DB.prepare('INSERT INTO digest_sent (digest_date, sent_at) VALUES (?, ?)')
-    .bind(digestDate, Date.now()).run();
+    .bind(dateKey, now.getTime()).run();
+  return { sent: true, reason: 'sent' };
 }
 ```
 
-Cron `0 4,5 * * *` UTC fires twice; the Vienna-local-hour guard makes exactly one half eligible, and `digest_sent` makes the Discord post replay-safe. Single Discord webhook (`DISCORD_DIGEST_WEBHOOK`) — body segmented by identity:
+Cron `0 4,5 * * *` UTC fires on both sides of Vienna DST; the Vienna-local-hour guard makes exactly one half eligible, and `digest_sent` makes the Discord post replay-safe.
 
-```
-🌅 Daily digest — 2026-05-04
+The Discord payload uses rich embeds, not a plain-text report. The message content is a short header:
 
-━━ glockyco ━━
-📈 GitHub @glockyco           ★ 47 (+1) · followers 23 (=) · contributions today: 4
-🔍 GSC: glockyco.com           clicks 12 (-2) · impressions 384 (+15) · pos 18.4 (=)
-
-━━ WoW_Much ━━
-📈 Thunderstore: WoW_Much      downloads 14 502 (+87) · 4 mods
-📈 Steam Guide: AK Compendium  rating 4.0★ (29 ratings, =) · views 1 421 (+3)
-📈 Steam Guide: Erenshor Maps  rating 4.0★ (41 ratings, =) · views 2 087 (+8)
-🔍 GSC: AK Compendium          clicks 41 (+5) · impressions 1 203 (+102)
-🔍 GSC: Erenshor Maps          clicks 28 (-1) · impressions 922 (+34)
-☁️  CF: erenshor-maps          visits 312 · pageviews 891
-💬 Steam reviews (24h):        2 new on Erenshor (1 ⊕ 1 ⊖) · "...quote..."
-📝 Wiki edits:                 5 changes on Erenshor wiki
-
-━━ Posts (24h) ━━
-None.
-
-━━ Health ━━
-✅ All sources fetching cleanly.
+```text
+Creator Dashboard daily digest — 2026-05-10 — last 24h
 ```
 
-When something breaks:
+Embeds are emitted in this order:
 
-```
-━━ Health ━━
-🔥 gsc-glockyco-com            permanent failure (auth_dead, 401) — alert sent 09:14
-⚠️  bing-ak-compendium          3 transient failures (recovered)
-```
+1. `glockyco` — GitHub followers/stars/repos, glockyco.com search clicks/impressions, glockyco.com Cloudflare Web Analytics visits/pageviews.
+2. `WoW_Much` — Steam guide view deltas, Steam review event count, Thunderstore downloads/packages, wiki edit events, AK/Erenshor search totals, AK/Erenshor Web Analytics visits/pageviews.
+3. `Posts` — new posts in the rolling 24h window, with author/platform/title links, or `No new posts`.
+4. `Health` — fetcher run status counts, failure counts by tier, and sources with consecutive failures.
+
+Digest content intentionally contains no emoji so Discord logs remain portable and grep-friendly.
 
 ### 3.9 Idempotency summary
 
@@ -1410,9 +1394,9 @@ Designed for full scope; deployable incrementally. Each phase produces a working
 | **3** | Tier 1 connectors (key-backed/public): GitHub, Steam Guide, Steam Reviews, Thunderstore, MediaWiki Recent Changes | Five connector modules / seven source IDs collecting hourly. Dashboard tiles render real data. **History starts ticking.** |
 | **4** | Dashboard UI: tile components per category, drill-down `/sources/[id]`, sparklines, identity tabs | Visual scan of all metrics in one place.                                     |
 | **5** | Posts subsystem: markdown loader + frontmatter validation, sync-posts script, `/posts` list + `/posts/[slug]` detail with performance panel | Editorial layer functional.                                                  |
-| **6** | Tier 2 connectors (auth): GSC, Bing Webmaster, GA4, CF GraphQL Analytics                        | All sources collecting.                                                      |
+| **6** | Tier 2 connectors (auth): GSC, Bing Webmaster, CF GraphQL Analytics. GA4 is deferred until property scope and Google permission path are confirmed. | Authenticated search/analytics sources live except GA4. |
 | **7** | Backfill: per-source scripts that pull historical data from analytics sources                   | Charts have real depth from day one.                                         |
-| **8** | Polish: timeline correlation view (headline feature), daily digest formatting + Vienna-DST guard, settings page, mobile refinement | Headline feature lit up.                                                     |
+| **8** | Polish: timeline correlation view (headline feature), daily digest rich embeds + Vienna-DST guard, settings page, mobile refinement | Headline feature lit up.                                                     |
 
 **Why this phasing:**
 
@@ -1426,11 +1410,11 @@ Each phase is independently deployable.
 
 | Item                                | Source                                       | When needed |
 | ----------------------------------- | -------------------------------------------- | ----------- |
-| Bing Webmaster API key              | bing.com/webmasters API key                  | Phase 6     |
-| CF Web Analytics site_tags (3 sites)| Each site's Web Analytics setup in CF dashboard | Phase 6  |
-| GA4 property ID                     | GA4 admin UI                                 | Phase 6     |
-| Google OAuth client + refresh token | GCP -> Auth Platform -> Clients (Web), then OAuth Playground (Server-side, Offline, Force prompt: Consent Screen). Scope: `webmasters.readonly`. Bound to jaichberger@gmail.com. | Phase 6 |
-| Google service account JSON         | Generate in GCP, retained for future GA4 access (GSC moved off SA due to acknowledged Google permission-propagation bug) | Phase 6     |
+| Bing Webmaster API key              | bing.com/webmasters API key                  | Configured for current live smoke; keep secret out of git |
+| CF Web Analytics account ID + site_tags | Cloudflare account dashboard + Web Analytics site URLs | Configured for current live smoke; same AK beacon covers workers.dev + `.org` |
+| GA4 property ID                     | GA4 admin UI                                 | Deferred until property scope and Google permission path are confirmed |
+| Google OAuth client + refresh token | GCP -> Auth Platform -> Clients (Web), then OAuth Playground (Server-side, Offline, Force prompt: Consent Screen). Scope: `webmasters.readonly`. Bound to jaichberg@gmail.com. | Configured for GSC |
+| Google service account JSON         | Generate in GCP, retained for future GA4 access (GSC moved off SA due to acknowledged Google permission-propagation bug) | Future GA4 only |
 | Steam Web API key                   | `steamcommunity.com/dev`                     | Phase 3     |
 | GitHub PAT                          | `github.com/settings/tokens` (`read:user`, `public_repo`) | Phase 3     |
 | Discord webhook URLs                | Create dedicated channels                    | Phase 2     |

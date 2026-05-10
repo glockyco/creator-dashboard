@@ -1542,7 +1542,7 @@ export function withBingKey(url: URL, env: Pick<Env, 'BING_WEBMASTER_API_KEY'>):
 }
 ```
 
-`src/lib/connectors/auth/google.ts` signs a service-account JWT with `jose`, exchanges it at `https://oauth2.googleapis.com/token`, and caches `{ token, expiresAt }` at module scope. Test it with generated local keys and stubbed `fetch`.
+`src/lib/connectors/auth/google.ts` exposes two cached token paths: `getGoogleAccessToken(env, scopes)` for service-account JWT bearer auth retained for future GA4, and `getGoogleOAuthAccessToken(env)` for the GSC refresh-token flow. GSC uses OAuth because Google's service-account permission grant path is currently broken; GA4 remains on the service-account path until revisited.
 
 - [ ] **Step 4: Document connector invariants**
 
@@ -1706,7 +1706,7 @@ If `query_summary` is stable in the fixture, also emit metrics `review_total`, `
 
 - [ ] **Step 7: Enable Tier 1 source registry**
 
-`src/lib/sources/registry.ts` should import `* as fetchers from '$lib/connectors/fetchers'` and contain exactly these source entries:
+`src/lib/sources/registry.ts` should import `* as fetchers from '$lib/connectors/fetchers'` and initially contain these Tier 1 source entries. Analytics entries are added in Task 16 and currently include parallel AK workers.dev + `compendiums.org` search sources.
 
 ```ts
 export const sources: SourceDef[] = z.array(SourceDef).parse([
@@ -1821,7 +1821,7 @@ export const sourceMetrics: Record<string, { primary: string[]; sparkline: strin
 };
 ```
 
-Add Phase 6 analytics metrics when those sources are enabled.
+Current analytics metrics are also present for all enabled GSC, Bing, and Cloudflare Analytics source IDs, including `gsc-ak-compendium-org` and `bing-ak-compendium-org`.
 
 - [ ] **Step 2: Define tile snapshot type**
 
@@ -2234,6 +2234,7 @@ Source IDs:
 ```text
 gsc-glockyco-com -> sc-domain:glockyco.com
 gsc-ak-compendium -> https://ancient-kingdoms-compendium.wowmuch1.workers.dev/
+gsc-ak-compendium-org -> sc-domain:ancient-kingdoms.compendiums.org
 gsc-erenshor-maps -> https://erenshor-maps.wowmuch1.workers.dev/
 ```
 
@@ -2259,6 +2260,7 @@ Source IDs:
 ```text
 bing-glockyco-com -> https://glockyco.com/
 bing-ak-compendium -> https://ancient-kingdoms-compendium.wowmuch1.workers.dev/
+bing-ak-compendium-org -> https://ancient-kingdoms.compendiums.org/
 bing-erenshor-maps -> https://erenshor-maps.wowmuch1.workers.dev/
 ```
 
@@ -2274,7 +2276,7 @@ cf-analytics-ak-compendium
 cf-analytics-erenshor-maps
 ```
 
-Read `CF_ANALYTICS_SITE_TAGS` as JSON:
+Read `CF_ACCOUNT_ID` plus `CF_ANALYTICS_SITE_TAGS` as configuration. The GraphQL query must filter `viewer.accounts(filter: { accountTag: $accountTag })`; unfiltered account queries can fail with `not authorized for that account` for `cfut_` user tokens even when the token row says "All accounts".
 
 ```json
 {
@@ -2523,7 +2525,7 @@ git commit -m "feat: add timeline correlation view"
 - Modify: `package.json`
 - Modify live-drifted public connectors/tests as smoke evidence requires.
 
-- [ ] **Step 1: Add smoke harness**
+- [x] **Step 1: Add smoke harness**
 
 `scripts/smoke-connectors.ts` loads the real source registry through Vite SSR, reads `.dev.vars` plus process env, runs selected source fetchers sequentially, prints sanitized metric/event counts and small samples, and never writes D1, sends queue jobs, or alerts.
 
@@ -2535,7 +2537,7 @@ pnpm smoke:authenticated
 pnpm smoke:connectors -- --source github-glockyco --strict
 ```
 
-- [ ] **Step 2: Run real public smoke and fix observed schema drift**
+- [x] **Step 2: Run real public smoke and fix observed schema drift**
 
 Run `pnpm smoke:public`. If a public connector fails against live upstream JSON, add a targeted failing fixture test for that live shape, fix the connector schema/mapping, and rerun smoke.
 
@@ -2547,7 +2549,7 @@ Observed first smoke drift:
 - GSC migrated off service-account auth: Google's "Add user" UI and Site Verification -> Search Console permission propagation are both broken (acknowledged April 23, 2026; no fix as of May 1, 2026). Switched to OAuth refresh-token flow bound to `jaichberg@gmail.com`, who is already verified owner of all three GSC properties. Connector also moved from `https://www.googleapis.com/webmasters/v3/...` to `https://searchconsole.googleapis.com/webmasters/v3/...` and now passes `dataState: 'all'` for fresh/unfinalized data. Service-account credential retained for future GA4 use.
 - Cloudflare Web Analytics GraphQL needs `accounts(filter: {accountTag: $accountTag})` even when the API token is scoped "All accounts". `cfut_` user tokens evaluate per-account authz at query time, so the unfiltered `viewer { accounts { ... } }` shape returns `not authorized for that account` when any account in the user's set is unreachable. Connector now reads `CF_ACCOUNT_ID` and passes it as the `$accountTag` variable.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 ```bash
 pnpm vitest run scripts/smoke-connectors.test.ts src/lib/connectors/fetchers/steam-reviews.test.ts src/lib/connectors/fetchers/thunderstore-team.test.ts src/lib/connectors/fetchers/mediawiki-recent-changes.test.ts
@@ -2624,7 +2626,7 @@ DST summer and winter tests pass
 digest dedupe test proves one send per Vienna date
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/digest src/lib/server/worker/scheduled.ts
@@ -2711,7 +2713,7 @@ settings schema/store tests pass
 Playwright confirms persisted settings and mobile layout assertions
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/settings src/routes/settings src/lib/components/settings src/app.html src/app.css src/lib/ui src/lib/components/dashboard src/lib/components/posts src/lib/components/timeline e2e/settings.spec.ts e2e/mobile.spec.ts
@@ -2722,33 +2724,53 @@ git commit -m "feat: add settings and mobile polish"
 
 ## Final verification before first manual deploy
 
-Run only after all phases intended for the deploy are complete and secrets/bindings are configured.
+Run only after deployment-readiness planning and smoke implementation are complete. Do not treat connector smoke as a full deploy smoke; it bypasses queues and D1 writes.
+
+Resource preflight:
+
+```text
+wrangler.toml has a real D1 database_id, not the placeholder
+remote D1 database exists and migrations are applied
+Cloudflare Queues exist: creator-dashboard-fetchers and creator-dashboard-fetcher-dlq
+production secrets are present: Access, Discord, GitHub, Steam, Google OAuth, Bing, Cloudflare Analytics
+GA4 is deferred unless GA4_PROPERTY_ID and permission path are confirmed
+```
+
+Safe local verification order:
 
 ```bash
 pnpm lint
 pnpm check
-pnpm test
+pnpm vitest run
 pnpm build
-pnpm playwright test --project=chromium
-pnpm migrate:local
-pnpm exec wrangler d1 migrations apply creator-dashboard --remote
-pnpm deploy
+pnpm smoke:public
+pnpm smoke:connectors --source github-glockyco --source gsc-ak-compendium-org --source bing-ak-compendium-org --source cf-analytics-ak-compendium --strict
+# Then run the planned local ingest smoke and hourly cron/queue smoke.
+```
+
+Deployment order after local smoke is green:
+
+```bash
+pnpm migrate:remote
+pnpm build
+pnpm exec wrangler deploy
+pnpm sync-posts
+# Then run the planned post-deploy verification script/checklist.
 ```
 
 Expected:
 
 ```text
-lint exits 0
-check exits 0
-unit tests exit 0
-build exits 0
-Playwright chromium exits 0
-local migrations apply cleanly
+lint/check/unit tests/build exit 0
+connector smoke confirms live upstream auth and schemas for selected sources
+local ingest smoke proves a queued/manual source job persists fetcher_runs plus metric/event rows
+local hourly cron/queue smoke proves scheduled dispatch enqueues and consumer drains without alerting or DLQ traffic
 remote migrations apply cleanly
 manual deploy succeeds
+post-deploy verification proves dashboard auth, manual refresh, queue consumer persistence, and no unexpected digest/DLQ alerts
 ```
 
-After deploy, verify manually:
+Manual post-deploy checks:
 
 ```bash
 pnpm exec wrangler tail creator-dashboard
@@ -2759,8 +2781,7 @@ Then visit `https://dashboard.glockyco.com` through Cloudflare Access and confir
 ```text
 Access login succeeds with GitHub OAuth
 Worker-side JWT verification does not reject the authenticated session
-Dashboard loads
-Health page loads
+Dashboard, Health, Posts, Timeline, and Settings pages load
 Manual refresh enqueues a job
 Fetcher run appears in Health after the queue consumer completes
 No workers.dev preview URL is reachable because workers_dev=false and preview_urls=false
