@@ -23,11 +23,12 @@ describe('source registry', () => {
       'bing-erenshor-maps',
       'cf-analytics-glockyco-com',
       'cf-analytics-ak-compendium',
-      'cf-analytics-erenshor-maps'
+      'cf-analytics-erenshor-maps',
+      'ga4'
     ]);
     expect(sources.filter((source) => source.category !== 'analytics').every((source) => source.cadenceHours === 1)).toBe(true);
     expect(sources.filter((source) => source.category === 'analytics').every((source) => source.cadenceHours === 24)).toBe(true);
-    expect(sources.some((source) => source.id === 'ga4')).toBe(false);
+    expect(sources.some((source) => source.id === 'ga4')).toBe(true);
   });
 
   it('accepts a valid source shape', () => {

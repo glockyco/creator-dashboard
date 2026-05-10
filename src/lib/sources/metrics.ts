@@ -22,5 +22,6 @@ export const sourceMetrics: Record<string, SourceMetricConfig> = {
   'bing-erenshor-maps': { primary: ['clicks', 'impressions', 'ctr', 'position'], sparkline: 'clicks' },
   'cf-analytics-glockyco-com': { primary: ['visits', 'pageviews'], sparkline: 'visits' },
   'cf-analytics-ak-compendium': { primary: ['visits', 'pageviews'], sparkline: 'visits' },
-  'cf-analytics-erenshor-maps': { primary: ['visits', 'pageviews'], sparkline: 'visits' }
+  'cf-analytics-erenshor-maps': { primary: ['visits', 'pageviews'], sparkline: 'visits' },
+  'ga4': { primary: ['active_users', 'sessions', 'views', 'event_count'], sparkline: 'active_users' }
 };

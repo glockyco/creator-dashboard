@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { getGoogleAccessToken } from '../auth/google.ts';
+import { getGoogleOAuthAccessToken } from '../auth/google.ts';
 import { fetchJson } from '../http.ts';
 import type { FetcherInput, FetcherOutput, MetricPoint } from '$lib/types/domain';
 
@@ -20,7 +20,7 @@ export async function fetchGa4({ source, env, now }: FetcherInput): Promise<Fetc
 }
 
 export async function fetchGa4Range({ source, env, startDate, endDate }: Ga4RangeInput): Promise<FetcherOutput> {
-  const token = await getGoogleAccessToken(env, ['https://www.googleapis.com/auth/analytics.readonly']);
+  const token = await getGoogleOAuthAccessToken(env);
   const response = await fetchJson(`https://analyticsdata.googleapis.com/v1beta/properties/${env.GA4_PROPERTY_ID}:runReport`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },

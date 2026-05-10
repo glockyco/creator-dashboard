@@ -31,5 +31,6 @@ export const sourceRecords: SourceRecord[] = [
   { id: 'bing-erenshor-maps', identity: 'WoW_Much', name: 'Bing: Erenshor Maps', category: 'analytics', cadenceHours: 24, connector: 'bingWebmaster', config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' } },
   { id: 'cf-analytics-glockyco-com', identity: 'glockyco', name: 'Cloudflare Analytics: glockyco.com', category: 'analytics', cadenceHours: 24, connector: 'cfAnalytics', config: {} },
   { id: 'cf-analytics-ak-compendium', identity: 'WoW_Much', name: 'Cloudflare Analytics: AK Compendium', category: 'analytics', cadenceHours: 24, connector: 'cfAnalytics', config: {} },
-  { id: 'cf-analytics-erenshor-maps', identity: 'WoW_Much', name: 'Cloudflare Analytics: Erenshor Maps', category: 'analytics', cadenceHours: 24, connector: 'cfAnalytics', config: {} }
+  { id: 'cf-analytics-erenshor-maps', identity: 'WoW_Much', name: 'Cloudflare Analytics: Erenshor Maps', category: 'analytics', cadenceHours: 24, connector: 'cfAnalytics', config: {} },
+  { id: 'ga4', identity: 'glockyco', name: 'GA4: glockyco.com', category: 'analytics', cadenceHours: 24, connector: 'ga4', config: {} }
 ];

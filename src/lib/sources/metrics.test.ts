@@ -10,5 +10,6 @@ describe('sourceMetrics', () => {
     expect(sourceMetrics['erenshor-wiki-recent']).toMatchObject({ primary: ['wiki_change_count'], sparkline: 'wiki_change_count', eventKind: 'wiki_edit' });
     expect(sourceMetrics['gsc-erenshor-maps']).toEqual({ primary: ['clicks', 'impressions', 'ctr', 'position'], sparkline: 'clicks' });
     expect(sourceMetrics['cf-analytics-erenshor-maps']).toEqual({ primary: ['visits', 'pageviews'], sparkline: 'visits' });
+    expect(sourceMetrics['ga4']).toEqual({ primary: ['active_users', 'sessions', 'views', 'event_count'], sparkline: 'active_users' });
   });
 });

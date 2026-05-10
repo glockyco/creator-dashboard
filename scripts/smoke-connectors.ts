@@ -76,7 +76,7 @@ export function secretRequirements(sourceId: string): string[] {
   if (sourceId.startsWith('gsc-')) return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN'];
   if (sourceId.startsWith('bing-')) return ['BING_WEBMASTER_API_KEY'];
   if (sourceId.startsWith('cf-analytics-')) return ['CF_API_TOKEN', 'CF_ACCOUNT_ID', 'CF_ANALYTICS_SITE_TAGS'];
-  if (sourceId.startsWith('ga4') || sourceId.includes('-ga4-')) return ['GOOGLE_SERVICE_ACCOUNT', 'GA4_PROPERTY_ID'];
+  if (sourceId.startsWith('ga4') || sourceId.includes('-ga4-')) return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GA4_PROPERTY_ID'];
   return [];
 }
 

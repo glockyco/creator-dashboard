@@ -7,6 +7,7 @@ STEAM_WEB_API_KEY=replace
 GOOGLE_OAUTH_CLIENT_ID=replace.apps.googleusercontent.com
 GOOGLE_OAUTH_CLIENT_SECRET=replace
 GOOGLE_OAUTH_REFRESH_TOKEN=1//replace
+# Refresh token must include both webmasters.readonly and analytics.readonly scopes.
 GOOGLE_SERVICE_ACCOUNT={}
 GSC_PROPERTIES=[]
 GA4_PROPERTY_ID=
