@@ -14,7 +14,7 @@ const source = {
 } as unknown as SourceDef;
 
 const env = {
-  GOOGLE_SERVICE_ACCOUNT: '{}',
+  GOOGLE_OAUTH_CLIENT_ID: 'cid', GOOGLE_OAUTH_CLIENT_SECRET: 'cs', GOOGLE_OAUTH_REFRESH_TOKEN: 'rt',
   GSC_PROPERTIES: '[]',
   BING_WEBMASTER_API_KEY: 'bing-key',
   BING_PROPERTIES: '["https://glockyco.com/"]',

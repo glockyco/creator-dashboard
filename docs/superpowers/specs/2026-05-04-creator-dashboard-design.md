@@ -164,7 +164,10 @@ Browser ─[GitHub OAuth via Access]→ CF Access edge ─[CF_Authorization cook
 ```
 GITHUB_PAT                  read:user, public_repo
 STEAM_WEB_API_KEY           steamcommunity.com/dev
-GOOGLE_SERVICE_ACCOUNT      JSON service-account credential, used by GSC + GA4
+GOOGLE_OAUTH_CLIENT_ID      OAuth Web client ID, used by GSC (refresh-token flow)
+GOOGLE_OAUTH_CLIENT_SECRET  OAuth Web client secret, used by GSC
+GOOGLE_OAUTH_REFRESH_TOKEN  Long-lived refresh token for jaichberg@gmail.com (webmasters.readonly)
+GOOGLE_SERVICE_ACCOUNT      JSON service-account credential, retained for future GA4 use
 GSC_PROPERTIES              JSON list — sites to query (matches registry, redundant guard)
 GA4_PROPERTY_ID             single property ID
 BING_WEBMASTER_API_KEY      bing.com/webmasters API key
@@ -773,21 +776,47 @@ export const cfHeaders = (env: Env) => ({
   'Content-Type':  'application/json',
 });
 
-// src/lib/connectors/auth/google.ts — service account → cached access token
-let cached: { token: string; expiresAt: number } | null = null;
-export async function getGoogleAccessToken(env: Env, scopes: string[]): Promise<string> {
-  if (cached && Date.now() < cached.expiresAt - 60_000) return cached.token;
+// src/lib/connectors/auth/google.ts — two cached access-token paths
+// (a) Service-account JWT-bearer flow, retained for GA4 (and any future SA-grantable API).
+// (b) OAuth refresh-token flow, used by GSC because Google's "Add user" / Site Verification
+//     -> Search Console permission propagation is broken (acknowledged April 23, 2026; no
+//     fix timeline as of May 1, 2026). Refresh token is bound to jaichberger@gmail.com,
+//     who is already verified owner of all three GSC properties.
+let cachedSa: { token: string; expiresAt: number } | null = null;
+let cachedOAuth: { token: string; expiresAt: number } | null = null;
 
-  // Sign service-account JWT (RS256) with `jose`, exchange at https://oauth2.googleapis.com/token
+export async function getGoogleAccessToken(
+  env: Pick<Env, 'GOOGLE_SERVICE_ACCOUNT'>,
+  scopes: string[]
+): Promise<string> {
+  if (cachedSa && Date.now() < cachedSa.expiresAt - 60_000) return cachedSa.token;
   const sa = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT) as { client_email: string; private_key: string };
   const jwt = await signSaJwt(sa, scopes);
-  const res = await fetchJson<{ access_token: string; expires_in: number }>(
+  const res = await fetchJson<TokenResponse>(
     'https://oauth2.googleapis.com/token',
     { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}` }
   );
-  cached = { token: res.access_token, expiresAt: Date.now() + res.expires_in * 1000 };
-  return cached.token;
+  cachedSa = { token: res.access_token, expiresAt: Date.now() + res.expires_in * 1000 };
+  return cachedSa.token;
+}
+
+export async function getGoogleOAuthAccessToken(
+  env: Pick<Env, 'GOOGLE_OAUTH_CLIENT_ID' | 'GOOGLE_OAUTH_CLIENT_SECRET' | 'GOOGLE_OAUTH_REFRESH_TOKEN'>
+): Promise<string> {
+  if (cachedOAuth && Date.now() < cachedOAuth.expiresAt - 60_000) return cachedOAuth.token;
+  const body = new URLSearchParams({
+    client_id: env.GOOGLE_OAUTH_CLIENT_ID,
+    client_secret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+    refresh_token: env.GOOGLE_OAUTH_REFRESH_TOKEN,
+    grant_type: 'refresh_token'
+  });
+  const res = await fetchJson<TokenResponse>(
+    'https://oauth2.googleapis.com/token',
+    { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body }
+  );
+  cachedOAuth = { token: res.access_token, expiresAt: Date.now() + res.expires_in * 1000 };
+  return cachedOAuth.token;
 }
 ```
 
@@ -809,7 +838,7 @@ src/lib/connectors/
     steam.ts
     cloudflare.ts
     bing.ts
-    google.ts                       service-account JWT → token (GSC + GA4)
+    google.ts                       SA JWT (GA4) + OAuth refresh-token (GSC)
 
   fetchers/
     github.ts
@@ -1399,7 +1428,8 @@ Each phase is independently deployable.
 | Bing Webmaster API key              | bing.com/webmasters API key                  | Phase 6     |
 | CF Web Analytics site_tags (3 sites)| Each site's Web Analytics setup in CF dashboard | Phase 6  |
 | GA4 property ID                     | GA4 admin UI                                 | Phase 6     |
-| Google service account JSON         | Generate in GCP, grant to GSC + GA4          | Phase 6     |
+| Google OAuth client + refresh token | GCP -> Auth Platform -> Clients (Web), then OAuth Playground (Server-side, Offline, Force prompt: Consent Screen). Scope: `webmasters.readonly`. Bound to jaichberger@gmail.com. | Phase 6 |
+| Google service account JSON         | Generate in GCP, retained for future GA4 access (GSC moved off SA due to acknowledged Google permission-propagation bug) | Phase 6     |
 | Steam Web API key                   | `steamcommunity.com/dev`                     | Phase 3     |
 | GitHub PAT                          | `github.com/settings/tokens` (`read:user`, `public_repo`) | Phase 3     |
 | Discord webhook URLs                | Create dedicated channels                    | Phase 2     |

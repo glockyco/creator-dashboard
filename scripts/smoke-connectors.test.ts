@@ -41,7 +41,7 @@ describe('smoke connector harness', () => {
     expect(secretRequirements('steam-reviews-erenshor')).toEqual([]);
     expect(secretRequirements('steam-guide-erenshor')).toEqual(['STEAM_WEB_API_KEY']);
     expect(secretRequirements('github-glockyco')).toEqual(['GITHUB_PAT']);
-    expect(secretRequirements('gsc-glockyco-com')).toEqual(['GOOGLE_SERVICE_ACCOUNT']);
+    expect(secretRequirements('gsc-glockyco-com')).toEqual(['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN']);
     expect(secretRequirements('bing-glockyco-com')).toEqual(['BING_WEBMASTER_API_KEY']);
     expect(secretRequirements('cf-analytics-glockyco-com')).toEqual(['CF_API_TOKEN', 'CF_ANALYTICS_SITE_TAGS']);
   });

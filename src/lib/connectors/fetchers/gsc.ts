@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { getGoogleAccessToken } from '../auth/google.ts';
+import { getGoogleOAuthAccessToken } from '../auth/google.ts';
 import { fetchJson } from '../http.ts';
 import type { FetcherInput, FetcherOutput, JsonRecord, MetricPoint } from '$lib/types/domain';
 
@@ -26,14 +26,14 @@ export async function fetchGsc({ source, env, now }: FetcherInput): Promise<Fetc
 
 export async function fetchGscRange({ source, env, startDate, endDate }: GscRangeInput): Promise<FetcherOutput> {
   const config = GscConfig.parse(source.config);
-  const token = await getGoogleAccessToken(env, ['https://www.googleapis.com/auth/webmasters.readonly']);
+  const token = await getGoogleOAuthAccessToken(env);
   const rows: GscRow[] = [];
 
   for (let startRow = 0; ; startRow += rowLimit) {
-    const response = await fetchJson(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(config.siteUrl)}/searchAnalytics/query`, {
+    const response = await fetchJson(`https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(config.siteUrl)}/searchAnalytics/query`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ startDate, endDate, dimensions: ['date', 'query', 'page'], rowLimit, startRow }),
+      body: JSON.stringify({ startDate, endDate, dimensions: ['date', 'query', 'page'], rowLimit, startRow, dataState: 'all' }),
       schema: GscResponse
     });
     rows.push(...response.rows);

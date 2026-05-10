@@ -510,6 +510,9 @@ declare global {
     FETCHER_QUEUE: Queue<JobMsg>;
     GITHUB_PAT: string;
     STEAM_WEB_API_KEY: string;
+    GOOGLE_OAUTH_CLIENT_ID: string;
+    GOOGLE_OAUTH_CLIENT_SECRET: string;
+    GOOGLE_OAUTH_REFRESH_TOKEN: string;
     GOOGLE_SERVICE_ACCOUNT: string;
     GSC_PROPERTIES: string;
     GA4_PROPERTY_ID: string;
@@ -2330,7 +2333,7 @@ git commit -m "feat: add authenticated analytics connectors"
 `env.ts` reads local process env names matching Worker secrets:
 
 ```ts
-const required = ['GOOGLE_SERVICE_ACCOUNT', 'GSC_PROPERTIES', 'BING_WEBMASTER_API_KEY', 'BING_PROPERTIES', 'CF_API_TOKEN', 'CF_ANALYTICS_SITE_TAGS'];
+const required = ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GSC_PROPERTIES', 'BING_WEBMASTER_API_KEY', 'BING_PROPERTIES', 'CF_API_TOKEN', 'CF_ANALYTICS_SITE_TAGS'];
 ```
 
 Include `GA4_PROPERTY_ID` only for GA4 backfill.
@@ -2540,6 +2543,7 @@ Observed first smoke drift:
 - Thunderstore `/api/experimental/package/` is paginated and uses `total_downloads`; community-scoped v1 package lists remain more suitable for team aggregate metrics.
 - MediaWiki flag fields can be empty strings when flags are present.
 - Steam guide stats moved to `IPublishedFileService/GetDetails/v1` (GET, key required, `includevotes=true`); the legacy `ISteamRemoteStorage/GetPublishedFileDetails/v1` is POST-only and returns `result: k_EResultFileNotFound` for current guide IDs.
+- GSC migrated off service-account auth: Google's "Add user" UI and Site Verification -> Search Console permission propagation are both broken (acknowledged April 23, 2026; no fix as of May 1, 2026). Switched to OAuth refresh-token flow bound to `jaichberg@gmail.com`, who is already verified owner of all three GSC properties. Connector also moved from `https://www.googleapis.com/webmasters/v3/...` to `https://searchconsole.googleapis.com/webmasters/v3/...` and now passes `dataState: 'all'` for fresh/unfinalized data. Service-account credential retained for future GA4 use.
 
 - [ ] **Step 3: Verify and commit**
 

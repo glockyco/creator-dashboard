@@ -1,6 +1,6 @@
-const required = ['GOOGLE_SERVICE_ACCOUNT', 'GSC_PROPERTIES', 'BING_WEBMASTER_API_KEY', 'BING_PROPERTIES', 'CF_API_TOKEN', 'CF_ANALYTICS_SITE_TAGS'] as const;
+const required = ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GSC_PROPERTIES', 'BING_WEBMASTER_API_KEY', 'BING_PROPERTIES', 'CF_API_TOKEN', 'CF_ANALYTICS_SITE_TAGS'] as const;
 
-export type BackfillEnv = Record<(typeof required)[number], string> & { GA4_PROPERTY_ID?: string };
+export type BackfillEnv = Record<(typeof required)[number], string> & { GA4_PROPERTY_ID?: string; GOOGLE_SERVICE_ACCOUNT?: string };
 
 export function readBackfillEnv(source: NodeJS.ProcessEnv = process.env, options: { includeGa4?: boolean } = {}): BackfillEnv {
   const names = options.includeGa4 ? [...required, 'GA4_PROPERTY_ID'] : [...required];

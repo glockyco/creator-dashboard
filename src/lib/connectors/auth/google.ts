@@ -12,15 +12,17 @@ const TokenResponse = z.object({
   expires_in: z.number().int().positive()
 });
 
-let cached: { token: string; expiresAt: number; cacheKey: string } | null = null;
+let cachedSa: { token: string; expiresAt: number; cacheKey: string } | null = null;
+let cachedOAuth: { token: string; expiresAt: number } | null = null;
 
 export function resetGoogleAccessTokenCacheForTests(): void {
-  cached = null;
+  cachedSa = null;
+  cachedOAuth = null;
 }
 
 export async function getGoogleAccessToken(env: Pick<Env, 'GOOGLE_SERVICE_ACCOUNT'>, scopes: string[]): Promise<string> {
   const cacheKey = scopes.slice().sort().join(' ');
-  if (cached && cached.cacheKey === cacheKey && Date.now() < cached.expiresAt - 60_000) return cached.token;
+  if (cachedSa && cachedSa.cacheKey === cacheKey && Date.now() < cachedSa.expiresAt - 60_000) return cachedSa.token;
 
   const serviceAccount = ServiceAccount.parse(JSON.parse(env.GOOGLE_SERVICE_ACCOUNT));
   const privateKey = await importPKCS8(serviceAccount.private_key, 'RS256');
@@ -46,6 +48,27 @@ export async function getGoogleAccessToken(env: Pick<Env, 'GOOGLE_SERVICE_ACCOUN
     schema: TokenResponse
   });
 
-  cached = { token: response.access_token, expiresAt: Date.now() + response.expires_in * 1000, cacheKey };
-  return cached.token;
+  cachedSa = { token: response.access_token, expiresAt: Date.now() + response.expires_in * 1000, cacheKey };
+  return cachedSa.token;
+}
+
+export async function getGoogleOAuthAccessToken(env: Pick<Env, 'GOOGLE_OAUTH_CLIENT_ID' | 'GOOGLE_OAUTH_CLIENT_SECRET' | 'GOOGLE_OAUTH_REFRESH_TOKEN'>): Promise<string> {
+  if (cachedOAuth && Date.now() < cachedOAuth.expiresAt - 60_000) return cachedOAuth.token;
+
+  const body = new URLSearchParams({
+    client_id: env.GOOGLE_OAUTH_CLIENT_ID,
+    client_secret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+    refresh_token: env.GOOGLE_OAUTH_REFRESH_TOKEN,
+    grant_type: 'refresh_token'
+  });
+
+  const response = await fetchJson('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+    schema: TokenResponse
+  });
+
+  cachedOAuth = { token: response.access_token, expiresAt: Date.now() + response.expires_in * 1000 };
+  return cachedOAuth.token;
 }

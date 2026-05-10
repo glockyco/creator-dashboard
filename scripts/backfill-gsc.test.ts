@@ -3,7 +3,7 @@ import type { MetricPoint } from '../src/lib/types/domain';
 import type { SourceDef } from '../src/lib/sources/registry';
 import { runGscBackfill } from './backfill-gsc';
 
-vi.mock('../src/lib/connectors/auth/google', () => ({ getGoogleAccessToken: vi.fn(async () => 'google-token') }));
+vi.mock('../src/lib/connectors/auth/google', () => ({ getGoogleOAuthAccessToken: vi.fn(async () => 'google-token') }));
 
 const source = {
   id: 'gsc-glockyco-com',
@@ -16,7 +16,7 @@ const source = {
 } as unknown as SourceDef;
 
 const env = {
-  GOOGLE_SERVICE_ACCOUNT: '{}',
+  GOOGLE_OAUTH_CLIENT_ID: 'cid', GOOGLE_OAUTH_CLIENT_SECRET: 'cs', GOOGLE_OAUTH_REFRESH_TOKEN: 'rt',
   GSC_PROPERTIES: '["sc-domain:glockyco.com"]',
   BING_WEBMASTER_API_KEY: 'bing-key',
   BING_PROPERTIES: '[]',

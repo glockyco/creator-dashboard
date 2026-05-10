@@ -15,6 +15,9 @@ declare global {
     GITHUB_PAT: string;
     STEAM_WEB_API_KEY: string;
     GOOGLE_SERVICE_ACCOUNT: string;
+    GOOGLE_OAUTH_CLIENT_ID: string;
+    GOOGLE_OAUTH_CLIENT_SECRET: string;
+    GOOGLE_OAUTH_REFRESH_TOKEN: string;
     GSC_PROPERTIES: string;
     GA4_PROPERTY_ID: string;
     BING_WEBMASTER_API_KEY: string;
