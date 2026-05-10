@@ -16,7 +16,7 @@
 - Use explicit source allowlists for smoke. Default smoke source: `steam-reviews-erenshor` because it is public, low-risk, and emits stable event/metric rows.
 - Do not exercise the digest cron in smoke unless the Discord digest webhook is explicitly pointed at a sandbox sink.
 - Permanent-failure and DLQ alerts remain production behavior. Smoke scripts must either stay on success paths or use local webhook sinks.
-- `GA4_PROPERTY_ID` remains deferred. Deploy readiness must not require GA4.
+- GA4 is no longer deferred. Resolve GA4 live integration before deploy-readiness implementation proceeds past planning.
 
 ---
 
@@ -37,7 +37,7 @@ GOOGLE_SERVICE_ACCOUNT is retained only for future GA4.
 CF analytics requires CF_API_TOKEN, CF_ACCOUNT_ID, and CF_ANALYTICS_SITE_TAGS.
 gsc-ak-compendium-org and bing-ak-compendium-org are enabled parallel AK migration sources.
 Daily digest uses rich Discord embeds.
-GA4 is deferred.
+GA4 live integration is planned before deploy readiness.
 ```
 
 - [ ] **Step 2: Verify deploy readiness gate text**
@@ -66,7 +66,7 @@ needles = [
   'CF_ACCOUNT_ID',
   'Google OAuth',
   'rich Discord embeds',
-  'GA4 is deferred',
+  'GA4 live integration',
 ]
 for path in paths:
   text = path.read_text()
@@ -92,7 +92,141 @@ git commit -m "docs: sync deploy readiness plan"
 
 ---
 
-## Task 2: Split deploy scripts and add preflight validation
+## Task 2: Resolve GA4 live integration
+
+**Files:**
+- Modify: `src/lib/connectors/fetchers/ga4.ts`
+- Modify: `src/lib/connectors/fetchers/ga4.test.ts`
+- Modify: `src/lib/sources/registry-data.ts`
+- Modify: `src/lib/sources/registry.test.ts`
+- Modify: `src/lib/sources/metrics.ts`
+- Modify: `src/lib/sources/metrics.test.ts`
+- Modify: `scripts/smoke-connectors.ts`
+- Modify: `scripts/smoke-connectors.test.ts`
+- Modify: `scripts/backfill/lib/env.ts`
+- Modify: `scripts/backfill-ga4.test.ts`
+- Modify: `.dev.vars.example`
+
+- [ ] **Step 1: Confirm Google Analytics Data API and property scope**
+
+In GCP project `creator-dashboard-495905`, confirm Google Analytics Data API is enabled:
+
+```bash
+pnpm exec wrangler --version
+```
+
+The Wrangler version command is only a harmless local sanity check before browser work. Then use the Google Cloud console to enable `analyticsdata.googleapis.com` if it is not already enabled.
+
+In GA4, identify the numeric property ID that covers the traffic the dashboard should track. For initial deployment, use the property that best represents `glockyco.com` / the relevant creator traffic. Write the real numeric value into `.dev.vars`; the value below is an example shape:
+
+```text
+GA4_PROPERTY_ID=123456789
+```
+
+- [ ] **Step 2: Reissue the Google OAuth refresh token with both scopes**
+
+Use the existing Google OAuth Web client in OAuth Playground with these scopes selected together:
+
+```text
+https://www.googleapis.com/auth/webmasters.readonly
+https://www.googleapis.com/auth/analytics.readonly
+```
+
+Keep OAuth flow `Server-side`, access type `Offline`, and force prompt `Consent Screen`. Replace `GOOGLE_OAUTH_REFRESH_TOKEN` in `.dev.vars` with the new refresh token. This keeps GSC working and allows GA4 to use the same refresh-token path, avoiding the Google service-account permission bug.
+
+- [ ] **Step 3: Write failing GA4 OAuth test**
+
+Update `src/lib/connectors/fetchers/ga4.test.ts` mock:
+
+```ts
+vi.mock('../auth/google', () => ({ getGoogleOAuthAccessToken: vi.fn(async () => 'google-token') }));
+```
+
+Then assert the connector calls the OAuth helper by importing the mock and checking it was called once. The test should fail before `ga4.ts` switches from `getGoogleAccessToken` to `getGoogleOAuthAccessToken`.
+
+- [ ] **Step 4: Switch GA4 connector to OAuth**
+
+In `src/lib/connectors/fetchers/ga4.ts`, replace:
+
+```ts
+import { getGoogleAccessToken } from '../auth/google.ts';
+```
+
+with:
+
+```ts
+import { getGoogleOAuthAccessToken } from '../auth/google.ts';
+```
+
+and replace:
+
+```ts
+const token = await getGoogleAccessToken(env, ['https://www.googleapis.com/auth/analytics.readonly']);
+```
+
+with:
+
+```ts
+const token = await getGoogleOAuthAccessToken(env);
+```
+
+- [ ] **Step 5: Enable the GA4 source and metric registry**
+
+Add the source once `GA4_PROPERTY_ID` is known:
+
+```ts
+{ id: 'ga4', identity: 'glockyco', name: 'GA4: glockyco.com', category: 'analytics', cadenceHours: 24, connector: 'ga4', config: {} }
+```
+
+Add metrics:
+
+```ts
+'ga4': { primary: ['active_users', 'sessions', 'views', 'event_count'], sparkline: 'active_users' }
+```
+
+Update `src/lib/sources/registry.test.ts` and `src/lib/sources/metrics.test.ts` expectations accordingly.
+
+- [ ] **Step 6: Update env requirements and examples**
+
+Change GA4 smoke requirements in `scripts/smoke-connectors.ts` to:
+
+```ts
+if (sourceId.startsWith('ga4') || sourceId.includes('-ga4-')) return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GA4_PROPERTY_ID'];
+```
+
+Update `scripts/smoke-connectors.test.ts` for that requirement list.
+
+In `scripts/backfill/lib/env.ts`, include `GA4_PROPERTY_ID` when `includeGa4` is true but do not require `GOOGLE_SERVICE_ACCOUNT` for GA4 if the connector uses OAuth.
+
+In `.dev.vars.example`, keep `GA4_PROPERTY_ID=` and note that the OAuth refresh token must include `analytics.readonly`.
+
+- [ ] **Step 7: Verify GA4 locally and live**
+
+Run targeted tests:
+
+```bash
+pnpm vitest run src/lib/connectors/fetchers/ga4.test.ts scripts/smoke-connectors.test.ts src/lib/sources/registry.test.ts src/lib/sources/metrics.test.ts scripts/backfill-ga4.test.ts
+pnpm check
+```
+
+Run live smoke:
+
+```bash
+pnpm smoke:connectors --source ga4 --strict
+```
+
+Expected: `ok ga4: 4 metric points, 0 events` or `ok ga4: 0 metric points, 0 events` if the selected property has no prior-day data.
+
+- [ ] **Step 8: Commit GA4 integration**
+
+```bash
+git add src/lib/connectors/fetchers/ga4.ts src/lib/connectors/fetchers/ga4.test.ts src/lib/sources/registry-data.ts src/lib/sources/registry.test.ts src/lib/sources/metrics.ts src/lib/sources/metrics.test.ts scripts/smoke-connectors.ts scripts/smoke-connectors.test.ts scripts/backfill/lib/env.ts scripts/backfill-ga4.test.ts .dev.vars.example docs/superpowers
+git commit -m "feat: enable ga4 analytics source"
+```
+
+---
+
+## Task 3: Split deploy scripts and add preflight validation
 
 **Files:**
 - Modify: `package.json`
@@ -132,7 +266,7 @@ crons = ["0 * * * *", "0 4,5 * * *"]
     expect(parseWranglerPreflight(toml).errors).toEqual([]);
   });
 
-  it('documents all production secrets except deferred GA4', () => {
+  it('documents all production secrets including GA4', () => {
     expect(requiredProductionSecrets()).toEqual([
       'ACCESS_TEAM_DOMAIN',
       'ACCESS_AUD',
@@ -147,6 +281,7 @@ crons = ["0 * * * *", "0 4,5 * * *"]
       'BING_WEBMASTER_API_KEY',
       'BING_PROPERTIES',
       'CF_API_TOKEN',
+      'GA4_PROPERTY_ID',
       'CF_ACCOUNT_ID',
       'CF_ANALYTICS_SITE_TAGS'
     ]);
@@ -186,6 +321,7 @@ export function requiredProductionSecrets(): string[] {
     'BING_WEBMASTER_API_KEY',
     'BING_PROPERTIES',
     'CF_API_TOKEN',
+    'GA4_PROPERTY_ID',
     'CF_ACCOUNT_ID',
     'CF_ANALYTICS_SITE_TAGS'
   ];
@@ -255,7 +391,7 @@ git commit -m "chore: add deploy preflight checks"
 
 ---
 
-## Task 3: Add local ingest smoke through refresh endpoint and queue consumer
+## Task 4: Add local ingest smoke through refresh endpoint and queue consumer
 
 **Files:**
 - Create: `scripts/smoke-ingest.ts`
@@ -363,7 +499,7 @@ pnpm smoke:ingest --source steam-reviews-erenshor --base-url http://127.0.0.1:87
 Expected:
 
 ```text
-ingest smoke ok steam-reviews-erenshor: last_success_at=<timestamp printed by script>
+ingest smoke ok steam-reviews-erenshor: last_success_at=1778420000000
 ```
 
 - [ ] **Step 6: Commit**
@@ -375,7 +511,7 @@ git commit -m "test: add local ingest smoke"
 
 ---
 
-## Task 4: Add bounded cron/queue smoke
+## Task 5: Add bounded cron/queue smoke
 
 **Files:**
 - Create: `scripts/smoke-cron.ts`
@@ -463,7 +599,7 @@ git commit -m "test: add bounded cron queue smoke"
 
 ---
 
-## Task 5: Remote resource provisioning and configuration
+## Task 6: Remote resource provisioning and configuration
 
 **Files:**
 - Modify: `wrangler.toml`
@@ -478,13 +614,13 @@ Run only with user approval because this modifies Cloudflare account state:
 pnpm exec wrangler d1 create creator-dashboard
 ```
 
-Copy the returned `database_id` into `wrangler.toml`:
+Copy the returned UUID into `wrangler.toml`; the value below is an example shape:
 
 ```toml
 [[d1_databases]]
 binding       = "DB"
 database_name = "creator-dashboard"
-database_id   = "paste-the-uuid-returned-by-wrangler-d1-create"
+database_id   = "11111111-1111-1111-1111-111111111111"
 ```
 
 - [ ] **Step 2: Create or verify queues**
@@ -529,7 +665,7 @@ git commit -m "chore: configure cloudflare deploy resources"
 
 ---
 
-## Task 6: Remote deploy and post-deploy verification
+## Task 7: Remote deploy and post-deploy verification
 
 **Files:**
 - Create: `scripts/verify-deploy.ts`
@@ -574,7 +710,7 @@ pnpm sync-posts
 Expected:
 
 ```text
-verify deploy ok steam-reviews-erenshor: last_success_at=<timestamp printed by script>
+verify deploy ok steam-reviews-erenshor: last_success_at=1778420000000
 ```
 
 - [ ] **Step 4: Tail logs and manually inspect Access/UI**

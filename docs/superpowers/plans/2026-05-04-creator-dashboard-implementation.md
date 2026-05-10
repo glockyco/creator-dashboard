@@ -1542,7 +1542,7 @@ export function withBingKey(url: URL, env: Pick<Env, 'BING_WEBMASTER_API_KEY'>):
 }
 ```
 
-`src/lib/connectors/auth/google.ts` exposes two cached token paths: `getGoogleAccessToken(env, scopes)` for service-account JWT bearer auth retained for future GA4, and `getGoogleOAuthAccessToken(env)` for the GSC refresh-token flow. GSC uses OAuth because Google's service-account permission grant path is currently broken; GA4 remains on the service-account path until revisited.
+`src/lib/connectors/auth/google.ts` exposes two cached token paths: `getGoogleAccessToken(env, scopes)` for service-account JWT bearer auth and `getGoogleOAuthAccessToken(env)` for refresh-token auth. GSC uses OAuth because Google's service-account permission grant path is currently broken. GA4 should now be tackled before deploy readiness; prefer OAuth with a refresh token reissued for both `webmasters.readonly` and `analytics.readonly` unless live GA4 setup proves the service-account path works cleanly.
 
 - [ ] **Step 4: Document connector invariants**
 
@@ -2733,7 +2733,7 @@ wrangler.toml has a real D1 database_id, not the placeholder
 remote D1 database exists and migrations are applied
 Cloudflare Queues exist: creator-dashboard-fetchers and creator-dashboard-fetcher-dlq
 production secrets are present: Access, Discord, GitHub, Steam, Google OAuth, Bing, Cloudflare Analytics
-GA4 is deferred unless GA4_PROPERTY_ID and permission path are confirmed
+GA4 live integration is complete, or its remaining blocker is explicitly documented with the exact missing Google property/access information
 ```
 
 Safe local verification order:

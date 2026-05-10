@@ -171,7 +171,7 @@ GOOGLE_OAUTH_CLIENT_SECRET  OAuth Web client secret, used by GSC
 GOOGLE_OAUTH_REFRESH_TOKEN  Long-lived refresh token for jaichberg@gmail.com (webmasters.readonly)
 GOOGLE_SERVICE_ACCOUNT      JSON service-account credential, retained for future GA4 use
 GSC_PROPERTIES              JSON list — sites to query (matches registry, redundant guard)
-GA4_PROPERTY_ID             optional/deferred property ID; GA4 source remains disabled until scope and permission path are confirmed
+GA4_PROPERTY_ID             required before deploy-readiness completion; property scope and access path are resolved in the GA4 live-integration task
 BING_WEBMASTER_API_KEY      bing.com/webmasters API key
 BING_PROPERTIES             JSON list — site URLs to query (matches registry, redundant guard)
 CF_API_TOKEN                Account Analytics:Read (Web Analytics) — `cfut_` user token works
@@ -1394,7 +1394,7 @@ Designed for full scope; deployable incrementally. Each phase produces a working
 | **3** | Tier 1 connectors (key-backed/public): GitHub, Steam Guide, Steam Reviews, Thunderstore, MediaWiki Recent Changes | Five connector modules / seven source IDs collecting hourly. Dashboard tiles render real data. **History starts ticking.** |
 | **4** | Dashboard UI: tile components per category, drill-down `/sources/[id]`, sparklines, identity tabs | Visual scan of all metrics in one place.                                     |
 | **5** | Posts subsystem: markdown loader + frontmatter validation, sync-posts script, `/posts` list + `/posts/[slug]` detail with performance panel | Editorial layer functional.                                                  |
-| **6** | Tier 2 connectors (auth): GSC, Bing Webmaster, CF GraphQL Analytics. GA4 is deferred until property scope and Google permission path are confirmed. | Authenticated search/analytics sources live except GA4. |
+| **6** | Tier 2 connectors (auth): GSC, Bing Webmaster, CF GraphQL Analytics, and GA4. GA4 live integration is the next deploy-readiness prerequisite. | Authenticated search/analytics sources live; GA4 pending active setup. |
 | **7** | Backfill: per-source scripts that pull historical data from analytics sources                   | Charts have real depth from day one.                                         |
 | **8** | Polish: timeline correlation view (headline feature), daily digest rich embeds + Vienna-DST guard, settings page, mobile refinement | Headline feature lit up.                                                     |
 
