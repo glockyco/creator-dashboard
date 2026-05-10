@@ -16,7 +16,7 @@ directory = ".svelte-kit/cloudflare"
 [[d1_databases]]
 binding       = "DB"
 database_name = "creator-dashboard"
-database_id   = "<replace with wrangler d1 create creator-dashboard database_id>"
+database_id   = "34994e84-b016-4aa0-9365-2ec43eebe665"
 
 [[queues.producers]]
 binding = "FETCHER_QUEUE"
