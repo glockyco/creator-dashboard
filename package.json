@@ -7,6 +7,7 @@
     "dev": "vite dev",
     "build": "vite build && node --experimental-strip-types scripts/write-worker-wrapper.ts",
     "preview": "vite preview",
+    "preview:local": "pnpm build && node --experimental-strip-types scripts/preview-local.ts",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write .",
