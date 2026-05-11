@@ -44,6 +44,7 @@ const hopByHopHeaders = new Set([
   "upgrade",
   "host",
 ]);
+const decodedResponseHeaders = new Set(["content-encoding", "content-length"]);
 
 export function parsePreviewLocalArgs(argv: string[]): PreviewLocalArgs {
   const parsed: PreviewLocalArgs = {
@@ -96,9 +97,10 @@ export function buildProxyHeaders(
 export function stripHopByHopHeaders(
   headers: Iterable<[string, string]>,
 ): [string, string][] {
-  return [...headers].filter(
-    ([name]) => !hopByHopHeaders.has(name.toLowerCase()),
-  );
+  return [...headers].filter(([name]) => {
+    const lower = name.toLowerCase();
+    return !hopByHopHeaders.has(lower) && !decodedResponseHeaders.has(lower);
+  });
 }
 
 export async function startAuthenticatedProxy(options: {

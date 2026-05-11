@@ -78,6 +78,8 @@ describe("preview-local helpers", () => {
         ["content-type", "text/html"],
         ["transfer-encoding", "chunked"],
         ["connection", "close"],
+        ["content-encoding", "br"],
+        ["content-length", "123"],
       ]),
     ).toEqual([["content-type", "text/html"]]);
   });
