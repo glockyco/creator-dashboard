@@ -48,6 +48,22 @@ INSERT INTO posts_index (slug, posted_at, author, platform, url, title, tags, bo
 INSERT INTO posts_sources (slug, source_id) VALUES ('release-notes', 'github-glockyco');
 `;
 
+export const previewSeedSql = `${e2eSeedSql}
+DELETE FROM fetcher_failures;
+DELETE FROM alerts_sent;
+DELETE FROM fetcher_runs;
+INSERT OR REPLACE INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures) VALUES ('github-glockyco', 1778500800000, 1778500800000, 'success', NULL, 0);
+INSERT OR REPLACE INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures) VALUES ('erenshor-wiki-recent', 1778497200000, NULL, 'permanent_failure', 'Preview seed: MediaWiki rejected the request before a descriptive user agent was sent.', 3);
+INSERT INTO fetcher_failures (source_id, ts, tier, status_code, error_message) VALUES ('erenshor-wiki-recent', 1778497200000, 'permanent', 403, 'Preview seed: upstream rejected the local request.');
+INSERT INTO alerts_sent (alert_key, sent_at) VALUES ('preview:erenshor-wiki-recent:permanent', 1778497200000);
+INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES ('github-glockyco', 'followers', 1776816000000, 11, NULL);
+INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES ('github-glockyco', 'followers', 1777680000000, 13, NULL);
+INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES ('github-glockyco', 'total_stars', 1778500800000, 42, NULL);
+INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES ('github-glockyco', 'public_repos', 1778500800000, 18, NULL);
+INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES ('erenshor-wiki-recent', 'wiki_change_count', 1778400000000, 5, NULL);
+INSERT OR IGNORE INTO events (source_id, external_id, ts, kind, author, title, body, url, metadata) VALUES ('erenshor-wiki-recent', 'preview-wiki-1', 1778400000000, 'wiki_edit', 'Preview editor', 'Updated Erenshor map route', 'Preview local edit event.', NULL, '{}');
+`;
+
 export function buildWranglerDevArgs(options: WranglerDevOptions): string[] {
   return [
     "exec",

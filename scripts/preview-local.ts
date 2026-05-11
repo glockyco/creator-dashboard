@@ -13,7 +13,7 @@ import {
   createAccessFixture,
   defaultAudience,
   defaultIssuerDomain,
-  e2eSeedSql,
+  previewSeedSql,
   resetAndSeedD1,
   startJwksServer,
   startWranglerDev,
@@ -187,7 +187,7 @@ async function main(): Promise<void> {
     await resetAndSeedD1({
       persistPath,
       seedPath,
-      seedSql: e2eSeedSql,
+      seedSql: previewSeedSql,
       reset: args.reset,
     });
 

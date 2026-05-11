@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildWranglerDevArgs, e2eSeedSql } from "./harness";
+import { buildWranglerDevArgs, e2eSeedSql, previewSeedSql } from "./harness";
 
 describe("local preview harness helpers", () => {
   it("builds wrangler dev args with local Access verification vars", () => {
@@ -41,5 +41,13 @@ describe("local preview harness helpers", () => {
       "INSERT INTO posts_index (slug, posted_at, author, platform, url, title, tags, body_excerpt, body_hash) VALUES ('release-notes'",
     );
     expect(e2eSeedSql).not.toContain("DISCORD");
+  });
+
+  it("adds manual-preview health state without real secrets", () => {
+    expect(previewSeedSql).toContain("INSERT OR REPLACE INTO fetcher_runs");
+    expect(previewSeedSql).toContain("permanent_failure");
+    expect(previewSeedSql).toContain("INSERT INTO fetcher_failures");
+    expect(previewSeedSql).toContain("INSERT INTO alerts_sent");
+    expect(previewSeedSql).not.toContain("discord.com/api/webhooks");
   });
 });
