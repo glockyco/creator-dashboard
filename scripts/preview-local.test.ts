@@ -36,6 +36,9 @@ describe("preview-local helpers", () => {
       open: false,
       reset: false,
     });
+    expect(parsePreviewLocalArgs(["--", "--no-open"])).toMatchObject({
+      open: false,
+    });
     expect(() => parsePreviewLocalArgs(["--worker-port"])).toThrow(
       "--worker-port requires a numeric value",
     );

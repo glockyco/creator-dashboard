@@ -55,7 +55,8 @@ export function parsePreviewLocalArgs(argv: string[]): PreviewLocalArgs {
   };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === "--no-open") parsed.open = false;
+    if (arg === "--") continue;
+    else if (arg === "--no-open") parsed.open = false;
     else if (arg === "--no-reset") parsed.reset = false;
     else if (arg === "--worker-port") {
       parsed.workerPort = parsePortValue(arg, argv[index + 1]);
