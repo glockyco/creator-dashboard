@@ -28,7 +28,7 @@ describe('fetchSteamReviews', () => {
         new Response(
           JSON.stringify({
             success: 1,
-            query_summary: { num_reviews: 1, review_score: 8, total_positive: 1, total_negative: 0 },
+            query_summary: { num_reviews: 1, total_reviews: 1, review_score: 8, total_positive: 1, total_negative: 0 },
             reviews: [{ recommendationid: 'live-1', author: {}, review: 'Mixed live shape.', timestamp_created: 1778002566, voted_up: true, weighted_vote_score: 0.5 }]
           }),
           { status: 200 }

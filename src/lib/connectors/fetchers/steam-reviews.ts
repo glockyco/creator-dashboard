@@ -19,7 +19,7 @@ const Review = z.object({
 const Response = z.object({
   success: z.number(),
   query_summary: z
-    .object({ num_reviews: z.number(), review_score: z.number(), total_positive: z.number(), total_negative: z.number() })
+    .object({ num_reviews: z.number(), total_reviews: z.number(), review_score: z.number(), total_positive: z.number(), total_negative: z.number() })
     .optional(),
   reviews: z.array(Review)
 });
@@ -35,7 +35,7 @@ export async function fetchSteamReviews({ source, now }: FetcherInput): Promise<
   const data = await fetchJson(url, { schema: Response });
   const metrics = data.query_summary
     ? [
-        { source_id: source.id, metric: 'review_total', ts: now, value: data.query_summary.num_reviews, dimensions: null },
+        { source_id: source.id, metric: 'review_total', ts: now, value: data.query_summary.total_reviews, dimensions: null },
         { source_id: source.id, metric: 'review_positive', ts: now, value: data.query_summary.total_positive, dimensions: null },
         { source_id: source.id, metric: 'review_negative', ts: now, value: data.query_summary.total_negative, dimensions: null },
         { source_id: source.id, metric: 'review_score', ts: now, value: data.query_summary.review_score, dimensions: null }
