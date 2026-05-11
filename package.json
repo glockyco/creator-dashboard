@@ -30,6 +30,7 @@
     "verify:deploy": "node --experimental-strip-types scripts/verify-deploy.ts"
   },
   "dependencies": {
+    "@lucide/svelte": "^1.14.0",
     "@observablehq/plot": "latest",
     "gray-matter": "latest",
     "jose": "latest",
@@ -39,11 +40,11 @@
     "@cloudflare/workers-types": "latest",
     "@eslint/js": "latest",
     "@playwright/test": "latest",
-    "@types/node": "latest",
     "@sveltejs/adapter-cloudflare": "latest",
     "@sveltejs/kit": "latest",
     "@sveltejs/vite-plugin-svelte": "latest",
     "@tailwindcss/vite": "latest",
+    "@types/node": "latest",
     "eslint": "latest",
     "eslint-config-prettier": "latest",
     "eslint-plugin-svelte": "latest",

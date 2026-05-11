@@ -1,9 +1,32 @@
 <script lang="ts">
   import type { FetcherStatus } from '$lib/dashboard/types';
+  import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 
-  let { sourceId, onStatus }: { sourceId: string; onStatus?: (status: FetcherStatus) => void } = $props();
+  type Tone = 'success' | 'warning' | 'danger' | 'muted';
+
+  let {
+    sourceId,
+    tone = 'muted',
+    statusLabel = 'unknown',
+    onStatus
+  }: {
+    sourceId: string;
+    tone?: Tone;
+    statusLabel?: string;
+    onStatus?: (status: FetcherStatus) => void;
+  } = $props();
+
   let busy = $state(false);
   let message = $state<string | null>(null);
+
+  const toneClass = $derived(
+    {
+      success: 'border-success/40 text-success hover:bg-success/10',
+      warning: 'border-warning/40 text-warning hover:bg-warning/10',
+      danger: 'border-danger/40 text-danger hover:bg-danger/10',
+      muted: 'border-border text-fg-muted hover:bg-bg-primary hover:text-fg-primary'
+    }[tone]
+  );
 
   async function refresh() {
     busy = true;
@@ -34,8 +57,15 @@
 </script>
 
 <div class="flex items-center gap-2">
-  <button class="min-h-11 rounded-full border border-border px-4 py-2 text-xs font-medium text-fg-muted hover:bg-bg-primary hover:text-fg-primary disabled:opacity-50" type="button" disabled={busy} onclick={refresh}>
-    {busy ? 'Refreshing…' : 'Refresh'}
+  <button
+    class={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border disabled:opacity-50 ${toneClass}`}
+    type="button"
+    disabled={busy}
+    aria-label={`Refresh (status: ${statusLabel})`}
+    title={`Refresh · ${statusLabel}`}
+    onclick={refresh}
+  >
+    <RefreshCw class={`h-4 w-4 ${busy ? 'animate-spin' : ''}`} aria-hidden="true" />
   </button>
   {#if message}<span class="text-xs text-fg-muted">{message}</span>{/if}
 </div>
