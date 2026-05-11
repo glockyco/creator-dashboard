@@ -1,7 +1,13 @@
-import { sources, type SourceDef } from '$lib/sources/registry';
-import { sourceMetrics } from '$lib/sources/metrics';
-import type { IdentityFilter } from '$lib/types/domain';
-import type { FetcherStatus, LatestEvent, LatestMetric, SparkPoint, TileSnapshot } from '$lib/dashboard/types';
+import { sources, type SourceDef } from "$lib/sources/registry";
+import { sourceMetrics } from "$lib/sources/metrics";
+import type { IdentityFilter } from "$lib/types/domain";
+import type {
+  FetcherStatus,
+  LatestEvent,
+  LatestMetric,
+  SparkPoint,
+  TileSnapshot,
+} from "$lib/dashboard/types";
 
 export type DashboardFilters = {
   identity?: IdentityFilter;
@@ -27,70 +33,153 @@ type EventRow = {
 };
 
 const defaultWindowMs = 30 * 24 * 3_600_000;
-const emptyStatus: FetcherStatus = { last_run_at: null, last_success_at: null, last_status: null, last_error: null, consecutive_failures: 0 };
+const emptyStatus: FetcherStatus = {
+  last_run_at: null,
+  last_success_at: null,
+  last_status: null,
+  last_error: null,
+  consecutive_failures: 0,
+};
 
-export async function getDashboardSnapshots(db: D1Database, filters: DashboardFilters = {}): Promise<TileSnapshot[]> {
+export async function getDashboardSnapshots(
+  db: D1Database,
+  filters: DashboardFilters = {},
+): Promise<TileSnapshot[]> {
   const since = filters.since ?? Date.now() - defaultWindowMs;
-  const visibleSources = sources.filter((source) => (filters.identity && filters.identity !== 'all' ? source.identity === filters.identity : true));
+  const visibleSources = sources.filter((source) =>
+    filters.identity && filters.identity !== "all"
+      ? source.identity === filters.identity
+      : true,
+  );
+  const visibleConfigs = visibleSources
+    .map((source) => ({ source, metrics: sourceMetrics[source.id] }))
+    .filter(
+      (
+        entry,
+      ): entry is {
+        source: SourceDef;
+        metrics: NonNullable<(typeof sourceMetrics)[string]>;
+      } => Boolean(entry.metrics),
+    );
+
+  if (visibleConfigs.length === 0) return [];
   const snapshots: TileSnapshot[] = [];
 
-  for (const source of visibleSources) {
-    const metrics = sourceMetrics[source.id];
-    if (!metrics) continue;
+  const [metricRowsResult, eventRows, statusRows] = await Promise.all([
+    metricRows(db, visibleConfigs, since),
+    latestEvents(db, visibleConfigs),
+    fetcherStatuses(
+      db,
+      visibleConfigs.map(({ source }) => source.id),
+    ),
+  ]);
+  const metricRowsByKey = groupMetricRows(metricRowsResult);
+  const eventsBySource = groupBySource(eventRows);
+  const statusBySource = groupStatusRows(statusRows);
 
-    const primary = [] as LatestMetric[];
-    for (const metric of metrics.primary) {
-      primary.push(toLatestMetric(metric, await metricRows(db, source.id, metric, since)));
-    }
+  for (const { source, metrics } of visibleConfigs) {
+    const primary = metrics.primary.map((metric) =>
+      toLatestMetric(
+        metric,
+        metricRowsByKey.get(metricKey(source.id, metric)) ?? [],
+      ),
+    );
 
     snapshots.push({
       source: withoutFetcher(source),
       metrics: primary,
-      sparkline: toSparkline(await metricRows(db, source.id, metrics.sparkline, since)),
-      latestEvents: await latestEvents(db, source.id),
-      status: (await fetcherStatus(db, source.id)) ?? emptyStatus
+      sparkline: toSparkline(
+        metricRowsByKey.get(metricKey(source.id, metrics.sparkline)) ?? [],
+      ),
+      latestEvents: (eventsBySource.get(source.id) ?? []).map(toLatestEvent),
+      status: statusBySource.get(source.id) ?? emptyStatus,
     });
   }
 
   return snapshots;
 }
 
-async function metricRows(db: D1Database, sourceId: string, metric: string, since: number): Promise<MetricPointRow[]> {
+async function metricRows(
+  db: D1Database,
+  entries: {
+    source: SourceDef;
+    metrics: NonNullable<(typeof sourceMetrics)[string]>;
+  }[],
+  since: number,
+): Promise<MetricPointRow[]> {
+  const sourceIds = entries.map(({ source }) => source.id);
+  const metricNames = [
+    ...new Set(
+      entries.flatMap(({ metrics }) => [...metrics.primary, metrics.sparkline]),
+    ),
+  ];
   const result = await db
     .prepare(
       `SELECT source_id, metric, ts, value, dimensions
        FROM metric_points
-       WHERE source_id = ? AND metric = ? AND ts >= ?
-       ORDER BY ts ASC`
+       WHERE source_id IN (${placeholders(sourceIds.length)})
+         AND metric IN (${placeholders(metricNames.length)})
+         AND ts >= ?
+         AND dimensions IS NULL
+       ORDER BY source_id ASC, metric ASC, ts ASC`,
     )
-    .bind(sourceId, metric, since)
+    .bind(...sourceIds, ...metricNames, since)
     .all<MetricPointRow>();
   return result.results ?? [];
 }
 
-async function latestEvents(db: D1Database, sourceId: string): Promise<LatestEvent[]> {
+async function latestEvents(
+  db: D1Database,
+  entries: {
+    source: SourceDef;
+    metrics: NonNullable<(typeof sourceMetrics)[string]>;
+  }[],
+): Promise<EventRow[]> {
+  const clauses: string[] = [];
+  const params: string[] = [];
+
+  for (const { source, metrics } of entries) {
+    if (metrics.eventKind) {
+      clauses.push("(source_id = ? AND kind = ?)");
+      params.push(source.id, metrics.eventKind);
+    } else {
+      clauses.push("(source_id = ?)");
+      params.push(source.id);
+    }
+  }
+
   const result = await db
     .prepare(
       `SELECT source_id, external_id, ts, kind, author, title, url
-       FROM events
-       WHERE source_id = ?
-       ORDER BY ts DESC
-       LIMIT 3`
+       FROM (
+         SELECT source_id, external_id, ts, kind, author, title, url,
+           ROW_NUMBER() OVER (PARTITION BY source_id ORDER BY ts DESC) AS row_number
+         FROM events
+         WHERE ${clauses.join(" OR ")}
+       )
+       WHERE row_number <= 3
+       ORDER BY source_id ASC, ts DESC`,
     )
-    .bind(sourceId)
+    .bind(...params)
     .all<EventRow>();
-  return (result.results ?? []).map((row) => ({ ts: row.ts, kind: row.kind, title: row.title, author: row.author, url: row.url }));
+  return result.results ?? [];
 }
 
-async function fetcherStatus(db: D1Database, sourceId: string): Promise<FetcherStatus | null> {
-  return await db
+type FetcherStatusRow = FetcherStatus & { source_id: string };
+
+async function fetcherStatuses(
+  db: D1Database,
+  sourceIds: string[],
+): Promise<FetcherStatusRow[]> {
+  const result = await db
     .prepare(
-      `SELECT last_run_at, last_success_at, last_status, last_error, consecutive_failures
+      `SELECT source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures
        FROM fetcher_runs
-       WHERE source_id = ?`
+       WHERE source_id IN (${placeholders(sourceIds.length)})`,
     )
-    .bind(sourceId)
-    .first<FetcherStatus>();
+    .bind(...sourceIds)
+    .all<FetcherStatusRow>();
+  return result.results ?? [];
 }
 
 function toLatestMetric(metric: string, rows: MetricPointRow[]): LatestMetric {
@@ -100,7 +189,17 @@ function toLatestMetric(metric: string, rows: MetricPointRow[]): LatestMetric {
     metric,
     value: latest?.value ?? null,
     previousValue: previous?.value ?? null,
-    delta: latest && previous ? latest.value - previous.value : null
+    delta: latest && previous ? latest.value - previous.value : null,
+  };
+}
+
+function toLatestEvent(row: EventRow): LatestEvent {
+  return {
+    ts: row.ts,
+    kind: row.kind,
+    title: row.title,
+    author: row.author,
+    url: row.url,
   };
 }
 
@@ -108,7 +207,44 @@ function toSparkline(rows: MetricPointRow[]): SparkPoint[] {
   return rows.map((row) => ({ ts: row.ts, value: row.value }));
 }
 
-function withoutFetcher(source: SourceDef): Omit<SourceDef, 'fetcher'> {
+function groupMetricRows(
+  rows: MetricPointRow[],
+): Map<string, MetricPointRow[]> {
+  const grouped = new Map<string, MetricPointRow[]>();
+  for (const row of rows) {
+    const key = metricKey(row.source_id, row.metric);
+    grouped.set(key, [...(grouped.get(key) ?? []), row]);
+  }
+  return grouped;
+}
+
+function groupBySource<T extends { source_id: string }>(
+  rows: T[],
+): Map<string, T[]> {
+  const grouped = new Map<string, T[]>();
+  for (const row of rows) {
+    grouped.set(row.source_id, [...(grouped.get(row.source_id) ?? []), row]);
+  }
+  return grouped;
+}
+
+function groupStatusRows(rows: FetcherStatusRow[]): Map<string, FetcherStatus> {
+  const grouped = new Map<string, FetcherStatus>();
+  for (const { source_id, ...status } of rows) {
+    grouped.set(source_id, status);
+  }
+  return grouped;
+}
+
+function metricKey(sourceId: string, metric: string): string {
+  return `${sourceId}\u0000${metric}`;
+}
+
+function placeholders(count: number): string {
+  return Array.from({ length: count }, () => "?").join(", ");
+}
+
+function withoutFetcher(source: SourceDef): Omit<SourceDef, "fetcher"> {
   const { fetcher: _fetcher, ...serializable } = source;
   return serializable;
 }

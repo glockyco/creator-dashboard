@@ -1,39 +1,111 @@
 <script lang="ts">
-  import type { IndexedPost } from '$lib/server/posts';
+  import type { IndexedPost } from "$lib/server/posts";
 
   let { posts }: { posts: IndexedPost[] } = $props();
+
+  const formatPostedDate = (timestamp: number) =>
+    new Intl.DateTimeFormat("en", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(new Date(timestamp));
 </script>
 
-<div class="overflow-hidden rounded-xl border border-border bg-bg-secondary">
-  <div class="hidden md:block">
-    <table class="w-full text-left text-sm">
-      <thead class="border-b border-border text-xs uppercase tracking-wide text-fg-muted">
-        <tr><th class="px-4 py-3">Post</th><th class="px-4 py-3">Author</th><th class="px-4 py-3">Platform</th><th class="px-4 py-3">Sources</th></tr>
-      </thead>
-      <tbody class="divide-y divide-border">
-        {#each posts as post}
-          <tr>
-            <td class="px-4 py-3"><a class="font-medium hover:underline" href={`/posts/${post.slug}`}>{post.title}</a><p class="text-xs text-fg-muted">{new Date(post.posted_at).toLocaleDateString()}</p></td>
-            <td class="px-4 py-3 text-fg-muted">{post.author}</td>
-            <td class="px-4 py-3 text-fg-muted">{post.platform}</td>
-            <td class="px-4 py-3 text-fg-muted">{post.related_sources.join(', ') || '—'}</td>
-          </tr>
-        {:else}
-          <tr><td class="px-4 py-8 text-center text-fg-muted" colspan="4">No posts match these filters.</td></tr>
-        {/each}
-      </tbody>
-    </table>
+<section
+  class="overflow-hidden rounded-xl border border-border bg-bg-secondary"
+>
+  <div class="border-b border-border p-5">
+    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-fg-muted">
+      Library
+    </p>
+    <h2 class="mt-1 text-lg font-semibold">Posts</h2>
+    <p class="text-sm text-fg-muted">
+      Each row opens the post detail with source performance context.
+    </p>
   </div>
 
-  <div class="divide-y divide-border md:hidden">
-    {#each posts as post}
-      <a class="block min-h-11 p-4" href={`/posts/${post.slug}`}>
-        <p class="text-xs text-fg-muted">{post.author} · {post.platform}</p>
-        <h2 class="mt-1 font-medium">{post.title}</h2>
-        {#if post.body_excerpt}<p class="mt-2 text-sm text-fg-muted">{post.body_excerpt}</p>{/if}
-      </a>
-    {:else}
-      <p class="p-8 text-center text-fg-muted">No posts match these filters.</p>
-    {/each}
-  </div>
-</div>
+  {#if posts.length === 0}
+    <div class="p-5">
+      <div
+        class="rounded-lg border border-dashed border-border bg-bg-primary p-8 text-center"
+      >
+        <h3 class="font-medium text-fg-primary">
+          No posts match these filters
+        </h3>
+        <p class="mt-2 text-sm text-fg-muted">
+          Clear the active author, tag, or source filter to recover the full
+          content index.
+        </p>
+      </div>
+    </div>
+  {:else}
+    <div class="hidden md:block">
+      <div
+        class="grid grid-cols-[1.5fr_0.8fr_0.9fr_1fr] border-b border-border px-5 py-3 text-xs font-semibold uppercase tracking-wide text-fg-muted"
+      >
+        <span>Post</span>
+        <span>Author / platform</span>
+        <span>Posted</span>
+        <span>Related sources</span>
+      </div>
+      <div class="divide-y divide-border">
+        {#each posts as post}
+          <a
+            class="grid grid-cols-[1.5fr_0.8fr_0.9fr_1fr] gap-4 px-5 py-4 transition hover:bg-bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-fg-primary"
+            href={`/posts/${post.slug}`}
+          >
+            <div>
+              <h3 class="font-medium text-fg-primary">{post.title}</h3>
+              {#if post.body_excerpt}
+                <p class="mt-1 line-clamp-2 text-sm text-fg-muted">
+                  {post.body_excerpt}
+                </p>
+              {/if}
+            </div>
+            <div class="text-sm text-fg-muted">
+              <p class="font-medium text-fg-primary">{post.author}</p>
+              <p>{post.platform}</p>
+            </div>
+            <time
+              class="text-sm text-fg-muted"
+              datetime={new Date(post.posted_at).toISOString()}
+              >{formatPostedDate(post.posted_at)}</time
+            >
+            <p class="text-sm text-fg-muted">
+              {post.related_sources.join(", ") || "No linked sources"}
+            </p>
+          </a>
+        {/each}
+      </div>
+    </div>
+
+    <div class="divide-y divide-border md:hidden">
+      {#each posts as post}
+        <a
+          class="block p-4 transition hover:bg-bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-fg-primary"
+          href={`/posts/${post.slug}`}
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs uppercase tracking-wide text-fg-muted">
+                {post.author} · {post.platform}
+              </p>
+              <h3 class="mt-1 font-medium text-fg-primary">{post.title}</h3>
+            </div>
+            <time
+              class="shrink-0 text-xs text-fg-muted"
+              datetime={new Date(post.posted_at).toISOString()}
+              >{formatPostedDate(post.posted_at)}</time
+            >
+          </div>
+          {#if post.body_excerpt}
+            <p class="mt-2 text-sm text-fg-muted">{post.body_excerpt}</p>
+          {/if}
+          <p class="mt-3 text-xs text-fg-muted">
+            Sources: {post.related_sources.join(", ") || "No linked sources"}
+          </p>
+        </a>
+      {/each}
+    </div>
+  {/if}
+</section>

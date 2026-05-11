@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @theme {
   --color-bg-primary: light-dark(#fafafa, #0a0a0a);
@@ -22,19 +22,43 @@
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
-:root[data-theme='light'] {
+:root[data-theme="light"] {
   color-scheme: light;
 }
 
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   color-scheme: dark;
 }
 
-:root[data-theme='system'] {
+:root[data-theme="system"] {
   color-scheme: light dark;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background:
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--color-glockyco) 13%, transparent),
+      transparent 34rem
+    ),
+    radial-gradient(
+      circle at top right,
+      color-mix(in srgb, var(--color-wowmuch) 10%, transparent),
+      transparent 30rem
+    ),
+    var(--color-bg-primary);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-glockyco) 38%, transparent);
+  color: var(--color-fg-primary);
 }
