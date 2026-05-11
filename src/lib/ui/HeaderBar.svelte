@@ -2,7 +2,7 @@
   class="border-b border-border bg-bg-secondary/85 shadow-sm shadow-black/5 backdrop-blur"
 >
   <div
-    class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8"
+    class="flex items-center justify-between gap-4 px-4 py-3 pl-20 sm:px-6 md:pl-6 lg:px-8"
   >
     <div class="min-w-0">
       <p

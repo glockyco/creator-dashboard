@@ -32,8 +32,10 @@
   "dependencies": {
     "@lucide/svelte": "^1.14.0",
     "@observablehq/plot": "latest",
+    "bits-ui": "^2.18.1",
     "gray-matter": "latest",
     "jose": "latest",
+    "vaul-svelte": "1.0.0-next.7",
     "zod": "latest"
   },
   "devDependencies": {

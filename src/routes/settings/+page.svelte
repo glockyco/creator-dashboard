@@ -21,7 +21,7 @@
   <title>Settings · Creator Dashboard</title>
 </svelte:head>
 
-<section class="mx-auto max-w-3xl space-y-6">
+<section class="space-y-6">
   <div class="rounded-xl border border-border bg-bg-secondary p-5">
     <p class="text-sm uppercase tracking-wide text-fg-muted">Preferences</p>
     <h1 class="mt-2 text-3xl font-semibold">Settings</h1>
