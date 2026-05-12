@@ -1,0 +1,4 @@
+# Force LF line endings for all text files so content hashes, snapshot
+# tests, and worker bundles stay byte-identical across macOS, Linux, and
+# Windows checkouts regardless of the local `core.autocrlf` setting.
+* text=auto eol=lf
