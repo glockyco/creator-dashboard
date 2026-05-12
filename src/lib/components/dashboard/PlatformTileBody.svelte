@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { TileSnapshot } from "$lib/dashboard/types";
+  import { formatMetricDelta, formatMetricValue } from "$lib/dashboard/format";
   import Sparkline from "./Sparkline.svelte";
 
   let { snapshot }: { snapshot: TileSnapshot } = $props();
@@ -15,11 +16,11 @@
           {metric.metric.replaceAll("_", " ")}
         </p>
         <p class="mt-2 text-2xl font-semibold tracking-tight">
-          {metric.value ?? "—"}
+          {formatMetricValue(metric.value)}
         </p>
         {#if metric.delta !== null}
           <p class="mt-1 text-xs font-medium text-fg-muted">
-            {metric.delta >= 0 ? "+" : ""}{metric.delta} vs previous
+            {formatMetricDelta(metric.delta)} vs previous
           </p>
         {:else}
           <p class="mt-1 text-xs text-fg-muted">No prior point</p>
