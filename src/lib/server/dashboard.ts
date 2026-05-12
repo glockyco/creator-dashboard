@@ -8,6 +8,7 @@ import type {
   SparkPoint,
   TileSnapshot,
 } from "$lib/dashboard/types";
+import { latestMetricFromPoints } from "$lib/dashboard/delta";
 
 export type DashboardFilters = {
   identity?: IdentityFilter;
@@ -183,14 +184,10 @@ async function fetcherStatuses(
 }
 
 function toLatestMetric(metric: string, rows: MetricPointRow[]): LatestMetric {
-  const latest = rows.at(-1);
-  const previous = rows.at(-2);
-  return {
+  return latestMetricFromPoints(
     metric,
-    value: latest?.value ?? null,
-    previousValue: previous?.value ?? null,
-    delta: latest && previous ? latest.value - previous.value : null,
-  };
+    rows.map((row) => ({ ts: row.ts, value: row.value }))
+  );
 }
 
 function toLatestEvent(row: EventRow): LatestEvent {

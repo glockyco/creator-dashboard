@@ -2,40 +2,44 @@ import { describe, expect, it } from 'vitest';
 import { formatDigest } from './format';
 import type { DigestData } from './query';
 
+const DAY_MS = 86_400_000;
+const PRIOR_TS = 0;
+const LATEST_TS = DAY_MS;
+
 const digest: DigestData = {
   window: { start: Date.parse('2026-05-09T06:00:00.000Z'), end: Date.parse('2026-05-10T06:00:00.000Z') },
   metrics: [
-    { source_id: 'github-glockyco', metric: 'followers', ts: 1, value: 12 },
-    { source_id: 'github-glockyco', metric: 'followers', ts: 2, value: 13 },
-    { source_id: 'github-glockyco', metric: 'total_stars', ts: 2, value: 2 },
-    { source_id: 'github-glockyco', metric: 'public_repos', ts: 2, value: 32 },
-    { source_id: 'gsc-glockyco-com', metric: 'clicks', ts: 2, value: 3 },
-    { source_id: 'gsc-glockyco-com', metric: 'impressions', ts: 2, value: 30 },
-    { source_id: 'bing-glockyco-com', metric: 'clicks', ts: 2, value: 1 },
-    { source_id: 'bing-glockyco-com', metric: 'impressions', ts: 2, value: 10 },
-    { source_id: 'cf-analytics-glockyco-com', metric: 'visits', ts: 2, value: 6 },
-    { source_id: 'cf-analytics-glockyco-com', metric: 'pageviews', ts: 2, value: 9 },
-    { source_id: 'steam-guide-erenshor', metric: 'views', ts: 1, value: 100 },
-    { source_id: 'steam-guide-erenshor', metric: 'views', ts: 2, value: 105 },
-    { source_id: 'steam-guide-ak', metric: 'views', ts: 1, value: 50 },
-    { source_id: 'steam-guide-ak', metric: 'views', ts: 2, value: 61 },
-    { source_id: 'thunderstore-wowmuch', metric: 'total_downloads', ts: 1, value: 1000 },
-    { source_id: 'thunderstore-wowmuch', metric: 'total_downloads', ts: 2, value: 1015 },
-    { source_id: 'cf-analytics-ak-compendium', metric: 'visits', ts: 2, value: 588 },
-    { source_id: 'cf-analytics-erenshor-maps', metric: 'visits', ts: 2, value: 274 },
-    { source_id: 'gsc-ak-compendium-org', metric: 'clicks', ts: 2, value: 0 },
-    { source_id: 'bing-ak-compendium-org', metric: 'clicks', ts: 2, value: 0 }
+    { source_id: 'github-glockyco', metric: 'followers', ts: PRIOR_TS, value: 12 },
+    { source_id: 'github-glockyco', metric: 'followers', ts: LATEST_TS, value: 13 },
+    { source_id: 'github-glockyco', metric: 'total_stars', ts: LATEST_TS, value: 2 },
+    { source_id: 'github-glockyco', metric: 'public_repos', ts: LATEST_TS, value: 32 },
+    { source_id: 'gsc-glockyco-com', metric: 'clicks', ts: LATEST_TS, value: 3 },
+    { source_id: 'gsc-glockyco-com', metric: 'impressions', ts: LATEST_TS, value: 30 },
+    { source_id: 'bing-glockyco-com', metric: 'clicks', ts: LATEST_TS, value: 1 },
+    { source_id: 'bing-glockyco-com', metric: 'impressions', ts: LATEST_TS, value: 10 },
+    { source_id: 'cf-analytics-glockyco-com', metric: 'visits', ts: LATEST_TS, value: 6 },
+    { source_id: 'cf-analytics-glockyco-com', metric: 'pageviews', ts: LATEST_TS, value: 9 },
+    { source_id: 'steam-guide-erenshor', metric: 'views', ts: PRIOR_TS, value: 100 },
+    { source_id: 'steam-guide-erenshor', metric: 'views', ts: LATEST_TS, value: 105 },
+    { source_id: 'steam-guide-ak', metric: 'views', ts: PRIOR_TS, value: 50 },
+    { source_id: 'steam-guide-ak', metric: 'views', ts: LATEST_TS, value: 61 },
+    { source_id: 'thunderstore-wowmuch', metric: 'total_downloads', ts: PRIOR_TS, value: 1000 },
+    { source_id: 'thunderstore-wowmuch', metric: 'total_downloads', ts: LATEST_TS, value: 1015 },
+    { source_id: 'cf-analytics-ak-compendium', metric: 'visits', ts: LATEST_TS, value: 588 },
+    { source_id: 'cf-analytics-erenshor-maps', metric: 'visits', ts: LATEST_TS, value: 274 },
+    { source_id: 'gsc-ak-compendium-org', metric: 'clicks', ts: LATEST_TS, value: 0 },
+    { source_id: 'bing-ak-compendium-org', metric: 'clicks', ts: LATEST_TS, value: 0 }
   ],
   events: [
-    { source_id: 'steam-reviews-ak', external_id: 'review-1', ts: 2, kind: 'review', author: null, title: 'Good review', url: 'https://example.test/review' },
-    { source_id: 'erenshor-wiki-recent', external_id: 'wiki-1', ts: 2, kind: 'wiki_edit', author: 'Editor', title: 'Map page', url: 'https://example.test/wiki' }
+    { source_id: 'steam-reviews-ak', external_id: 'review-1', ts: LATEST_TS, kind: 'review', author: null, title: 'Good review', url: 'https://example.test/review' },
+    { source_id: 'erenshor-wiki-recent', external_id: 'wiki-1', ts: LATEST_TS, kind: 'wiki_edit', author: 'Editor', title: 'Map page', url: 'https://example.test/wiki' }
   ],
-  posts: [{ slug: 'post-1', posted_at: 2, author: 'glockyco', platform: 'site', url: 'https://example.test/post', title: 'Post title', tags: ['dev'], body_excerpt: null }],
+  posts: [{ slug: 'post-1', posted_at: LATEST_TS, author: 'glockyco', platform: 'site', url: 'https://example.test/post', title: 'Post title', tags: ['dev'], body_excerpt: null }],
   runs: [
-    { source_id: 'github-glockyco', last_run_at: 2, last_success_at: 2, last_status: 'success', last_error: null, consecutive_failures: 0 },
-    { source_id: 'gsc-ak-compendium', last_run_at: 2, last_success_at: null, last_status: 'failed', last_error: 'forbidden', consecutive_failures: 2 }
+    { source_id: 'github-glockyco', last_run_at: LATEST_TS, last_success_at: LATEST_TS, last_status: 'success', last_error: null, consecutive_failures: 0 },
+    { source_id: 'gsc-ak-compendium', last_run_at: LATEST_TS, last_success_at: null, last_status: 'failed', last_error: 'forbidden', consecutive_failures: 2 }
   ],
-  failures: [{ source_id: 'gsc-ak-compendium', ts: 2, tier: 'permanent', status_code: 403, error_message: 'forbidden' }]
+  failures: [{ source_id: 'gsc-ak-compendium', ts: LATEST_TS, tier: 'permanent', status_code: 403, error_message: 'forbidden' }]
 };
 
 describe('formatDigest', () => {

@@ -3,6 +3,13 @@ import { getDashboardSnapshots } from "./dashboard";
 
 const fetchers = vi.hoisted(() => ({ github: vi.fn(), steam: vi.fn() }));
 
+const DAY_MS = 86_400_000;
+const PRIOR_TS = DAY_MS; // 24h ago in test space
+const LATEST_TS = 2 * DAY_MS; // "now" in test space
+const EVENT_TS = LATEST_TS + DAY_MS; // events after the latest metric
+const STATUS_TS = LATEST_TS + 2 * DAY_MS;
+const SINCE_TS = PRIOR_TS - 500;
+
 vi.mock("$lib/sources/registry", () => ({
   sources: [
     {
@@ -48,42 +55,42 @@ function rowsForAll(sql: string, params: unknown[]) {
       {
         source_id: "github-glockyco",
         metric: "followers",
-        ts: 1_000,
+        ts: PRIOR_TS,
         value: 10,
         dimensions: null,
       },
       {
         source_id: "github-glockyco",
         metric: "followers",
-        ts: 2_000,
+        ts: LATEST_TS,
         value: 12,
         dimensions: null,
       },
       {
         source_id: "github-glockyco",
         metric: "followers",
-        ts: 3_000,
+        ts: EVENT_TS,
         value: 99,
         dimensions: '{"repo":"sample"}',
       },
       {
         source_id: "github-glockyco",
         metric: "total_stars",
-        ts: 2_000,
+        ts: LATEST_TS,
         value: 30,
         dimensions: null,
       },
       {
         source_id: "github-glockyco",
         metric: "contributions",
-        ts: 1_000,
+        ts: PRIOR_TS,
         value: 1,
         dimensions: null,
       },
       {
         source_id: "github-glockyco",
         metric: "contributions",
-        ts: 2_000,
+        ts: LATEST_TS,
         value: 2,
         dimensions: null,
       },
@@ -102,7 +109,7 @@ function rowsForAll(sql: string, params: unknown[]) {
       {
         source_id: "github-glockyco",
         external_id: "evt-1",
-        ts: 3_000,
+        ts: EVENT_TS,
         kind: "release",
         author: "glockyco",
         title: "Released a tool",
@@ -111,7 +118,7 @@ function rowsForAll(sql: string, params: unknown[]) {
       {
         source_id: "steam-reviews-ak",
         external_id: "evt-2",
-        ts: 4_000,
+        ts: STATUS_TS,
         kind: "announcement",
         author: "developer",
         title: "Non-review update",
@@ -120,7 +127,7 @@ function rowsForAll(sql: string, params: unknown[]) {
       {
         source_id: "steam-reviews-ak",
         external_id: "evt-3",
-        ts: 3_500,
+        ts: EVENT_TS + DAY_MS / 2,
         kind: "review",
         author: "player",
         title: "Recommended",
@@ -138,8 +145,8 @@ function rowsForAll(sql: string, params: unknown[]) {
       ? [
           {
             source_id: "github-glockyco",
-            last_run_at: 4_000,
-            last_success_at: 4_000,
+            last_run_at: STATUS_TS,
+            last_success_at: STATUS_TS,
             last_status: "success",
             last_error: null,
             consecutive_failures: 0,
@@ -153,8 +160,8 @@ function rowsForAll(sql: string, params: unknown[]) {
 function rowForFirst(params: unknown[]) {
   if (params[0] === "github-glockyco")
     return {
-      last_run_at: 4_000,
-      last_success_at: 4_000,
+      last_run_at: STATUS_TS,
+      last_success_at: STATUS_TS,
       last_status: "success",
       last_error: null,
       consecutive_failures: 0,
@@ -168,7 +175,7 @@ describe("getDashboardSnapshots", () => {
 
     const snapshots = await getDashboardSnapshots(db, {
       identity: "glockyco",
-      since: 500,
+      since: SINCE_TS,
     });
 
     expect(snapshots).toEqual([
@@ -197,12 +204,12 @@ describe("getDashboardSnapshots", () => {
           },
         ],
         sparkline: [
-          { ts: 1_000, value: 1 },
-          { ts: 2_000, value: 2 },
+          { ts: PRIOR_TS, value: 1 },
+          { ts: LATEST_TS, value: 2 },
         ],
         latestEvents: [
           {
-            ts: 3_000,
+            ts: EVENT_TS,
             kind: "release",
             author: "glockyco",
             title: "Released a tool",
@@ -210,8 +217,8 @@ describe("getDashboardSnapshots", () => {
           },
         ],
         status: {
-          last_run_at: 4_000,
-          last_success_at: 4_000,
+          last_run_at: STATUS_TS,
+          last_success_at: STATUS_TS,
           last_status: "success",
           last_error: null,
           consecutive_failures: 0,
@@ -223,7 +230,7 @@ describe("getDashboardSnapshots", () => {
     ).toHaveLength(1);
     expect(
       calls.find((call) => call.sql.includes("FROM metric_points"))?.params,
-    ).toContain(500);
+    ).toContain(SINCE_TS);
   });
 
   it("returns empty metric values, event-kind filtered events, and default status when a source has no metric rows yet", async () => {
@@ -231,7 +238,7 @@ describe("getDashboardSnapshots", () => {
 
     const snapshots = await getDashboardSnapshots(db, {
       identity: "WoW_Much",
-      since: 500,
+      since: SINCE_TS,
     });
 
     expect(snapshots).toHaveLength(1);
@@ -244,7 +251,7 @@ describe("getDashboardSnapshots", () => {
     expect(snapshots[0].sparkline).toEqual([]);
     expect(snapshots[0].latestEvents).toEqual([
       {
-        ts: 3_500,
+        ts: EVENT_TS + DAY_MS / 2,
         kind: "review",
         author: "player",
         title: "Recommended",

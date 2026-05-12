@@ -28,8 +28,8 @@ function sourceDetailDb() {
 function rowsFor(sql: string, params: unknown[]) {
   if (sql.includes('FROM metric_points')) {
     const metric = params[1];
-    if (metric === 'followers') return [{ ts: 1_000, value: 10 }, { ts: 2_000, value: 12 }];
-    if (metric === 'contributions') return [{ ts: 1_000, value: 3 }, { ts: 2_000, value: 4 }];
+    if (metric === 'followers') return [{ ts: 86_400_000, value: 10 }, { ts: 172_800_000, value: 12 }];
+    if (metric === 'contributions') return [{ ts: 86_400_000, value: 3 }, { ts: 172_800_000, value: 4 }];
     return [];
   }
   if (sql.includes('FROM posts_sources')) {
@@ -58,10 +58,10 @@ describe('getSourceDetail', () => {
     expect(detail).toEqual({
       source: { id: 'github-glockyco', identity: 'glockyco', name: 'GitHub @glockyco', category: 'platform', cadenceHours: 1, config: {} },
       metricHistory: {
-        followers: [{ ts: 1_000, value: 10 }, { ts: 2_000, value: 12 }],
+        followers: [{ ts: 86_400_000, value: 10 }, { ts: 172_800_000, value: 12 }],
         total_stars: [],
         public_repos: [],
-        contributions: [{ ts: 1_000, value: 3 }, { ts: 2_000, value: 4 }]
+        contributions: [{ ts: 86_400_000, value: 3 }, { ts: 172_800_000, value: 4 }]
       },
       secondaryMetrics: [
         { metric: 'followers', value: 12, previousValue: 10, delta: 2 },

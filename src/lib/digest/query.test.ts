@@ -40,7 +40,7 @@ function rowsFor(sql: string, params: unknown[]) {
 }
 
 describe('getDigestData', () => {
-  it('reads a half-open rolling 24h window and excludes dimension metric rows', async () => {
+  it('reads a 48h metric window and a 24h event/post/failure window', async () => {
     const { db, calls } = digestDb();
     const now = new Date('2026-05-10T06:00:00.000Z');
 
@@ -48,11 +48,24 @@ describe('getDigestData', () => {
 
     const start = Date.parse('2026-05-09T06:00:00.000Z');
     const end = Date.parse('2026-05-10T06:00:00.000Z');
-    expect(calls.filter((call) => call.sql.includes('FROM metric_points'))[0]).toMatchObject({ params: [start, end] });
-    expect(calls.filter((call) => call.sql.includes('FROM metric_points'))[0].sql).toContain('dimensions IS NULL');
+    const metricStart = Date.parse('2026-05-08T06:00:00.000Z');
+
+    const metricCall = calls.find((call) => call.sql.includes('FROM metric_points'));
+    expect(metricCall).toMatchObject({ params: [metricStart, end] });
+    expect(metricCall?.sql).toContain('dimensions IS NULL');
+
+    const eventCall = calls.find((call) => call.sql.includes('FROM events'));
+    expect(eventCall).toMatchObject({ params: [start, end] });
+
+    const postCall = calls.find((call) => call.sql.includes('FROM posts_index'));
+    expect(postCall).toMatchObject({ params: [start, end] });
+
+    const failureCall = calls.find((call) => call.sql.includes('FROM fetcher_failures'));
+    expect(failureCall).toMatchObject({ params: [start, end] });
+
     expect(snapshot.window).toEqual({ start, end });
     expect(snapshot.metrics).toEqual([
-      { source_id: 'github-glockyco', metric: 'followers', ts: start, value: 12 },
+      { source_id: 'github-glockyco', metric: 'followers', ts: metricStart, value: 12 },
       { source_id: 'github-glockyco', metric: 'followers', ts: end - 1, value: 13 }
     ]);
     expect(snapshot.events).toHaveLength(1);

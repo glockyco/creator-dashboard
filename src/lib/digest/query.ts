@@ -17,14 +17,21 @@ type RawMetricRow = DigestMetricRow & { dimensions: string | null };
 type RawPostRow = Omit<DigestPostRow, 'tags'> & { tags: string };
 
 const DAY_MS = 86_400_000;
+/**
+ * Metrics need a 24h prior baseline for "vs 24h ago" deltas, so the
+ * metric_points query covers 48h while events / posts / failures / runs
+ * still report on the 24h digest window.
+ */
+const METRIC_WINDOW_MS = 2 * DAY_MS;
 
 export async function getDigestData(db: D1Database, now: Date): Promise<DigestData> {
   const end = now.getTime();
   const start = end - DAY_MS;
+  const metricStart = end - METRIC_WINDOW_MS;
 
   const metricRows = await db
     .prepare('SELECT source_id, metric, ts, value, dimensions FROM metric_points WHERE ts >= ? AND ts < ? AND dimensions IS NULL ORDER BY source_id, metric, ts ASC')
-    .bind(start, end)
+    .bind(metricStart, end)
     .all<RawMetricRow>();
   const eventRows = await db
     .prepare('SELECT source_id, external_id, ts, kind, author, title, url FROM events WHERE ts >= ? AND ts < ? ORDER BY ts DESC LIMIT 50')

@@ -20,10 +20,10 @@
         </p>
         {#if metric.delta !== null}
           <p class="mt-1 text-xs font-medium text-fg-muted">
-            {formatMetricDelta(metric.delta)} vs previous
+            {formatMetricDelta(metric.delta)} vs 24h ago
           </p>
         {:else}
-          <p class="mt-1 text-xs text-fg-muted">No prior point</p>
+          <p class="mt-1 text-xs text-fg-muted">No 24h baseline</p>
         {/if}
       </div>
     {:else}

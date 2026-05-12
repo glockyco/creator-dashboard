@@ -1,6 +1,7 @@
 import { getSource, type SourceDef } from '$lib/sources/registry';
 import { sourceMetrics } from '$lib/sources/metrics';
 import type { LatestMetric, SparkPoint } from '$lib/dashboard/types';
+import { latestMetricFromPoints } from '$lib/dashboard/delta';
 
 export type LinkedPost = {
   slug: string;
@@ -67,7 +68,7 @@ export async function getSourceDetail(db: D1Database, sourceId: string, range: S
   return {
     source: withoutFetcher(source),
     metricHistory,
-    secondaryMetrics: config ? config.primary.map((metric) => latestMetric(metric, metricHistory[metric] ?? [])) : [],
+    secondaryMetrics: config ? config.primary.map((metric) => latestMetricFromPoints(metric, metricHistory[metric] ?? [])) : [],
     linkedPosts: await linkedPosts(db, source.id),
     events: await getSourceEvents(db, source.id, { pageSize: 20 })
   };
@@ -134,16 +135,6 @@ async function linkedPosts(db: D1Database, sourceId: string): Promise<LinkedPost
   return (result.results ?? []).map((post) => ({ ...post, tags: parseTags(post.tags) }));
 }
 
-function latestMetric(metric: string, points: SparkPoint[]): LatestMetric {
-  const latest = points.at(-1);
-  const previous = points.at(-2);
-  return {
-    metric,
-    value: latest?.value ?? null,
-    previousValue: previous?.value ?? null,
-    delta: latest && previous ? latest.value - previous.value : null
-  };
-}
 
 function toEvent(row: EventRow): SourceEvent {
   return { ...row, metadata: parseMetadata(row.metadata) };

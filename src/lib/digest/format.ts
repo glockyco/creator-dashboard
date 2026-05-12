@@ -1,3 +1,4 @@
+import { findPointAt24hPrior } from '$lib/dashboard/delta';
 import type { DigestData } from './query';
 
 export type DiscordEmbed = { title: string; color?: number; fields: Array<{ name: string; value: string; inline?: boolean }> };
@@ -125,10 +126,17 @@ function attentionField(data: DigestData): string {
 }
 
 function metric(data: DigestData, sourceId: string, name: string): MetricState {
-  const points = data.metrics.filter((point) => point.source_id === sourceId && point.metric === name).sort((a, b) => a.ts - b.ts);
-  const latest = points.at(-1)?.value ?? null;
-  const previous = points.length >= 2 ? points.at(-2)?.value ?? null : null;
-  return { latest, previous, delta: latest !== null && previous !== null ? latest - previous : null };
+  const points = data.metrics.filter((point) => point.source_id === sourceId && point.metric === name);
+  let latest: { ts: number; value: number } | undefined;
+  for (const point of points) {
+    if (!latest || point.ts > latest.ts) latest = point;
+  }
+  const prior = latest ? findPointAt24hPrior(points, latest) : undefined;
+  return {
+    latest: latest?.value ?? null,
+    previous: prior?.value ?? null,
+    delta: latest && prior ? latest.value - prior.value : null
+  };
 }
 
 function sumLatest(data: DigestData, sourceIds: string[], name: string): number | null {
