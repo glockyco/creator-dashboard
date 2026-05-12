@@ -28,7 +28,8 @@
     "smoke:ingest": "node --experimental-strip-types scripts/smoke-ingest.ts",
     "smoke:cron": "node --experimental-strip-types scripts/smoke-cron.ts",
     "verify:deploy": "node --experimental-strip-types scripts/verify-deploy.ts",
-    "kill:dev": "node --experimental-strip-types scripts/kill-dev.ts"
+    "kill:dev": "node --experimental-strip-types scripts/kill-dev.ts",
+    "dev:setup": "node --experimental-strip-types scripts/dev-setup.ts"
   },
   "dependencies": {
     "@lucide/svelte": "^1.14.0",
