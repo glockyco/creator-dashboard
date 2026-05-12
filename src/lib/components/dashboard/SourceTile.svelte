@@ -30,7 +30,7 @@
 </script>
 
 <article
-  class={`group min-w-0 rounded-2xl border bg-bg-secondary/90 p-4 shadow-sm shadow-black/5 transition hover:-translate-y-0.5 hover:border-fg-muted hover:shadow-md sm:p-5 ${hasProblem ? "border-danger/40" : "border-border"}`}
+  class={`group min-w-0 rounded-2xl border bg-bg-secondary/90 p-4 shadow-sm shadow-black/5 transition hover:border-fg-muted hover:shadow-md sm:p-5 ${hasProblem ? "border-danger/40" : "border-border"}`}
   data-source-id={snapshot.source.id}
 >
   <div class="mb-5 flex items-start justify-between gap-3">
