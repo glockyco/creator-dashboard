@@ -1,4 +1,4 @@
-import { accessHeaders } from '../e2e/support/access-auth.ts';
+import { chooseAccessHeaders } from './access-headers.ts';
 
 export type SmokeIngestArgs = { sourceId: string; baseUrl: string; timeoutMs: number };
 export type FetcherStatusShape = {
@@ -54,7 +54,7 @@ export async function pollStatus(args: SmokeIngestArgs, headers: Record<string, 
 
 async function main(): Promise<void> {
   const args = parseSmokeIngestArgs(process.argv.slice(2));
-  const headers = await accessHeaders();
+  const headers = await chooseAccessHeaders(args.baseUrl);
   await postRefresh(args, headers);
   const status = await pollStatus(args, headers);
   console.log(`ingest smoke ok ${args.sourceId}: last_success_at=${status.last_success_at}`);

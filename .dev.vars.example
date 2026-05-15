@@ -16,3 +16,11 @@ BING_PROPERTIES=[]
 CF_API_TOKEN=
 CF_ACCOUNT_ID=
 CF_ANALYTICS_SITE_TAGS={}
+# Cloudflare Access service token for headless smoke checks against the
+# deployed Worker (pnpm verify:deploy, pnpm smoke:ingest, pnpm smoke:cron
+# when --base-url points at a remote URL). Create via Zero Trust dashboard
+# > Access > Service Auth > Service Tokens, then add the token to the
+# Access application's policy include list. Not required by the Worker
+# itself; only the local CI/verify scripts read these.
+CF_ACCESS_CLIENT_ID=
+CF_ACCESS_CLIENT_SECRET=

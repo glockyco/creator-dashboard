@@ -1,4 +1,4 @@
-import { accessHeaders } from '../e2e/support/access-auth.ts';
+import { chooseAccessHeaders } from './access-headers.ts';
 import { parseSmokeIngestArgs, pollStatus, type SmokeIngestArgs } from './smoke-ingest.ts';
 
 export type SmokeCronArgs = SmokeIngestArgs;
@@ -21,7 +21,7 @@ async function postHourlySmoke(args: SmokeCronArgs, headers: Record<string, stri
 
 async function main(): Promise<void> {
   const args = parseSmokeCronArgs(process.argv.slice(2));
-  const headers = await accessHeaders();
+  const headers = await chooseAccessHeaders(args.baseUrl);
   await postHourlySmoke(args, headers);
   const status = await pollStatus(args, headers);
   console.log(`cron smoke ok ${args.sourceId}: last_success_at=${status.last_success_at}`);

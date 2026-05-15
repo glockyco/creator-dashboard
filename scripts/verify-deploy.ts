@@ -1,4 +1,4 @@
-import { accessHeaders } from '../e2e/support/access-auth.ts';
+import { chooseAccessHeaders } from './access-headers.ts';
 import { pollStatus, type SmokeIngestArgs } from './smoke-ingest.ts';
 
 export type VerifyDeployArgs = SmokeIngestArgs;
@@ -38,7 +38,7 @@ async function postRefresh(args: VerifyDeployArgs, headers: Record<string, strin
 
 async function main(): Promise<void> {
   const args = parseVerifyDeployArgs(process.argv.slice(2));
-  const headers = await accessHeaders();
+  const headers = await chooseAccessHeaders(args.baseUrl);
   await requireOk(`${args.baseUrl}/`, headers);
   await requireOk(`${args.baseUrl}/health`, headers);
   await postRefresh(args, headers);
