@@ -34,11 +34,7 @@ describe('findPointAt24hPrior', () => {
 
   it('returns undefined when the closest earlier point is outside the 12h tolerance', () => {
     const latest = { ts: 10 * DAY_MS, value: 50 };
-    const points = [
-      { ts: latest.ts - 5 * DAY_MS, value: 5 },
-      { ts: latest.ts - HOUR_MS, value: 49 },
-      latest
-    ];
+    const points = [{ ts: latest.ts - 5 * DAY_MS, value: 5 }, { ts: latest.ts - HOUR_MS, value: 49 }, latest];
     expect(findPointAt24hPrior(points, latest)).toBeUndefined();
   });
 
@@ -73,11 +69,7 @@ describe('latestMetricFromPoints', () => {
 
   it('emits null delta when prior samples are outside the 12h tolerance', () => {
     const latest = { ts: 10 * DAY_MS, value: 20 };
-    const points = [
-      { ts: latest.ts - 3 * DAY_MS, value: 17 },
-      { ts: latest.ts - HOUR_MS, value: 19 },
-      latest
-    ];
+    const points = [{ ts: latest.ts - 3 * DAY_MS, value: 17 }, { ts: latest.ts - HOUR_MS, value: 19 }, latest];
     expect(latestMetricFromPoints('clicks', points)).toEqual({
       metric: 'clicks',
       value: 20,

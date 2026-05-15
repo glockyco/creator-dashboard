@@ -15,7 +15,8 @@
     return points
       .map((point, index) => {
         const x = maxTs === minTs ? width / 2 : ((point.ts - minTs) / (maxTs - minTs)) * width;
-        const y = maxValue === minValue ? height / 2 : height - ((point.value - minValue) / (maxValue - minValue)) * height;
+        const y =
+          maxValue === minValue ? height / 2 : height - ((point.value - minValue) / (maxValue - minValue)) * height;
         return `${index === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
       })
       .join(' ');
@@ -24,8 +25,20 @@
 
 {#if points.length > 0}
   <svg class="h-16 w-full overflow-visible" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Metric sparkline">
-    <path d={pathFor(points)} fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-glockyco" />
+    <path
+      d={pathFor(points)}
+      fill="none"
+      stroke="currentColor"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="text-glockyco"
+    />
   </svg>
 {:else}
-  <div class="flex h-16 items-center justify-center rounded-lg border border-dashed border-border text-xs text-fg-muted">No sparkline data</div>
+  <div
+    class="flex h-16 items-center justify-center rounded-lg border border-dashed border-border text-xs text-fg-muted"
+  >
+    No sparkline data
+  </div>
 {/if}

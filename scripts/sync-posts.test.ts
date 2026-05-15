@@ -8,18 +8,27 @@ const knownSourceIds = new Set(['thunderstore-wowmuch']);
 
 describe('sync-posts', () => {
   it('builds deterministic D1 sync SQL for posts and source links', () => {
-    const posts = syncPostsFromEntries([{ path: 'posts/2026-04-12-wow-much-040-release.md', markdown: validPost }], knownSourceIds);
+    const posts = syncPostsFromEntries(
+      [{ path: 'posts/2026-04-12-wow-much-040-release.md', markdown: validPost }],
+      knownSourceIds
+    );
     const sql = buildSyncSql(posts);
 
     expect(sql).not.toContain('BEGIN;');
     expect(sql).not.toContain('COMMIT;');
     expect(sql).not.toContain('CREATE TEMP TABLE');
-    expect(sql).toContain("INSERT OR REPLACE INTO posts_index (slug, posted_at, author, platform, url, title, tags, body_excerpt, body_hash)");
+    expect(sql).toContain(
+      'INSERT OR REPLACE INTO posts_index (slug, posted_at, author, platform, url, title, tags, body_excerpt, body_hash)'
+    );
     expect(sql).toContain("'2026-04-12-wow-much-040-release', 1775952000000, 'WoW_Much', 'Steam'");
-    expect(sql).toContain("INSERT OR IGNORE INTO posts_sources (slug, source_id)");
+    expect(sql).toContain('INSERT OR IGNORE INTO posts_sources (slug, source_id)');
     expect(sql).toContain("'2026-04-12-wow-much-040-release', 'thunderstore-wowmuch'");
-    expect(sql).toContain("DELETE FROM posts_sources WHERE NOT ((slug = '2026-04-12-wow-much-040-release' AND source_id = 'thunderstore-wowmuch'));");
-    expect(sql.trim().endsWith("DELETE FROM posts_index WHERE slug NOT IN ('2026-04-12-wow-much-040-release');")).toBe(true);
+    expect(sql).toContain(
+      "DELETE FROM posts_sources WHERE NOT ((slug = '2026-04-12-wow-much-040-release' AND source_id = 'thunderstore-wowmuch'));"
+    );
+    expect(sql.trim().endsWith("DELETE FROM posts_index WHERE slug NOT IN ('2026-04-12-wow-much-040-release');")).toBe(
+      true
+    );
     expect(sql).toContain("'e4a8eafeebab0e2344728a92f49b0de674ac149d8e580484be39746706945022'");
   });
 
@@ -28,7 +37,9 @@ describe('sync-posts', () => {
       [
         {
           path: 'posts/quote.md',
-          markdown: validPost.replace('WoW_Much 0.4.0 release', "Johann's release").replace('Release notes excerpt.', "Johann's release notes.")
+          markdown: validPost
+            .replace('WoW_Much 0.4.0 release', "Johann's release")
+            .replace('Release notes excerpt.', "Johann's release notes.")
         }
       ],
       knownSourceIds
@@ -44,7 +55,9 @@ describe('sync-posts', () => {
       knownSourceIds
     )[0];
     const bodyChanged = syncPostsFromEntries(
-      [{ path: 'posts/body.md', markdown: validPost.replace('More detail about the release.', 'Different body text.') }],
+      [
+        { path: 'posts/body.md', markdown: validPost.replace('More detail about the release.', 'Different body text.') }
+      ],
       knownSourceIds
     )[0];
 
@@ -56,7 +69,10 @@ describe('sync-posts', () => {
     expect(parseSyncPostsArgs([])).toEqual({ out: '.tmp/sync-posts.sql', executeRemote: false });
     expect(parseSyncPostsArgs(['--out', 'custom.sql'])).toEqual({ out: 'custom.sql', executeRemote: false });
     expect(parseSyncPostsArgs(['--execute-remote'])).toEqual({ out: '.tmp/sync-posts.sql', executeRemote: true });
-    expect(parseSyncPostsArgs(['--execute-remote', '--out', 'custom.sql'])).toEqual({ out: 'custom.sql', executeRemote: true });
+    expect(parseSyncPostsArgs(['--execute-remote', '--out', 'custom.sql'])).toEqual({
+      out: 'custom.sql',
+      executeRemote: true
+    });
     expect(() => parseSyncPostsArgs(['--out'])).toThrow('--out requires a value');
     expect(() => parseSyncPostsArgs(['--unknown'])).toThrow('unknown argument: --unknown');
   });
@@ -64,7 +80,11 @@ describe('sync-posts', () => {
   it('runs under node strip-types as the deploy post sync step', async () => {
     const outPath = '.tmp/sync-posts-test.sql';
 
-    const result = spawnSync(process.execPath, ['--experimental-strip-types', 'scripts/sync-posts.ts', '--out', outPath], { encoding: 'utf8' });
+    const result = spawnSync(
+      process.execPath,
+      ['--experimental-strip-types', 'scripts/sync-posts.ts', '--out', outPath],
+      { encoding: 'utf8' }
+    );
 
     expect(result.stderr).toBe('');
     expect(result.status).toBe(0);

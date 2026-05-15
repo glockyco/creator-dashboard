@@ -26,8 +26,12 @@ describe('source registry', () => {
       'cf-analytics-erenshor-maps',
       'ga4'
     ]);
-    expect(sources.filter((source) => source.category !== 'analytics').every((source) => source.cadenceHours === 1)).toBe(true);
-    expect(sources.filter((source) => source.category === 'analytics').every((source) => source.cadenceHours === 24)).toBe(true);
+    expect(
+      sources.filter((source) => source.category !== 'analytics').every((source) => source.cadenceHours === 1)
+    ).toBe(true);
+    expect(
+      sources.filter((source) => source.category === 'analytics').every((source) => source.cadenceHours === 24)
+    ).toBe(true);
     expect(sources.some((source) => source.id === 'ga4')).toBe(true);
   });
 
@@ -56,7 +60,14 @@ describe('source registry', () => {
       SourceDef.parse({ id: 'x', name: 'x', identity: 'glockyco', category: 'platform', cadenceHours: 0, fetcher })
     ).toThrow();
     expect(() =>
-      SourceDef.parse({ id: 'x', name: 'x', identity: 'glockyco', category: 'platform', cadenceHours: 1, fetcher: 'nope' })
+      SourceDef.parse({
+        id: 'x',
+        name: 'x',
+        identity: 'glockyco',
+        category: 'platform',
+        cadenceHours: 1,
+        fetcher: 'nope'
+      })
     ).toThrow();
   });
 });

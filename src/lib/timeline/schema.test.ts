@@ -17,7 +17,12 @@ describe('parseTimelineFilters', () => {
   });
 
   it('parses comma-separated source IDs and overlay values', () => {
-    const params = new URLSearchParams({ since: '2026-04-01', until: '2026-05-04', sources: 'thunderstore-wowmuch,steam-reviews-erenshor', overlay: 'events' });
+    const params = new URLSearchParams({
+      since: '2026-04-01',
+      until: '2026-05-04',
+      sources: 'thunderstore-wowmuch,steam-reviews-erenshor',
+      overlay: 'events'
+    });
 
     expect(parseTimelineFilters(params, { now, knownSourceIds })).toMatchObject({
       since: '2026-04-01',
@@ -28,9 +33,17 @@ describe('parseTimelineFilters', () => {
   });
 
   it('rejects invalid dates, inverted ranges, unknown sources, and unsupported overlays', () => {
-    expect(() => parseTimelineFilters(new URLSearchParams({ since: '2026-02-31' }), { now, knownSourceIds })).toThrow('invalid since date');
-    expect(() => parseTimelineFilters(new URLSearchParams({ since: '2026-05-05', until: '2026-05-04' }), { now, knownSourceIds })).toThrow('since must be on or before until');
-    expect(() => parseTimelineFilters(new URLSearchParams({ sources: 'missing-source' }), { now, knownSourceIds })).toThrow('unknown timeline source');
-    expect(() => parseTimelineFilters(new URLSearchParams({ overlay: 'posts,health' }), { now, knownSourceIds })).toThrow('invalid overlay');
+    expect(() => parseTimelineFilters(new URLSearchParams({ since: '2026-02-31' }), { now, knownSourceIds })).toThrow(
+      'invalid since date'
+    );
+    expect(() =>
+      parseTimelineFilters(new URLSearchParams({ since: '2026-05-05', until: '2026-05-04' }), { now, knownSourceIds })
+    ).toThrow('since must be on or before until');
+    expect(() =>
+      parseTimelineFilters(new URLSearchParams({ sources: 'missing-source' }), { now, knownSourceIds })
+    ).toThrow('unknown timeline source');
+    expect(() =>
+      parseTimelineFilters(new URLSearchParams({ overlay: 'posts,health' }), { now, knownSourceIds })
+    ).toThrow('invalid overlay');
   });
 });

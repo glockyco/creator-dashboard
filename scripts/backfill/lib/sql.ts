@@ -2,7 +2,10 @@ import type { MetricPoint } from '../../../src/lib/types/domain';
 
 export function metricInsertSql(rows: MetricPoint[]): string {
   if (rows.length === 0) return '';
-  const values = rows.map((row) => `(${sqlString(row.source_id)}, ${sqlString(row.metric)}, ${row.ts}, ${row.value}, ${row.dimensions ? sqlString(JSON.stringify(row.dimensions)) : 'NULL'})`);
+  const values = rows.map(
+    (row) =>
+      `(${sqlString(row.source_id)}, ${sqlString(row.metric)}, ${row.ts}, ${row.value}, ${row.dimensions ? sqlString(JSON.stringify(row.dimensions)) : 'NULL'})`
+  );
   return `INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions)\nVALUES\n${values.join(',\n')};`;
 }
 

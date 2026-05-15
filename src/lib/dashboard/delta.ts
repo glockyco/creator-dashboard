@@ -19,10 +19,7 @@ const TOLERANCE_MS = 12 * 60 * 60 * 1000;
  *
  * `points` does not need to be sorted.
  */
-export function findPointAt24hPrior<T extends { ts: number }>(
-  points: readonly T[],
-  latest: T
-): T | undefined {
+export function findPointAt24hPrior<T extends { ts: number }>(points: readonly T[], latest: T): T | undefined {
   const target = latest.ts - DAY_MS;
   let best: T | undefined;
   let bestDistance = Number.POSITIVE_INFINITY;
@@ -44,10 +41,7 @@ export function findPointAt24hPrior<T extends { ts: number }>(
  * sample closest to 24h before it; `delta = value - previousValue` or `null`
  * when no usable 24h baseline exists.
  */
-export function latestMetricFromPoints(
-  metric: string,
-  points: readonly SparkPoint[]
-): LatestMetric {
+export function latestMetricFromPoints(metric: string, points: readonly SparkPoint[]): LatestMetric {
   let latest: SparkPoint | undefined;
   for (const point of points) {
     if (!latest || point.ts > latest.ts) latest = point;

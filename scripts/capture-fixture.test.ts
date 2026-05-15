@@ -17,7 +17,10 @@ describe('capture-fixture utility', () => {
       'ga4',
       'cf-analytics'
     ]);
-    expect(parseCaptureArgs(['steam-guide', '--source-id', 'steam-guide-erenshor'])).toEqual({ connector: 'steam-guide', sourceId: 'steam-guide-erenshor' });
+    expect(parseCaptureArgs(['steam-guide', '--source-id', 'steam-guide-erenshor'])).toEqual({
+      connector: 'steam-guide',
+      sourceId: 'steam-guide-erenshor'
+    });
     expect(() => parseCaptureArgs(['steam-guide', '--source-id'])).toThrow('requires a value');
     expect(() => parseCaptureArgs(['unknown'])).toThrow('unsupported connector');
   });
@@ -43,9 +46,11 @@ describe('capture-fixture utility', () => {
       fetcher,
       config: { publishedfileid: '3500398991' }
     } as SourceDef;
-    const fetchImpl = vi.fn< typeof fetch >().mockResolvedValue(
-      new Response(JSON.stringify({ token: 'ghp_secret_123', email: 'johann@example.com' }), { status: 200 })
-    );
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ token: 'ghp_secret_123', email: 'johann@example.com' }), { status: 200 })
+      );
     const writer = vi.fn<(path: string, content: string) => Promise<void>>().mockResolvedValue(undefined);
 
     await captureFixture({

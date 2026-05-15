@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
-  import HeaderBar from "./HeaderBar.svelte";
-  import Sidebar from "./Sidebar.svelte";
+  import type { Snippet } from 'svelte';
+  import HeaderBar from './HeaderBar.svelte';
+  import Sidebar from './Sidebar.svelte';
 
   let { children }: { children: Snippet } = $props();
 </script>

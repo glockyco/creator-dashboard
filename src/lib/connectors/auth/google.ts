@@ -20,7 +20,10 @@ export function resetGoogleAccessTokenCacheForTests(): void {
   cachedOAuth = null;
 }
 
-export async function getGoogleAccessToken(env: Pick<Env, 'GOOGLE_SERVICE_ACCOUNT'>, scopes: string[]): Promise<string> {
+export async function getGoogleAccessToken(
+  env: Pick<Env, 'GOOGLE_SERVICE_ACCOUNT'>,
+  scopes: string[]
+): Promise<string> {
   const cacheKey = scopes.slice().sort().join(' ');
   if (cachedSa && cachedSa.cacheKey === cacheKey && Date.now() < cachedSa.expiresAt - 60_000) return cachedSa.token;
 
@@ -52,7 +55,9 @@ export async function getGoogleAccessToken(env: Pick<Env, 'GOOGLE_SERVICE_ACCOUN
   return cachedSa.token;
 }
 
-export async function getGoogleOAuthAccessToken(env: Pick<Env, 'GOOGLE_OAUTH_CLIENT_ID' | 'GOOGLE_OAUTH_CLIENT_SECRET' | 'GOOGLE_OAUTH_REFRESH_TOKEN'>): Promise<string> {
+export async function getGoogleOAuthAccessToken(
+  env: Pick<Env, 'GOOGLE_OAUTH_CLIENT_ID' | 'GOOGLE_OAUTH_CLIENT_SECRET' | 'GOOGLE_OAUTH_REFRESH_TOKEN'>
+): Promise<string> {
   if (cachedOAuth && Date.now() < cachedOAuth.expiresAt - 60_000) return cachedOAuth.token;
 
   const body = new URLSearchParams({

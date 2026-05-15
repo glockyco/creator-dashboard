@@ -4,7 +4,13 @@ import type { MetricPoint } from '../../../src/lib/types/domain';
 
 const rows: MetricPoint[] = [
   { source_id: 'gsc-glockyco-com', metric: 'clicks', ts: 1777593600000, value: 12, dimensions: null },
-  { source_id: "bing-o'hare", metric: 'impressions', ts: 1777593600000, value: 120, dimensions: { query: "johann's site", page: 'https://example.invalid/a' } }
+  {
+    source_id: "bing-o'hare",
+    metric: 'impressions',
+    ts: 1777593600000,
+    value: 120,
+    dimensions: { query: "johann's site", page: 'https://example.invalid/a' }
+  }
 ];
 
 describe('metricInsertSql', () => {
@@ -13,7 +19,9 @@ describe('metricInsertSql', () => {
 
     expect(sql).toContain('INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions)');
     expect(sql).toContain("('gsc-glockyco-com', 'clicks', 1777593600000, 12, NULL)");
-    expect(sql).toContain("('bing-o''hare', 'impressions', 1777593600000, 120, '{\"query\":\"johann''s site\",\"page\":\"https://example.invalid/a\"}')");
+    expect(sql).toContain(
+      "('bing-o''hare', 'impressions', 1777593600000, 120, '{\"query\":\"johann''s site\",\"page\":\"https://example.invalid/a\"}')"
+    );
     expect(sql).not.toContain('undefined');
   });
 

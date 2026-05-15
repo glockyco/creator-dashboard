@@ -49,7 +49,10 @@
 
   async function pollStatus() {
     for (let attempt = 0; attempt < 15; attempt += 1) {
-      const response = await fetch(`/api/sources/${sourceId}/status`, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      const response = await fetch(`/api/sources/${sourceId}/status`, {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
       if (response.ok) onStatus?.((await response.json()) as FetcherStatus);
       await new Promise((resolve) => setTimeout(resolve, 2_000));
     }

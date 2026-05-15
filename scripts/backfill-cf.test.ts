@@ -14,7 +14,9 @@ const source = {
 } as unknown as SourceDef;
 
 const env = {
-  GOOGLE_OAUTH_CLIENT_ID: 'cid', GOOGLE_OAUTH_CLIENT_SECRET: 'cs', GOOGLE_OAUTH_REFRESH_TOKEN: 'rt',
+  GOOGLE_OAUTH_CLIENT_ID: 'cid',
+  GOOGLE_OAUTH_CLIENT_SECRET: 'cs',
+  GOOGLE_OAUTH_REFRESH_TOKEN: 'rt',
   GSC_PROPERTIES: '[]',
   BING_WEBMASTER_API_KEY: 'bing-key',
   BING_PROPERTIES: '[]',
@@ -25,9 +27,21 @@ const env = {
 
 describe('runCfBackfill', () => {
   it('uses the Cloudflare connector date-range helper and writes a dry-run SQL batch', async () => {
-    const fixture = { data: { viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: [{ dimensions: { date: '2026-01-02' }, sum: { visits: 11 }, count: 17 }] }] } } };
+    const fixture = {
+      data: {
+        viewer: {
+          accounts: [
+            {
+              rumPageloadEventsAdaptiveGroups: [{ dimensions: { date: '2026-01-02' }, sum: { visits: 11 }, count: 17 }]
+            }
+          ]
+        }
+      }
+    };
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 })));
-    const writer = vi.fn<(rows: MetricPoint[], out: string, batchSize?: number) => Promise<string>>().mockResolvedValue('BEGIN;\nINSERT OR IGNORE INTO metric_points ...;\nCOMMIT;\n');
+    const writer = vi
+      .fn<(rows: MetricPoint[], out: string, batchSize?: number) => Promise<string>>()
+      .mockResolvedValue('BEGIN;\nINSERT OR IGNORE INTO metric_points ...;\nCOMMIT;\n');
 
     const result = await runCfBackfill({
       args: ['--dry-run', '--out', '.tmp/backfill-cf.sql'],

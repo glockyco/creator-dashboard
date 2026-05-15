@@ -8,7 +8,7 @@ describe('getHealthSnapshot', () => {
       .mockResolvedValueOnce({ results: [{ source_id: 'source-a', last_status: 'success' }] })
       .mockResolvedValueOnce({ results: [{ source_id: 'source-a', tier: 'permanent' }] })
       .mockResolvedValueOnce({ results: [{ alert_key: 'permanent:source-a:auth_dead' }] });
-    const prepare = vi.fn((sql: string) => ({ all }));
+    const prepare = vi.fn((_sql: string) => ({ all }));
     const db = { prepare } as unknown as D1Database;
 
     await expect(getHealthSnapshot(db)).resolves.toEqual({

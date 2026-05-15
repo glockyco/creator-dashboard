@@ -18,7 +18,14 @@ const Response = z.object({
       }),
       repositories: z.object({
         totalCount: z.number().int(),
-        nodes: z.array(z.object({ name: z.string(), stargazerCount: z.number().int(), isArchived: z.boolean(), url: z.string().url() }))
+        nodes: z.array(
+          z.object({
+            name: z.string(),
+            stargazerCount: z.number().int(),
+            isArchived: z.boolean(),
+            url: z.string().url()
+          })
+        )
       })
     })
   })
@@ -56,8 +63,20 @@ export async function fetchGithub({ source, env, now }: FetcherInput): Promise<F
   return {
     metric_points: [
       { source_id: source.id, metric: 'followers', ts: now, value: viewer.followers.totalCount, dimensions: null },
-      { source_id: source.id, metric: 'total_stars', ts: now, value: activeRepos.reduce((sum, repo) => sum + repo.stargazerCount, 0), dimensions: null },
-      { source_id: source.id, metric: 'public_repos', ts: now, value: viewer.repositories.totalCount, dimensions: null },
+      {
+        source_id: source.id,
+        metric: 'total_stars',
+        ts: now,
+        value: activeRepos.reduce((sum, repo) => sum + repo.stargazerCount, 0),
+        dimensions: null
+      },
+      {
+        source_id: source.id,
+        metric: 'public_repos',
+        ts: now,
+        value: viewer.repositories.totalCount,
+        dimensions: null
+      },
       ...contributionPoints,
       ...repoStarPoints
     ],

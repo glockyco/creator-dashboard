@@ -20,27 +20,27 @@ Sources, posts, dashboard tabs, and digest sections are all keyed by identity. A
 
 ### 0.2 Sources tracked (initial set)
 
-| ID                               | Identity   | Category    | Cadence | Notes                                              |
-| -------------------------------- | ---------- | ----------- | ------- | -------------------------------------------------- |
-| `github-glockyco`                | glockyco   | platform    | 1h      | Followers, total stars, daily contributions grid   |
-| `gsc-glockyco-com`               | glockyco   | analytics   | 24h     | `sc-domain:glockyco.com`                           |
-| `steam-guide-erenshor`           | WoW_Much   | platform    | 1h      | publishedfileid `3500398991`                       |
-| `steam-guide-ak`                 | WoW_Much   | platform    | 1h      | publishedfileid `3616580411`                       |
-| `steam-reviews-erenshor`         | WoW_Much   | event_feed  | 1h      | appid `2382520`                                    |
-| `steam-reviews-ak`               | WoW_Much   | event_feed  | 1h      | appid `2241380`                                    |
-| `thunderstore-wowmuch`           | WoW_Much   | platform    | 1h      | community `erenshor`, namespace `WoW_Much`, multiple packages auto-discovered |
-| `erenshor-wiki-recent`           | WoW_Much   | event_feed  | 1h      | MediaWiki recent changes feed                      |
-| `gsc-ak-compendium`              | WoW_Much   | analytics   | 24h     | `https://ancient-kingdoms-compendium.wowmuch1.workers.dev/` |
-| `gsc-ak-compendium-org`          | WoW_Much   | analytics   | 24h     | `sc-domain:ancient-kingdoms.compendiums.org` during AK `.org` migration |
-| `gsc-erenshor-maps`              | WoW_Much   | analytics   | 24h     | `https://erenshor-maps.wowmuch1.workers.dev/`      |
-| `bing-glockyco-com`              | glockyco   | analytics   | 24h     | `https://glockyco.com/`                            |
-| `bing-ak-compendium`             | WoW_Much   | analytics   | 24h     | `https://ancient-kingdoms-compendium.wowmuch1.workers.dev/` |
-| `bing-ak-compendium-org`         | WoW_Much   | analytics   | 24h     | `https://ancient-kingdoms.compendiums.org/` during AK `.org` migration |
-| `bing-erenshor-maps`             | WoW_Much   | analytics   | 24h     | `https://erenshor-maps.wowmuch1.workers.dev/`      |
-| `cf-analytics-glockyco-com`      | glockyco   | analytics   | 24h     | Auto Web Analytics (proxied zone)                  |
-| `cf-analytics-ak-compendium`     | WoW_Much   | analytics   | 24h     | Same Web Analytics beacon covers workers.dev + `.org` |
-| `cf-analytics-erenshor-maps`     | WoW_Much   | analytics   | 24h     | Web Analytics JS snippet (Worker)                  |
-| `ga4` (deferred)                 | glockyco   | analytics   | 24h     | Disabled until `GA4_PROPERTY_ID` and Google permission path are confirmed |
+| ID                           | Identity | Category   | Cadence | Notes                                                                         |
+| ---------------------------- | -------- | ---------- | ------- | ----------------------------------------------------------------------------- |
+| `github-glockyco`            | glockyco | platform   | 1h      | Followers, total stars, daily contributions grid                              |
+| `gsc-glockyco-com`           | glockyco | analytics  | 24h     | `sc-domain:glockyco.com`                                                      |
+| `steam-guide-erenshor`       | WoW_Much | platform   | 1h      | publishedfileid `3500398991`                                                  |
+| `steam-guide-ak`             | WoW_Much | platform   | 1h      | publishedfileid `3616580411`                                                  |
+| `steam-reviews-erenshor`     | WoW_Much | event_feed | 1h      | appid `2382520`                                                               |
+| `steam-reviews-ak`           | WoW_Much | event_feed | 1h      | appid `2241380`                                                               |
+| `thunderstore-wowmuch`       | WoW_Much | platform   | 1h      | community `erenshor`, namespace `WoW_Much`, multiple packages auto-discovered |
+| `erenshor-wiki-recent`       | WoW_Much | event_feed | 1h      | MediaWiki recent changes feed                                                 |
+| `gsc-ak-compendium`          | WoW_Much | analytics  | 24h     | `https://ancient-kingdoms-compendium.wowmuch1.workers.dev/`                   |
+| `gsc-ak-compendium-org`      | WoW_Much | analytics  | 24h     | `sc-domain:ancient-kingdoms.compendiums.org` during AK `.org` migration       |
+| `gsc-erenshor-maps`          | WoW_Much | analytics  | 24h     | `https://erenshor-maps.wowmuch1.workers.dev/`                                 |
+| `bing-glockyco-com`          | glockyco | analytics  | 24h     | `https://glockyco.com/`                                                       |
+| `bing-ak-compendium`         | WoW_Much | analytics  | 24h     | `https://ancient-kingdoms-compendium.wowmuch1.workers.dev/`                   |
+| `bing-ak-compendium-org`     | WoW_Much | analytics  | 24h     | `https://ancient-kingdoms.compendiums.org/` during AK `.org` migration        |
+| `bing-erenshor-maps`         | WoW_Much | analytics  | 24h     | `https://erenshor-maps.wowmuch1.workers.dev/`                                 |
+| `cf-analytics-glockyco-com`  | glockyco | analytics  | 24h     | Auto Web Analytics (proxied zone)                                             |
+| `cf-analytics-ak-compendium` | WoW_Much | analytics  | 24h     | Same Web Analytics beacon covers workers.dev + `.org`                         |
+| `cf-analytics-erenshor-maps` | WoW_Much | analytics  | 24h     | Web Analytics JS snippet (Worker)                                             |
+| `ga4` (deferred)             | glockyco | analytics  | 24h     | Disabled until `GA4_PROPERTY_ID` and Google permission path are confirmed     |
 
 **Out of scope:**
 
@@ -196,12 +196,12 @@ Local dev uses `.dev.vars` (gitignored) for Wrangler-bound secrets. Use `.env.lo
 import { z } from 'zod';
 
 export const identities = ['glockyco', 'WoW_Much'] as const;
-export type Identity = typeof identities[number];
+export type Identity = (typeof identities)[number];
 export const Identity = z.enum(identities);
 
 export const identityMeta: Record<Identity, { displayName: string; description: string }> = {
   glockyco: { displayName: 'glockyco', description: 'Professional / academic identity' },
-  WoW_Much: { displayName: 'WoW_Much', description: 'Gaming / mods identity' },
+  WoW_Much: { displayName: 'WoW_Much', description: 'Gaming / mods identity' }
 };
 ```
 
@@ -315,35 +315,179 @@ import { Identity } from '$lib/identities';
 import * as fetchers from './fetchers';
 
 const SourceDef = z.object({
-  id:           z.string(),
-  name:         z.string(),
-  identity:     Identity,
-  category:     z.enum(['platform', 'analytics', 'event_feed']),
+  id: z.string(),
+  name: z.string(),
+  identity: Identity,
+  category: z.enum(['platform', 'analytics', 'event_feed']),
   cadenceHours: z.number().int().positive(),
-  fetcher:      z.function(),
-  config:       z.record(z.unknown()).default({}),
+  fetcher: z.function(),
+  config: z.record(z.unknown()).default({})
 });
 export type SourceDef = z.infer<typeof SourceDef>;
 
 export const sources: SourceDef[] = z.array(SourceDef).parse([
-  { id: 'github-glockyco',         identity: 'glockyco', name: 'GitHub @glockyco',                category: 'platform',   cadenceHours: 1,  fetcher: fetchers.github,                 config: {} },
-  { id: 'gsc-glockyco-com',        identity: 'glockyco', name: 'GSC: glockyco.com',               category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,                    config: { siteUrl: 'sc-domain:glockyco.com' } },
-  { id: 'steam-guide-erenshor',    identity: 'WoW_Much', name: 'Steam Guide: Erenshor Maps',      category: 'platform',   cadenceHours: 1,  fetcher: fetchers.steamGuide,             config: { publishedfileid: '3500398991' } },
-  { id: 'steam-guide-ak',          identity: 'WoW_Much', name: 'Steam Guide: AK Compendium',      category: 'platform',   cadenceHours: 1,  fetcher: fetchers.steamGuide,             config: { publishedfileid: '3616580411' } },
-  { id: 'steam-reviews-erenshor',  identity: 'WoW_Much', name: 'Steam Reviews: Erenshor',         category: 'event_feed', cadenceHours: 1,  fetcher: fetchers.steamReviews,           config: { appid: '2382520' } },
-  { id: 'steam-reviews-ak',        identity: 'WoW_Much', name: 'Steam Reviews: Ancient Kingdoms', category: 'event_feed', cadenceHours: 1,  fetcher: fetchers.steamReviews,           config: { appid: '2241380' } },
-  { id: 'thunderstore-wowmuch',    identity: 'WoW_Much', name: 'Thunderstore: WoW_Much',          category: 'platform',   cadenceHours: 1,  fetcher: fetchers.thunderstoreTeam,       config: { namespace: 'WoW_Much', community: 'erenshor' } },
-  { id: 'erenshor-wiki-recent',    identity: 'WoW_Much', name: 'Erenshor Wiki: Recent Changes',   category: 'event_feed', cadenceHours: 1,  fetcher: fetchers.mediaWikiRecentChanges, config: { wiki: 'erenshor.wiki.gg' } },
-  { id: 'gsc-ak-compendium',          identity: 'WoW_Much', name: 'GSC: AK Compendium (workers.dev)',      category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,            config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' } },
-  { id: 'gsc-ak-compendium-org',      identity: 'WoW_Much', name: 'GSC: AK Compendium (compendiums.org)',  category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,            config: { siteUrl: 'sc-domain:ancient-kingdoms.compendiums.org' } },
-  { id: 'gsc-erenshor-maps',          identity: 'WoW_Much', name: 'GSC: Erenshor Maps',                    category: 'analytics',  cadenceHours: 24, fetcher: fetchers.gsc,            config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' } },
-  { id: 'bing-glockyco-com',          identity: 'glockyco', name: 'Bing: glockyco.com',                    category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster, config: { siteUrl: 'https://glockyco.com/' } },
-  { id: 'bing-ak-compendium',         identity: 'WoW_Much', name: 'Bing: AK Compendium (workers.dev)',     category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster, config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' } },
-  { id: 'bing-ak-compendium-org',     identity: 'WoW_Much', name: 'Bing: AK Compendium (compendiums.org)', category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster, config: { siteUrl: 'https://ancient-kingdoms.compendiums.org/' } },
-  { id: 'bing-erenshor-maps',         identity: 'WoW_Much', name: 'Bing: Erenshor Maps',                   category: 'analytics',  cadenceHours: 24, fetcher: fetchers.bingWebmaster, config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' } },
-  { id: 'cf-analytics-glockyco-com',  identity: 'glockyco', name: 'Cloudflare Analytics: glockyco.com',    category: 'analytics',  cadenceHours: 24, fetcher: fetchers.cfAnalytics,   config: {} },
-  { id: 'cf-analytics-ak-compendium', identity: 'WoW_Much', name: 'Cloudflare Analytics: AK Compendium',   category: 'analytics',  cadenceHours: 24, fetcher: fetchers.cfAnalytics,   config: {} },
-  { id: 'cf-analytics-erenshor-maps', identity: 'WoW_Much', name: 'Cloudflare Analytics: Erenshor Maps',   category: 'analytics',  cadenceHours: 24, fetcher: fetchers.cfAnalytics,   config: {} },
+  {
+    id: 'github-glockyco',
+    identity: 'glockyco',
+    name: 'GitHub @glockyco',
+    category: 'platform',
+    cadenceHours: 1,
+    fetcher: fetchers.github,
+    config: {}
+  },
+  {
+    id: 'gsc-glockyco-com',
+    identity: 'glockyco',
+    name: 'GSC: glockyco.com',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.gsc,
+    config: { siteUrl: 'sc-domain:glockyco.com' }
+  },
+  {
+    id: 'steam-guide-erenshor',
+    identity: 'WoW_Much',
+    name: 'Steam Guide: Erenshor Maps',
+    category: 'platform',
+    cadenceHours: 1,
+    fetcher: fetchers.steamGuide,
+    config: { publishedfileid: '3500398991' }
+  },
+  {
+    id: 'steam-guide-ak',
+    identity: 'WoW_Much',
+    name: 'Steam Guide: AK Compendium',
+    category: 'platform',
+    cadenceHours: 1,
+    fetcher: fetchers.steamGuide,
+    config: { publishedfileid: '3616580411' }
+  },
+  {
+    id: 'steam-reviews-erenshor',
+    identity: 'WoW_Much',
+    name: 'Steam Reviews: Erenshor',
+    category: 'event_feed',
+    cadenceHours: 1,
+    fetcher: fetchers.steamReviews,
+    config: { appid: '2382520' }
+  },
+  {
+    id: 'steam-reviews-ak',
+    identity: 'WoW_Much',
+    name: 'Steam Reviews: Ancient Kingdoms',
+    category: 'event_feed',
+    cadenceHours: 1,
+    fetcher: fetchers.steamReviews,
+    config: { appid: '2241380' }
+  },
+  {
+    id: 'thunderstore-wowmuch',
+    identity: 'WoW_Much',
+    name: 'Thunderstore: WoW_Much',
+    category: 'platform',
+    cadenceHours: 1,
+    fetcher: fetchers.thunderstoreTeam,
+    config: { namespace: 'WoW_Much', community: 'erenshor' }
+  },
+  {
+    id: 'erenshor-wiki-recent',
+    identity: 'WoW_Much',
+    name: 'Erenshor Wiki: Recent Changes',
+    category: 'event_feed',
+    cadenceHours: 1,
+    fetcher: fetchers.mediaWikiRecentChanges,
+    config: { wiki: 'erenshor.wiki.gg' }
+  },
+  {
+    id: 'gsc-ak-compendium',
+    identity: 'WoW_Much',
+    name: 'GSC: AK Compendium (workers.dev)',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.gsc,
+    config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' }
+  },
+  {
+    id: 'gsc-ak-compendium-org',
+    identity: 'WoW_Much',
+    name: 'GSC: AK Compendium (compendiums.org)',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.gsc,
+    config: { siteUrl: 'sc-domain:ancient-kingdoms.compendiums.org' }
+  },
+  {
+    id: 'gsc-erenshor-maps',
+    identity: 'WoW_Much',
+    name: 'GSC: Erenshor Maps',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.gsc,
+    config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' }
+  },
+  {
+    id: 'bing-glockyco-com',
+    identity: 'glockyco',
+    name: 'Bing: glockyco.com',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.bingWebmaster,
+    config: { siteUrl: 'https://glockyco.com/' }
+  },
+  {
+    id: 'bing-ak-compendium',
+    identity: 'WoW_Much',
+    name: 'Bing: AK Compendium (workers.dev)',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.bingWebmaster,
+    config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' }
+  },
+  {
+    id: 'bing-ak-compendium-org',
+    identity: 'WoW_Much',
+    name: 'Bing: AK Compendium (compendiums.org)',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.bingWebmaster,
+    config: { siteUrl: 'https://ancient-kingdoms.compendiums.org/' }
+  },
+  {
+    id: 'bing-erenshor-maps',
+    identity: 'WoW_Much',
+    name: 'Bing: Erenshor Maps',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.bingWebmaster,
+    config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' }
+  },
+  {
+    id: 'cf-analytics-glockyco-com',
+    identity: 'glockyco',
+    name: 'Cloudflare Analytics: glockyco.com',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.cfAnalytics,
+    config: {}
+  },
+  {
+    id: 'cf-analytics-ak-compendium',
+    identity: 'WoW_Much',
+    name: 'Cloudflare Analytics: AK Compendium',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.cfAnalytics,
+    config: {}
+  },
+  {
+    id: 'cf-analytics-erenshor-maps',
+    identity: 'WoW_Much',
+    name: 'Cloudflare Analytics: Erenshor Maps',
+    category: 'analytics',
+    cadenceHours: 24,
+    fetcher: fetchers.cfAnalytics,
+    config: {}
+  }
   // ga4 — deferred until property ID and Google permission path are confirmed (see §7.2).
 ]);
 ```
@@ -365,7 +509,7 @@ posted_at: 2026-04-12T18:30:00Z
 author: WoW_Much
 platform: thunderstore
 url: https://thunderstore.io/c/erenshor/p/WoW_Much/WoW_Much/
-title: "WoW Much 0.4.0 release notes"
+title: 'WoW Much 0.4.0 release notes'
 tags: [release, erenshor, wow-much]
 related_sources: [thunderstore-wowmuch]
 ---
@@ -383,33 +527,35 @@ import { Identity } from '$lib/identities';
 import { sources } from '$lib/sources/registry';
 
 const PostFrontmatter = z.object({
-  posted_at:       z.string().datetime(),
-  author:          Identity,
-  platform:        z.string(),
-  url:             z.string().url(),
-  title:           z.string(),
-  tags:            z.array(z.string()).default([]),
-  related_sources: z.array(z.string()).default([]),
+  posted_at: z.string().datetime(),
+  author: Identity,
+  platform: z.string(),
+  url: z.string().url(),
+  title: z.string(),
+  tags: z.array(z.string()).default([]),
+  related_sources: z.array(z.string()).default([])
 });
 
 const raw = import.meta.glob('/posts/*.md', { eager: true, query: '?raw', import: 'default' });
-const knownSourceIds = new Set(sources.map(s => s.id));
+const knownSourceIds = new Set(sources.map((s) => s.id));
 
-export const posts = Object.entries(raw).map(([path, src]) => {
-  const { data, content } = matter(src as string);
-  const fm = PostFrontmatter.parse(data);
-  for (const sid of fm.related_sources) {
-    if (!knownSourceIds.has(sid)) {
-      throw new Error(`Post ${path}: related_sources contains unknown source '${sid}'`);
+export const posts = Object.entries(raw)
+  .map(([path, src]) => {
+    const { data, content } = matter(src as string);
+    const fm = PostFrontmatter.parse(data);
+    for (const sid of fm.related_sources) {
+      if (!knownSourceIds.has(sid)) {
+        throw new Error(`Post ${path}: related_sources contains unknown source '${sid}'`);
+      }
     }
-  }
-  return {
-    slug: path.replace(/^\/posts\//, '').replace(/\.md$/, ''),
-    posted_at_ms: new Date(fm.posted_at).getTime(),
-    body: content,
-    ...fm,
-  };
-}).sort((a, b) => b.posted_at_ms - a.posted_at_ms);
+    return {
+      slug: path.replace(/^\/posts\//, '').replace(/\.md$/, ''),
+      posted_at_ms: new Date(fm.posted_at).getTime(),
+      body: content,
+      ...fm
+    };
+  })
+  .sort((a, b) => b.posted_at_ms - a.posted_at_ms);
 ```
 
 **Sync to D1 (deploy time, not runtime):**
@@ -427,36 +573,36 @@ Why deploy-time, not runtime: the deploy is when "publish" happens. Sync at depl
 
 ### 2.5 Validation strategy
 
-| Boundary                                              | Schema                            | Failure mode                              |
-| ----------------------------------------------------- | --------------------------------- | ----------------------------------------- |
-| Source registry array → at module init                | `z.array(SourceDef).parse([...])` | Worker fails to start, deploy aborts      |
-| Post frontmatter → at loader init                     | `PostFrontmatter`                 | Worker fails to start, deploy aborts      |
-| Post `related_sources` → at loader init               | cross-check vs `sources` IDs      | Worker fails to start, deploy aborts      |
-| Connector HTTP response → before write                | per-source response schema        | Permanent failure → Discord alert         |
-| User input (date ranges, source filters) → API routes | per-route Zod schema              | 400 to client                             |
-| D1 reads                                              | TypeScript types only, no runtime | Trust the DB; we wrote it                 |
+| Boundary                                              | Schema                            | Failure mode                         |
+| ----------------------------------------------------- | --------------------------------- | ------------------------------------ |
+| Source registry array → at module init                | `z.array(SourceDef).parse([...])` | Worker fails to start, deploy aborts |
+| Post frontmatter → at loader init                     | `PostFrontmatter`                 | Worker fails to start, deploy aborts |
+| Post `related_sources` → at loader init               | cross-check vs `sources` IDs      | Worker fails to start, deploy aborts |
+| Connector HTTP response → before write                | per-source response schema        | Permanent failure → Discord alert    |
+| User input (date ranges, source filters) → API routes | per-route Zod schema              | 400 to client                        |
+| D1 reads                                              | TypeScript types only, no runtime | Trust the DB; we wrote it            |
 
 **Connector contract:**
 
 ```typescript
-export type FetcherInput  = { source: SourceDef; env: Env; now: number };
+export type FetcherInput = { source: SourceDef; env: Env; now: number };
 export type FetcherOutput = { metric_points: MetricPoint[]; events: Event[] };
-export type Fetcher       = (input: FetcherInput) => Promise<FetcherOutput>;
+export type Fetcher = (input: FetcherInput) => Promise<FetcherOutput>;
 ```
 
 Connectors are pure: HTTP → Zod-parsed → typed rows. **They don't touch D1.** The consumer Worker is responsible for all persistence. Easy to test (give a mock HTTP response, assert on returned rows).
 
 ### 2.6 Read patterns this model serves
 
-| View                                       | Query shape                                                                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Dashboard tile (one source, last 30 days)  | `WHERE source_id=? AND metric=? AND ts > ? ORDER BY ts`                                                                              |
-| GSC top-10 queries last 7 days             | `WHERE source_id='gsc-...' AND ts > ? GROUP BY json_extract(dimensions, '$.query') ORDER BY SUM(value) DESC LIMIT 10`                |
-| Timeline view (correlation)                | Two parallel queries: `metric_points` range + `events` range; posts joined via `posts_sources`; merged client-side                   |
-| GitHub contribution heatmap                | `WHERE source_id='github-glockyco' AND metric='contributions' ORDER BY ts` (365 daily rows × N years)                                |
-| Health (last 24h failures)                 | `WHERE ts > ? ORDER BY ts DESC` from `fetcher_failures`                                                                              |
-| All Steam reviews across both games        | `WHERE kind='review' ORDER BY ts DESC LIMIT 50`                                                                                      |
-| "Posts I made + post-window subscriber Δ"  | `JOIN posts_index/posts_sources` + correlated subqueries against `metric_points` (single SQL, indexed)                               |
+| View                                      | Query shape                                                                                                           |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Dashboard tile (one source, last 30 days) | `WHERE source_id=? AND metric=? AND ts > ? ORDER BY ts`                                                               |
+| GSC top-10 queries last 7 days            | `WHERE source_id='gsc-...' AND ts > ? GROUP BY json_extract(dimensions, '$.query') ORDER BY SUM(value) DESC LIMIT 10` |
+| Timeline view (correlation)               | Two parallel queries: `metric_points` range + `events` range; posts joined via `posts_sources`; merged client-side    |
+| GitHub contribution heatmap               | `WHERE source_id='github-glockyco' AND metric='contributions' ORDER BY ts` (365 daily rows × N years)                 |
+| Health (last 24h failures)                | `WHERE ts > ? ORDER BY ts DESC` from `fetcher_failures`                                                               |
+| All Steam reviews across both games       | `WHERE kind='review' ORDER BY ts DESC LIMIT 50`                                                                       |
+| "Posts I made + post-window subscriber Δ" | `JOIN posts_index/posts_sources` + correlated subqueries against `metric_points` (single SQL, indexed)                |
 
 ---
 
@@ -478,7 +624,7 @@ All HTTP routes uniformly behind Access. No public exemptions.
 async function scheduled(event: ScheduledEvent, env: Env) {
   if (event.cron === '0 * * * *') {
     await env.FETCHER_QUEUE.sendBatch(
-      sources.map(s => ({ body: { source_id: s.id, dispatch_ts: Date.now(), force: false } as JobMsg }))
+      sources.map((s) => ({ body: { source_id: s.id, dispatch_ts: Date.now(), force: false } as JobMsg }))
     );
   } else if (event.cron === '0 4,5 * * *') {
     await maybeDailyDigest(env);
@@ -492,18 +638,22 @@ Sends N messages once per hour. The consumer decides per-source whether the work
 
 ```typescript
 async function queue(batch: MessageBatch<JobMsg>, env: Env) {
-  const msg = batch.messages[0];                        // batch_size = 1
+  const msg = batch.messages[0]; // batch_size = 1
   const { source_id, force } = msg.body;
-  const source = sources.find(s => s.id === source_id);
-  if (!source) { msg.ack(); return; }                   // unknown id — drop silently
+  const source = sources.find((s) => s.id === source_id);
+  if (!source) {
+    msg.ack();
+    return;
+  } // unknown id — drop silently
 
   // Cadence gate — force=true bypasses (manual refresh)
   if (!force) {
-    const run = await env.DB.prepare(
-      'SELECT last_run_at FROM fetcher_runs WHERE source_id = ?'
-    ).bind(source_id).first<{ last_run_at: number }>();
+    const run = await env.DB.prepare('SELECT last_run_at FROM fetcher_runs WHERE source_id = ?')
+      .bind(source_id)
+      .first<{ last_run_at: number }>();
     const cadenceMs = source.cadenceHours * 3_600_000;
-    if (run && Date.now() - run.last_run_at < cadenceMs - 300_000) {  // 5-min jitter window
+    if (run && Date.now() - run.last_run_at < cadenceMs - 300_000) {
+      // 5-min jitter window
       msg.ack();
       return;
     }
@@ -513,16 +663,30 @@ async function queue(batch: MessageBatch<JobMsg>, env: Env) {
     const result = await source.fetcher({ source, env, now: Date.now() });
 
     await env.DB.batch([
-      ...result.metric_points.map(mp =>
-        env.DB.prepare('INSERT OR IGNORE INTO metric_points VALUES (?, ?, ?, ?, ?)')
-          .bind(mp.source_id, mp.metric, mp.ts, mp.value, mp.dimensions ? JSON.stringify(mp.dimensions) : null)
+      ...result.metric_points.map((mp) =>
+        env.DB.prepare('INSERT OR IGNORE INTO metric_points VALUES (?, ?, ?, ?, ?)').bind(
+          mp.source_id,
+          mp.metric,
+          mp.ts,
+          mp.value,
+          mp.dimensions ? JSON.stringify(mp.dimensions) : null
+        )
       ),
-      ...result.events.map(ev =>
-        env.DB.prepare('INSERT OR IGNORE INTO events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-          .bind(ev.source_id, ev.external_id, ev.ts, ev.kind, ev.author, ev.title, ev.body, ev.url,
-                ev.metadata ? JSON.stringify(ev.metadata) : null)
+      ...result.events.map((ev) =>
+        env.DB.prepare('INSERT OR IGNORE INTO events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').bind(
+          ev.source_id,
+          ev.external_id,
+          ev.ts,
+          ev.kind,
+          ev.author,
+          ev.title,
+          ev.body,
+          ev.url,
+          ev.metadata ? JSON.stringify(ev.metadata) : null
+        )
       ),
-      env.DB.prepare(`
+      env.DB.prepare(
+        `
         INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, consecutive_failures)
         VALUES (?, ?, ?, 'success', 0)
         ON CONFLICT(source_id) DO UPDATE SET
@@ -531,7 +695,8 @@ async function queue(batch: MessageBatch<JobMsg>, env: Env) {
           last_status         = 'success',
           last_error          = NULL,
           consecutive_failures = 0
-      `).bind(source_id, Date.now(), Date.now()),
+      `
+      ).bind(source_id, Date.now(), Date.now())
     ]);
 
     msg.ack();
@@ -549,23 +714,24 @@ Connectors are pure (don't touch D1). Consumer is responsible for all persistenc
 type Failure = { tier: 'transient' | 'rate_limited' | 'permanent'; statusCode?: number; retryAfterSeconds?: number };
 
 function classify(err: unknown): Failure {
-  if (err instanceof z.ZodError)                    return { tier: 'permanent' };               // API drift
+  if (err instanceof z.ZodError) return { tier: 'permanent' }; // API drift
   if (err instanceof FetchError) {
     const s = err.status;
-    if (s === 429)                                   return { tier: 'rate_limited', statusCode: s, retryAfterSeconds: parseRetryAfter(err.headers) ?? 600 };
-    if (s === 401 || s === 403 || s === 404)         return { tier: 'permanent', statusCode: s };
-    if (s >= 500)                                    return { tier: 'transient', statusCode: s };
+    if (s === 429)
+      return { tier: 'rate_limited', statusCode: s, retryAfterSeconds: parseRetryAfter(err.headers) ?? 600 };
+    if (s === 401 || s === 403 || s === 404) return { tier: 'permanent', statusCode: s };
+    if (s >= 500) return { tier: 'transient', statusCode: s };
   }
-  return { tier: 'transient' };                      // network errors, timeouts, anything else
+  return { tier: 'transient' }; // network errors, timeouts, anything else
 }
 ```
 
-| Failure                                      | Action                                                  | Max attempts |
-| -------------------------------------------- | ------------------------------------------------------- | ------------ |
-| `permanent` (401/403/404/Zod)                | Alert immediately, ack, do not retry                    | 1            |
-| `rate_limited` (429)                         | Retry after `Retry-After` header (or 10 min default)    | 5            |
-| `transient` (5xx, network)                   | Retry after fixed 5 min                                 | 5            |
-| Exhausted retries                            | Routed to DLQ; alert from DLQ consumer                  | n/a          |
+| Failure                       | Action                                               | Max attempts |
+| ----------------------------- | ---------------------------------------------------- | ------------ |
+| `permanent` (401/403/404/Zod) | Alert immediately, ack, do not retry                 | 1            |
+| `rate_limited` (429)          | Retry after `Retry-After` header (or 10 min default) | 5            |
+| `transient` (5xx, network)    | Retry after fixed 5 min                              | 5            |
+| Exhausted retries             | Routed to DLQ; alert from DLQ consumer               | n/a          |
 
 Fixed 5-min delay (not exponential) is the deliberate simplification — Queues doesn't pass retry count through, so true exponential would require a D1 round-trip per consumer. At our volume, 5 retries × 5 min = 25-min recovery window covers any legitimately transient issue. Upgrade to D1-tracked retries if a flaky source warrants it.
 
@@ -575,9 +741,9 @@ Fixed 5-min delay (not exponential) is the deliberate simplification — Queues 
 async function dlq(batch: MessageBatch<JobMsg>, env: Env) {
   for (const msg of batch.messages) {
     const { source_id } = msg.body;
-    await env.DB.prepare(
-      'INSERT INTO fetcher_failures (source_id, ts, tier, error_message) VALUES (?, ?, ?, ?)'
-    ).bind(source_id, Date.now(), 'dlq', 'Exhausted retries').run();
+    await env.DB.prepare('INSERT INTO fetcher_failures (source_id, ts, tier, error_message) VALUES (?, ?, ?, ?)')
+      .bind(source_id, Date.now(), 'dlq', 'Exhausted retries')
+      .run();
     await maybeSendAlert(env, source_id, 'dlq', 'exhausted_retries', 'Failed after 5 retries');
     msg.ack();
   }
@@ -587,15 +753,20 @@ async function dlq(batch: MessageBatch<JobMsg>, env: Env) {
 ### 3.6 Alert deduplication
 
 ```typescript
-async function maybeSendAlert(env: Env, source_id: string, tier: 'permanent' | 'dlq', errorClass: string, message: string) {
+async function maybeSendAlert(
+  env: Env,
+  source_id: string,
+  tier: 'permanent' | 'dlq',
+  errorClass: string,
+  message: string
+) {
   const alertKey = `${tier}:${source_id}:${errorClass}`;
-  const existing = await env.DB.prepare(
-    'SELECT sent_at FROM alerts_sent WHERE alert_key = ?'
-  ).bind(alertKey).first<{ sent_at: number }>();
-  if (existing && Date.now() - existing.sent_at < 24 * 3_600_000) return;  // re-fire after 24h
+  const existing = await env.DB.prepare('SELECT sent_at FROM alerts_sent WHERE alert_key = ?')
+    .bind(alertKey)
+    .first<{ sent_at: number }>();
+  if (existing && Date.now() - existing.sent_at < 24 * 3_600_000) return; // re-fire after 24h
   await postDiscord(env.DISCORD_ALERTS_WEBHOOK, formatAlert(source_id, tier, errorClass, message));
-  await env.DB.prepare('INSERT OR REPLACE INTO alerts_sent VALUES (?, ?)')
-    .bind(alertKey, Date.now()).run();
+  await env.DB.prepare('INSERT OR REPLACE INTO alerts_sent VALUES (?, ?)').bind(alertKey, Date.now()).run();
 }
 ```
 
@@ -607,10 +778,12 @@ Without dedup, a permanent 401 on a daily-cadence source would post 24 alerts/da
 // src/routes/api/refresh/[source_id]/+server.ts (Access-protected)
 export async function POST({ params, request, platform }) {
   await assertAccessJwt(request, platform.env);
-  const source = sources.find(s => s.id === params.source_id);
+  const source = sources.find((s) => s.id === params.source_id);
   if (!source) return new Response('unknown source', { status: 404 });
   await platform.env.FETCHER_QUEUE.send({
-    source_id: source.id, dispatch_ts: Date.now(), force: true
+    source_id: source.id,
+    dispatch_ts: Date.now(),
+    force: true
   });
   return json({ queued: true });
 }
@@ -624,7 +797,7 @@ Frontend:
 await fetch(`/api/refresh/${sourceId}`, {
   method: 'POST',
   credentials: 'same-origin',
-  headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  headers: { 'X-Requested-With': 'XMLHttpRequest' }
 });
 ```
 
@@ -637,9 +810,9 @@ export async function maybeDailyDigest(env: Env, now: Date) {
   if (!isViennaDigestHour(now)) return { sent: false, reason: 'outside_digest_hour' };
 
   const dateKey = viennaDateKey(now);
-  const existing = await env.DB.prepare(
-    'SELECT digest_date FROM digest_sent WHERE digest_date = ?'
-  ).bind(dateKey).first<{ digest_date: string }>();
+  const existing = await env.DB.prepare('SELECT digest_date FROM digest_sent WHERE digest_date = ?')
+    .bind(dateKey)
+    .first<{ digest_date: string }>();
   if (existing) return { sent: false, reason: 'already_sent' };
 
   const data = await getDigestData(env.DB, now);
@@ -650,7 +823,8 @@ export async function maybeDailyDigest(env: Env, now: Date) {
     body: JSON.stringify(message)
   });
   await env.DB.prepare('INSERT INTO digest_sent (digest_date, sent_at) VALUES (?, ?)')
-    .bind(dateKey, now.getTime()).run();
+    .bind(dateKey, now.getTime())
+    .run();
   return { sent: true, reason: 'sent' };
 }
 ```
@@ -676,13 +850,13 @@ Digest content intentionally contains no emoji so Discord logs remain portable a
 
 Every write path is replay-safe:
 
-| Path                                       | Idempotency mechanism                                                                                         |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Connector hourly fetch (cron-driven)       | `INSERT OR IGNORE` on PKs `(source_id, metric, ts, dimensions)` and `(source_id, external_id)`                |
-| Manual refresh                             | Same write path; `force=true` only bypasses cadence gate                                                      |
-| Queue retry                                | Same as above — re-fetch produces same rows; ignored on conflict                                              |
-| Cron firing twice during DST transition    | Digest guard checks Vienna local hour; `digest_sent` prevents duplicate Discord posts; metrics dispatcher idempotent at write level |
-| Worker restart mid-batch                   | `db.batch()` is atomic; nothing half-written                                                                  |
+| Path                                    | Idempotency mechanism                                                                                                               |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Connector hourly fetch (cron-driven)    | `INSERT OR IGNORE` on PKs `(source_id, metric, ts, dimensions)` and `(source_id, external_id)`                                      |
+| Manual refresh                          | Same write path; `force=true` only bypasses cadence gate                                                                            |
+| Queue retry                             | Same as above — re-fetch produces same rows; ignored on conflict                                                                    |
+| Cron firing twice during DST transition | Digest guard checks Vienna local hour; `digest_sent` prevents duplicate Discord posts; metrics dispatcher idempotent at write level |
+| Worker restart mid-batch                | `db.batch()` is atomic; nothing half-written                                                                                        |
 
 You can replay any fetch cron and any queue message without polluting state. Digest cron is replay-safe via `digest_sent` because it has an external Discord side effect.
 
@@ -701,7 +875,7 @@ export class FetchError extends Error {
     public readonly status: number,
     public readonly headers: Headers,
     public readonly body: string,
-    public readonly url: string,
+    public readonly url: string
   ) {
     super(`HTTP ${status} from ${url}: ${body.slice(0, 200)}`);
     this.name = 'FetchError';
@@ -709,8 +883,8 @@ export class FetchError extends Error {
 }
 
 export interface FetchOptions extends RequestInit {
-  timeout?: number;            // ms, default 15_000
-  schema?: z.ZodTypeAny;       // optional Zod parser for response body
+  timeout?: number; // ms, default 15_000
+  schema?: z.ZodTypeAny; // optional Zod parser for response body
 }
 
 export async function fetchJson<T>(url: string, options: FetchOptions = {}): Promise<T> {
@@ -722,7 +896,9 @@ export async function fetchJson<T>(url: string, options: FetchOptions = {}): Pro
     const text = await res.text();
     if (!res.ok) throw new FetchError(res.status, res.headers, text, url);
     let data: unknown;
-    try { data = JSON.parse(text); } catch {
+    try {
+      data = JSON.parse(text);
+    } catch {
       throw new FetchError(200, res.headers, `Invalid JSON: ${text.slice(0, 200)}`, url);
     }
     return (schema ? schema.parse(data) : data) as T;
@@ -744,9 +920,9 @@ Single I/O boundary every connector uses:
 ```typescript
 // src/lib/connectors/auth/github.ts
 export const githubHeaders = (env: Env) => ({
-  'Authorization': `Bearer ${env.GITHUB_PAT}`,
-  'Content-Type':  'application/json',
-  'User-Agent':    'creator-dashboard/1.0',
+  Authorization: `Bearer ${env.GITHUB_PAT}`,
+  'Content-Type': 'application/json',
+  'User-Agent': 'creator-dashboard/1.0'
 });
 
 // src/lib/connectors/auth/steam.ts — API key as query param
@@ -757,8 +933,8 @@ export const withSteamKey = (url: URL, env: Env) => {
 
 // src/lib/connectors/auth/cloudflare.ts
 export const cfHeaders = (env: Env) => ({
-  'Authorization': `Bearer ${env.CF_API_TOKEN}`,
-  'Content-Type':  'application/json',
+  Authorization: `Bearer ${env.CF_API_TOKEN}`,
+  'Content-Type': 'application/json'
 });
 
 // src/lib/connectors/auth/google.ts — two cached access-token paths
@@ -777,11 +953,11 @@ export async function getGoogleAccessToken(
   if (cachedSa && Date.now() < cachedSa.expiresAt - 60_000) return cachedSa.token;
   const sa = JSON.parse(env.GOOGLE_SERVICE_ACCOUNT) as { client_email: string; private_key: string };
   const jwt = await signSaJwt(sa, scopes);
-  const res = await fetchJson<TokenResponse>(
-    'https://oauth2.googleapis.com/token',
-    { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}` }
-  );
+  const res = await fetchJson<TokenResponse>('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
+  });
   cachedSa = { token: res.access_token, expiresAt: Date.now() + res.expires_in * 1000 };
   return cachedSa.token;
 }
@@ -796,10 +972,11 @@ export async function getGoogleOAuthAccessToken(
     refresh_token: env.GOOGLE_OAUTH_REFRESH_TOKEN,
     grant_type: 'refresh_token'
   });
-  const res = await fetchJson<TokenResponse>(
-    'https://oauth2.googleapis.com/token',
-    { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body }
-  );
+  const res = await fetchJson<TokenResponse>('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body
+  });
   cachedOAuth = { token: res.access_token, expiresAt: Date.now() + res.expires_in * 1000 };
   return cachedOAuth.token;
 }
@@ -860,41 +1037,64 @@ const Response = z.object({
       contributionsCollection: z.object({
         contributionCalendar: z.object({
           totalContributions: z.number().int(),
-          weeks: z.array(z.object({
-            contributionDays: z.array(z.object({
-              date: z.string(),
-              contributionCount: z.number().int(),
-            })),
-          })),
-        }),
+          weeks: z.array(
+            z.object({
+              contributionDays: z.array(
+                z.object({
+                  date: z.string(),
+                  contributionCount: z.number().int()
+                })
+              )
+            })
+          )
+        })
       }),
       repositories: z.object({
         totalCount: z.number().int(),
-        nodes: z.array(z.object({
-          name: z.string(),
-          stargazerCount: z.number().int(),
-          isArchived: z.boolean(),
-          url: z.string().url(),
-        })),
-      }),
-    }),
-  }),
+        nodes: z.array(
+          z.object({
+            name: z.string(),
+            stargazerCount: z.number().int(),
+            isArchived: z.boolean(),
+            url: z.string().url()
+          })
+        )
+      })
+    })
+  })
 });
 
 const QUERY = /* GraphQL */ `
   query {
     viewer {
       login
-      followers { totalCount }
+      followers {
+        totalCount
+      }
       contributionsCollection {
         contributionCalendar {
           totalContributions
-          weeks { contributionDays { date contributionCount } }
+          weeks {
+            contributionDays {
+              date
+              contributionCount
+            }
+          }
         }
       }
-      repositories(ownerAffiliations: OWNER, privacy: PUBLIC, first: 100, orderBy: {field: STARGAZERS, direction: DESC}) {
+      repositories(
+        ownerAffiliations: OWNER
+        privacy: PUBLIC
+        first: 100
+        orderBy: { field: STARGAZERS, direction: DESC }
+      ) {
         totalCount
-        nodes { name stargazerCount isArchived url }
+        nodes {
+          name
+          stargazerCount
+          isArchived
+          url
+        }
       }
     }
   }
@@ -902,44 +1102,44 @@ const QUERY = /* GraphQL */ `
 
 export async function fetchGithub({ source, env, now }: FetcherInput): Promise<FetcherOutput> {
   const data = await fetchJson<z.infer<typeof Response>>('https://api.github.com/graphql', {
-    method:  'POST',
+    method: 'POST',
     headers: githubHeaders(env),
-    body:    JSON.stringify({ query: QUERY }),
-    schema:  Response,
+    body: JSON.stringify({ query: QUERY }),
+    schema: Response
   });
 
   const v = data.data.viewer;
-  const totalStars = v.repositories.nodes.filter(r => !r.isArchived).reduce((s, r) => s + r.stargazerCount, 0);
+  const totalStars = v.repositories.nodes.filter((r) => !r.isArchived).reduce((s, r) => s + r.stargazerCount, 0);
 
   // Daily contribution counts for the past year — re-emitted every fetch, INSERT OR IGNORE handles dedup.
   const contributionPoints = v.contributionsCollection.contributionCalendar.weeks
-    .flatMap(w => w.contributionDays)
-    .map(d => ({
-      source_id:  source.id,
-      metric:     'contributions',
-      ts:         new Date(`${d.date}T00:00:00Z`).getTime(),
-      value:      d.contributionCount,
-      dimensions: null,
+    .flatMap((w) => w.contributionDays)
+    .map((d) => ({
+      source_id: source.id,
+      metric: 'contributions',
+      ts: new Date(`${d.date}T00:00:00Z`).getTime(),
+      value: d.contributionCount,
+      dimensions: null
     }));
 
   // Per-repo star counts — dimensioned, top 100.
-  const repoStarPoints = v.repositories.nodes.map(r => ({
-    source_id:  source.id,
-    metric:     'repo_stars',
-    ts:         now,
-    value:      r.stargazerCount,
-    dimensions: { repo: r.name, archived: r.isArchived ? 'true' : 'false' },
+  const repoStarPoints = v.repositories.nodes.map((r) => ({
+    source_id: source.id,
+    metric: 'repo_stars',
+    ts: now,
+    value: r.stargazerCount,
+    dimensions: { repo: r.name, archived: r.isArchived ? 'true' : 'false' }
   }));
 
   return {
     metric_points: [
-      { source_id: source.id, metric: 'followers',    ts: now, value: v.followers.totalCount,     dimensions: null },
-      { source_id: source.id, metric: 'total_stars',  ts: now, value: totalStars,                 dimensions: null },
-      { source_id: source.id, metric: 'public_repos', ts: now, value: v.repositories.totalCount,  dimensions: null },
+      { source_id: source.id, metric: 'followers', ts: now, value: v.followers.totalCount, dimensions: null },
+      { source_id: source.id, metric: 'total_stars', ts: now, value: totalStars, dimensions: null },
+      { source_id: source.id, metric: 'public_repos', ts: now, value: v.repositories.totalCount, dimensions: null },
       ...contributionPoints,
-      ...repoStarPoints,
+      ...repoStarPoints
     ],
-    events: [],   // PushEvent / ReleaseEvent / IssueEvent added later as a separate fetcher if wanted
+    events: [] // PushEvent / ReleaseEvent / IssueEvent added later as a separate fetcher if wanted
   };
 }
 ```
@@ -963,36 +1163,50 @@ import { fetchGithub } from './github';
 import { FetchError } from '../http';
 import fixture from './github.fixture.json';
 
-const source = { id: 'github-glockyco', name: 'GitHub @glockyco', identity: 'glockyco', category: 'platform', cadenceHours: 1, fetcher: fetchGithub, config: {} } as const;
+const source = {
+  id: 'github-glockyco',
+  name: 'GitHub @glockyco',
+  identity: 'glockyco',
+  category: 'platform',
+  cadenceHours: 1,
+  fetcher: fetchGithub,
+  config: {}
+} as const;
 const env = { GITHUB_PAT: 'ghp_test' } as const;
 const now = 1714838400_000;
 
-beforeEach(() => { vi.unstubAllGlobals(); });
+beforeEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('fetchGithub', () => {
   it('emits scalar + dimensioned + 365 contribution points (happy path)', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(fixture), { status: 200, headers: { 'content-type': 'application/json' } })
-    ));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify(fixture), { status: 200, headers: { 'content-type': 'application/json' } })
+        )
+    );
     const out = await fetchGithub({ source, env, now });
 
-    expect(out.metric_points.find(p => p.metric === 'followers')?.value).toBeTypeOf('number');
-    expect(out.metric_points.filter(p => p.metric === 'contributions').length).toBeGreaterThanOrEqual(365);
-    expect(out.metric_points.filter(p => p.metric === 'repo_stars').length).toBeGreaterThan(0);
+    expect(out.metric_points.find((p) => p.metric === 'followers')?.value).toBeTypeOf('number');
+    expect(out.metric_points.filter((p) => p.metric === 'contributions').length).toBeGreaterThanOrEqual(365);
+    expect(out.metric_points.filter((p) => p.metric === 'repo_stars').length).toBeGreaterThan(0);
     expect(out.events).toHaveLength(0);
   });
 
   it('throws ZodError on schema drift', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ data: { viewer: null } }), { status: 200 })
-    ));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { viewer: null } }), { status: 200 }))
+    );
     await expect(fetchGithub({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);
   });
 
   it('propagates HTTP 401 as FetchError', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      new Response('Bad credentials', { status: 401 })
-    ));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Bad credentials', { status: 401 })));
     await expect(fetchGithub({ source, env, now })).rejects.toMatchObject({ status: 401 });
   });
 });
@@ -1014,11 +1228,11 @@ Point-in-time sources (GitHub stars, Steam ratings, Thunderstore downloads, Medi
 
 Analytics sources **do** have server-side history:
 
-| Source         | Retention                     |
-| -------------- | ----------------------------- |
-| GSC            | 16 months                     |
-| GA4            | 14 months                     |
-| Bing Webmaster | varies (typically 6 months)   |
+| Source         | Retention                      |
+| -------------- | ------------------------------ |
+| GSC            | 16 months                      |
+| GA4            | 14 months                      |
+| Bing Webmaster | varies (typically 6 months)    |
 | CF Analytics   | 6 months free / 12 months paid |
 
 ```
@@ -1050,15 +1264,15 @@ Cloudflare Workers limit each invocation to **6 simultaneous connections** waiti
 
 Per-source rate limits are well above our usage:
 
-| Source                 | Limit                              | Usage                       |
-| ---------------------- | ---------------------------------- | --------------------------- |
-| GitHub GraphQL         | 5000 points/h authed               | ~24/day                     |
-| Steam Web API          | 100k/day                           | ~96/day                     |
-| GSC                    | 1200 QPM/site                      | ~24/day per property        |
-| GA4                    | 1250 tokens/h/property             | ~240 tokens/day             |
-| CF GraphQL Analytics   | 300 queries / 5 min                | ~24/h total                 |
-| Bing                   | undocumented                       | conservative                |
-| Thunderstore, MediaWiki| undocumented                       | conservative                |
+| Source                  | Limit                  | Usage                |
+| ----------------------- | ---------------------- | -------------------- |
+| GitHub GraphQL          | 5000 points/h authed   | ~24/day              |
+| Steam Web API           | 100k/day               | ~96/day              |
+| GSC                     | 1200 QPM/site          | ~24/day per property |
+| GA4                     | 1250 tokens/h/property | ~240 tokens/day      |
+| CF GraphQL Analytics    | 300 queries / 5 min    | ~24/h total          |
+| Bing                    | undocumented           | conservative         |
+| Thunderstore, MediaWiki | undocumented           | conservative         |
 
 Conservative defaults already in §3.4: 429 → respect `Retry-After`, default 10 min, max 5 retries.
 
@@ -1079,15 +1293,15 @@ Conservative defaults already in §3.4: 429 → respect `Retry-After`, default 1
 └──────────────────────┴──────────────────────────────────────────────────────────────────────────┘
 ```
 
-| Route                  | Purpose                                                                                       |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| `/`                    | Dashboard — grid of tiles, one per source. Filtered by selected identity tab.                 |
-| `/timeline`            | Correlation view — stacked time-series with event + post markers. The headline feature.       |
-| `/sources/[id]`        | Per-source drill-down — full-size charts, paginated events feed, full history.                |
-| `/posts`               | Writings list — sortable, filterable by author / tag / related source.                        |
-| `/posts/[slug]`        | Single post — body + per-related-source performance panel.                                    |
-| `/health`              | Operational view — last-fetched ages, recent failures, manual refresh, DLQ snapshot.          |
-| `/settings`            | Theme toggle, default date range, identity color overrides — persisted to localStorage.       |
+| Route           | Purpose                                                                                 |
+| --------------- | --------------------------------------------------------------------------------------- |
+| `/`             | Dashboard — grid of tiles, one per source. Filtered by selected identity tab.           |
+| `/timeline`     | Correlation view — stacked time-series with event + post markers. The headline feature. |
+| `/sources/[id]` | Per-source drill-down — full-size charts, paginated events feed, full history.          |
+| `/posts`        | Writings list — sortable, filterable by author / tag / related source.                  |
+| `/posts/[slug]` | Single post — body + per-related-source performance panel.                              |
+| `/health`       | Operational view — last-fetched ages, recent failures, manual refresh, DLQ snapshot.    |
+| `/settings`     | Theme toggle, default date range, identity color overrides — persisted to localStorage. |
 
 ### 5.2 Identity tabs as global state
 
@@ -1148,15 +1362,18 @@ Each chart, in pseudocode:
 Plot.plot({
   marks: [
     Plot.lineY(metric_points, { x: 'ts', y: 'value', stroke: 'var(--color-accent)' }),
-    Plot.areaY(metric_points,  { x: 'ts', y: 'value', fillOpacity: 0.1 }),
-    Plot.ruleX(events,         { x: 'ts',         stroke: 'var(--color-event)', strokeWidth: 1.5 }),
-    Plot.ruleX(posts,          { x: 'posted_at_ms', stroke: 'var(--color-post)', strokeWidth: 2, strokeDasharray: '3,3' }),
-    Plot.tip([...events, ...posts], Plot.pointerX({
-      x: d => d.ts ?? d.posted_at_ms,
-      title: d => d.title || d.body?.slice(0, 80),
-    })),
-  ],
-})
+    Plot.areaY(metric_points, { x: 'ts', y: 'value', fillOpacity: 0.1 }),
+    Plot.ruleX(events, { x: 'ts', stroke: 'var(--color-event)', strokeWidth: 1.5 }),
+    Plot.ruleX(posts, { x: 'posted_at_ms', stroke: 'var(--color-post)', strokeWidth: 2, strokeDasharray: '3,3' }),
+    Plot.tip(
+      [...events, ...posts],
+      Plot.pointerX({
+        x: (d) => d.ts ?? d.posted_at_ms,
+        title: (d) => d.title || d.body?.slice(0, 80)
+      })
+    )
+  ]
+});
 ```
 
 Plot charts render client-side into component-owned containers. **Cross-chart sync** for date-window navigation: a small Svelte store holds the current x-domain; each chart re-renders. Skip pinch-zoom — Plot's mobile story is "use UI controls, not gestures."
@@ -1207,20 +1424,20 @@ Dark by default. Light mode toggle in Settings. Tailwind 4 `@theme` block:
 @import 'tailwindcss';
 
 @theme {
-  --color-bg-primary:    light-dark(#fafafa, #0a0a0a);
-  --color-bg-secondary:  light-dark(#f0f0f0, #161616);
-  --color-fg-primary:    light-dark(#0a0a0a, #fafafa);
-  --color-fg-muted:      light-dark(#525252, #a3a3a3);
-  --color-border:        light-dark(#e5e5e5, #262626);
+  --color-bg-primary: light-dark(#fafafa, #0a0a0a);
+  --color-bg-secondary: light-dark(#f0f0f0, #161616);
+  --color-fg-primary: light-dark(#0a0a0a, #fafafa);
+  --color-fg-muted: light-dark(#525252, #a3a3a3);
+  --color-border: light-dark(#e5e5e5, #262626);
 
-  --color-glockyco:      #6366f1;  /* indigo-500; user can override via Settings */
-  --color-wowmuch:       #f59e0b;  /* amber-500; user can override via Settings */
+  --color-glockyco: #6366f1; /* indigo-500; user can override via Settings */
+  --color-wowmuch: #f59e0b; /* amber-500; user can override via Settings */
 
-  --color-success:       #22c55e;
-  --color-warning:       #f59e0b;
-  --color-danger:        #ef4444;
-  --color-event:         #8b5cf6;  /* violet for event markers */
-  --color-post:          #14b8a6;  /* teal for post markers */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-event: #8b5cf6; /* violet for event markers */
+  --color-post: #14b8a6; /* teal for post markers */
 }
 ```
 
@@ -1242,16 +1459,16 @@ Dark by default. Light mode toggle in Settings. Tailwind 4 `@theme` block:
 
 ### 6.1 Test layers
 
-| Layer                     | Tool       | What it covers                                                                              | Run when           |
-| ------------------------- | ---------- | ------------------------------------------------------------------------------------------- | ------------------ |
-| **Connector unit tests**  | vitest     | Per-connector: happy path, schema drift, auth error                                         | Pre-commit + CI    |
-| **Schema parsers**        | vitest     | `PostFrontmatter`, `SourceDef`, identity validators reject malformed input                  | Pre-commit + CI    |
-| **Posts sync**            | vitest     | `scripts/sync-posts.ts` against fixture `posts/` produces expected SQL transcript           | Pre-commit + CI    |
-| **Auth helper**           | vitest     | Access JWT verification accepts valid token, rejects expired/wrong-AUD/wrong-issuer         | Pre-commit + CI    |
-| **Worker integration**    | Wrangler   | `pnpm exec wrangler dev --test-scheduled` + scripted HTTP calls: scheduled handler reachable; fixture source can prove cron → queue → D1 row once Phase 2 test wiring exists | Pre-deploy         |
-| **Live connector smoke**  | Node/Vite   | `scripts/smoke-connectors.ts` runs real source fetchers sequentially against live upstream APIs, reads `.dev.vars`, prints sanitized counts/samples, skips missing credentials, and never writes D1/enqueues/alerts | Before digest/deploy |
-| **End-to-end UI**         | Playwright | Wrangler Worker behind local Access/JWKS harness; local D1 migrations and deterministic seed data let UI specs assert dashboard/timeline/source/posts rendering without auth bypasses | Pre-deploy         |
-| **D1 migration replay**   | Wrangler   | Apply migrations to a fresh local DB; assert all tables and indexes exist                   | Pre-deploy         |
+| Layer                    | Tool       | What it covers                                                                                                                                                                                                      | Run when             |
+| ------------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| **Connector unit tests** | vitest     | Per-connector: happy path, schema drift, auth error                                                                                                                                                                 | Pre-commit + CI      |
+| **Schema parsers**       | vitest     | `PostFrontmatter`, `SourceDef`, identity validators reject malformed input                                                                                                                                          | Pre-commit + CI      |
+| **Posts sync**           | vitest     | `scripts/sync-posts.ts` against fixture `posts/` produces expected SQL transcript                                                                                                                                   | Pre-commit + CI      |
+| **Auth helper**          | vitest     | Access JWT verification accepts valid token, rejects expired/wrong-AUD/wrong-issuer                                                                                                                                 | Pre-commit + CI      |
+| **Worker integration**   | Wrangler   | `pnpm exec wrangler dev --test-scheduled` + scripted HTTP calls: scheduled handler reachable; fixture source can prove cron → queue → D1 row once Phase 2 test wiring exists                                        | Pre-deploy           |
+| **Live connector smoke** | Node/Vite  | `scripts/smoke-connectors.ts` runs real source fetchers sequentially against live upstream APIs, reads `.dev.vars`, prints sanitized counts/samples, skips missing credentials, and never writes D1/enqueues/alerts | Before digest/deploy |
+| **End-to-end UI**        | Playwright | Wrangler Worker behind local Access/JWKS harness; local D1 migrations and deterministic seed data let UI specs assert dashboard/timeline/source/posts rendering without auth bypasses                               | Pre-deploy           |
+| **D1 migration replay**  | Wrangler   | Apply migrations to a fresh local DB; assert all tables and indexes exist                                                                                                                                           | Pre-deploy           |
 
 **Deliberately not tested:**
 
@@ -1304,9 +1521,9 @@ jobs:
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
-      - run: pnpm check                 # svelte-check + tsc
-      - run: pnpm test                  # vitest
-      - run: pnpm build                 # smoke-test
+      - run: pnpm check # svelte-check + tsc
+      - run: pnpm test # vitest
+      - run: pnpm build # smoke-test
 ```
 
 **No auto-deploy from CI.** Single-user private tool — manual `pnpm deploy` from the dev machine is appropriate. Auto-deploy would mean encrypted Cloudflare API tokens in GitHub secrets (more surface area) for negligible velocity gain. Re-evaluate if friction grows.
@@ -1387,39 +1604,39 @@ Future enhancement (not part of the v1 phasing): a weekly cron exports D1 to R2 
 
 Designed for full scope; deployable incrementally. Each phase produces a working deploy.
 
-| Phase | Scope                                                                                           | Deliverable                                                                  |
-| ----- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **1** | Foundation: repo, SvelteKit + Tailwind 4 + adapter-cloudflare, wrangler config, Access policy, JWT verifier, D1 migrations applied, hello-world page | Auth-gated empty dashboard reachable at `dashboard.glockyco.com`.            |
-| **2** | Orchestration core: cron + queue + DLQ, fetcher_runs/failures tables, alert dedup, manual-refresh endpoint, basic Health page, Discord alert wiring | Orchestration proven with no production fetchers configured; tests use injected fixture fetchers. |
-| **3** | Tier 1 connectors (key-backed/public): GitHub, Steam Guide, Steam Reviews, Thunderstore, MediaWiki Recent Changes | Five connector modules / seven source IDs collecting hourly. Dashboard tiles render real data. **History starts ticking.** |
-| **4** | Dashboard UI: tile components per category, drill-down `/sources/[id]`, sparklines, identity tabs | Visual scan of all metrics in one place.                                     |
-| **5** | Posts subsystem: markdown loader + frontmatter validation, sync-posts script, `/posts` list + `/posts/[slug]` detail with performance panel | Editorial layer functional.                                                  |
-| **6** | Tier 2 connectors (auth): GSC, Bing Webmaster, CF GraphQL Analytics, and GA4. GA4 live integration is the next deploy-readiness prerequisite. | Authenticated search/analytics sources live; GA4 pending active setup. |
-| **7** | Backfill: per-source scripts that pull historical data from analytics sources                   | Charts have real depth from day one.                                         |
-| **8** | Polish: timeline correlation view (headline feature), daily digest rich embeds + Vienna-DST guard, settings page, mobile refinement | Headline feature lit up.                                                     |
+| Phase | Scope                                                                                                                                                | Deliverable                                                                                                                |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **1** | Foundation: repo, SvelteKit + Tailwind 4 + adapter-cloudflare, wrangler config, Access policy, JWT verifier, D1 migrations applied, hello-world page | Auth-gated empty dashboard reachable at `dashboard.glockyco.com`.                                                          |
+| **2** | Orchestration core: cron + queue + DLQ, fetcher_runs/failures tables, alert dedup, manual-refresh endpoint, basic Health page, Discord alert wiring  | Orchestration proven with no production fetchers configured; tests use injected fixture fetchers.                          |
+| **3** | Tier 1 connectors (key-backed/public): GitHub, Steam Guide, Steam Reviews, Thunderstore, MediaWiki Recent Changes                                    | Five connector modules / seven source IDs collecting hourly. Dashboard tiles render real data. **History starts ticking.** |
+| **4** | Dashboard UI: tile components per category, drill-down `/sources/[id]`, sparklines, identity tabs                                                    | Visual scan of all metrics in one place.                                                                                   |
+| **5** | Posts subsystem: markdown loader + frontmatter validation, sync-posts script, `/posts` list + `/posts/[slug]` detail with performance panel          | Editorial layer functional.                                                                                                |
+| **6** | Tier 2 connectors (auth): GSC, Bing Webmaster, CF GraphQL Analytics, and GA4. GA4 live integration is the next deploy-readiness prerequisite.        | Authenticated search/analytics sources live; GA4 pending active setup.                                                     |
+| **7** | Backfill: per-source scripts that pull historical data from analytics sources                                                                        | Charts have real depth from day one.                                                                                       |
+| **8** | Polish: timeline correlation view (headline feature), daily digest rich embeds + Vienna-DST guard, settings page, mobile refinement                  | Headline feature lit up.                                                                                                   |
 
 **Why this phasing:**
 
 - Phase 3 deploys before Phase 6 because Tier 1 connectors are public-API and provide value immediately. Their history is point-in-time-only — every day waiting is a day of trend data not collected.
 - Phase 5 (posts) before Phase 6 (Tier 2 connectors) because posts unblocks the writing archive use case independently.
-- Phase 8 (correlation timeline) is last because it requires *all* upstream pieces present and historically deep enough to be interesting.
+- Phase 8 (correlation timeline) is last because it requires _all_ upstream pieces present and historically deep enough to be interesting.
 
 Each phase is independently deployable.
 
 ### 7.2 Remaining config inputs (don't affect architecture)
 
-| Item                                | Source                                       | When needed |
-| ----------------------------------- | -------------------------------------------- | ----------- |
-| Bing Webmaster API key              | bing.com/webmasters API key                  | Configured for current live smoke; keep secret out of git |
-| CF Web Analytics account ID + site_tags | Cloudflare account dashboard + Web Analytics site URLs | Configured for current live smoke; same AK beacon covers workers.dev + `.org` |
-| GA4 property ID                     | GA4 admin UI                                 | Deferred until property scope and Google permission path are confirmed |
-| Google OAuth client + refresh token | GCP -> Auth Platform -> Clients (Web), then OAuth Playground (Server-side, Offline, Force prompt: Consent Screen). Scope: `webmasters.readonly`. Bound to jaichberg@gmail.com. | Configured for GSC |
-| Google service account JSON         | Generate in GCP, retained for future GA4 access (GSC moved off SA due to acknowledged Google permission-propagation bug) | Future GA4 only |
-| Steam Web API key                   | `steamcommunity.com/dev`                     | Phase 3     |
-| GitHub PAT                          | `github.com/settings/tokens` (`read:user`, `public_repo`) | Phase 3     |
-| Discord webhook URLs                | Create dedicated channels                    | Phase 2     |
-| Cloudflare Access team domain + AUD | Set up Access app in Zero Trust dashboard    | Phase 1     |
-| Cloudflare account/zone IDs         | From `glockyco.com` zone in CF dashboard     | Phase 1     |
+| Item                                    | Source                                                                                                                                                                         | When needed                                                                   |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Bing Webmaster API key                  | bing.com/webmasters API key                                                                                                                                                    | Configured for current live smoke; keep secret out of git                     |
+| CF Web Analytics account ID + site_tags | Cloudflare account dashboard + Web Analytics site URLs                                                                                                                         | Configured for current live smoke; same AK beacon covers workers.dev + `.org` |
+| GA4 property ID                         | GA4 admin UI                                                                                                                                                                   | Deferred until property scope and Google permission path are confirmed        |
+| Google OAuth client + refresh token     | GCP -> Auth Platform -> Clients (Web), then OAuth Playground (Server-side, Offline, Force prompt: Consent Screen). Scope: `webmasters.readonly`. Bound to jaichberg@gmail.com. | Configured for GSC                                                            |
+| Google service account JSON             | Generate in GCP, retained for future GA4 access (GSC moved off SA due to acknowledged Google permission-propagation bug)                                                       | Future GA4 only                                                               |
+| Steam Web API key                       | `steamcommunity.com/dev`                                                                                                                                                       | Phase 3                                                                       |
+| GitHub PAT                              | `github.com/settings/tokens` (`read:user`, `public_repo`)                                                                                                                      | Phase 3                                                                       |
+| Discord webhook URLs                    | Create dedicated channels                                                                                                                                                      | Phase 2                                                                       |
+| Cloudflare Access team domain + AUD     | Set up Access app in Zero Trust dashboard                                                                                                                                      | Phase 1                                                                       |
+| Cloudflare account/zone IDs             | From `glockyco.com` zone in CF dashboard                                                                                                                                       | Phase 1                                                                       |
 
 ### 7.3 Decisions captured during review
 
@@ -1435,8 +1652,8 @@ Once §0-§7 are signed off, the brainstorming process is complete. Per `superpo
 
 The plan is a different artifact:
 
-- **This design** (`docs/superpowers/specs/2026-05-04-creator-dashboard-design.md`): *what* and *why*. Architecture and rationale. Long-lived.
-- **Implementation plan** (`docs/superpowers/plans/...`): *how* and *in what order*. Per-phase task breakdown with concrete file lists, code skeletons, acceptance checks, dependencies. What an executing session works from.
+- **This design** (`docs/superpowers/specs/2026-05-04-creator-dashboard-design.md`): _what_ and _why_. Architecture and rationale. Long-lived.
+- **Implementation plan** (`docs/superpowers/plans/...`): _how_ and _in what order_. Per-phase task breakdown with concrete file lists, code skeletons, acceptance checks, dependencies. What an executing session works from.
 
 The plan respects §7.1 phasing. Each phase becomes a sequence of small tasks with verification steps.
 
@@ -1446,26 +1663,26 @@ The plan respects §7.1 phasing. Each phase becomes a sequence of small tasks wi
 
 Concise audit trail of architectural choices and their rationale.
 
-| Decision                                                       | Why                                                                                                                              |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Sibling private repo, not submodule of `personal-website`**  | Different threat model (auth secrets), different deploy cadence, different runtime (server vs static).                            |
-| **Cloudflare-native over GitHub Actions + Turso**              | One control plane, fewer secret rotation surfaces, manual-refresh natural; GH cron is "lossy under high load" per their docs.    |
-| **D1 over Workers Analytics Engine**                           | WAE has 3-month retention cap and built-in sampling. D1 free tier (5 GB) is 1000× our annual volume.                             |
-| **Cron Trigger → Queues fan-out over Workflows**               | Per-fetcher retry isolation, configurable backoff up to 24h, DLQ; Workflows is sequential and journals every step.               |
-| **Cloudflare Access over Worker-hosted OAuth**                 | Free, zero auth code we maintain, mobile UX is fine. JWT validation is ~15 lines.                                                |
-| **Tailwind 4 over plain CSS**                                  | Dashboard work is dense and variant-heavy. Iteration speed wins over editorial design.                                           |
-| **Observable Plot for charts**                                 | Native correlation view; single library covers heatmap + lines + bars + sparklines + tooltips.                                   |
-| **D1 + markdown hybrid for posts**                             | SQL-joinable for correlation; markdown stays canonical for editorial.                                                            |
-| **Posts metadata sync at deploy time, not runtime**            | Single source-of-truth event; no per-isolate sync race; no drift.                                                                |
-| **Identities as static config, not D1 table**                  | Two identities for the foreseeable future; adding more is a code change anyway.                                                  |
-| **Daily digest, not per-event push**                           | Engagement deltas don't need real-time alerting; one consolidated message at 06:00 Vienna.                                       |
-| **Permanent + DLQ failures alert immediately, transient stays silent** | Real problems need attention; transient failures are noise.                                                              |
-| **Single Discord webhook for digest, not per-identity**        | User wants to see both identities at once.                                                                                       |
-| **Fixed 5-min retry over exponential backoff**                 | Queues doesn't pass retry count; D1 round-trip per retry is overkill at our volume.                                              |
-| **Ko-fi out of scope**                                         | No public read API, webhook-only is payment-only; GA4 already covers ko-fi.com page traffic.                                     |
-| **Connectors are pure (no D1 access)**                         | Clean test boundary; consumer Worker owns persistence atomically via `db.batch()`.                                               |
-| **`INSERT OR IGNORE` everywhere**                              | Natural idempotency from `(source_id, external_id)` and `(source_id, metric, ts, dimensions)` PKs.                               |
-| **Hand-curated fixtures over record-and-replay**               | Test goal is schema/business logic, not exhaustive API surface.                                                                  |
-| **Backfill via local Node scripts, not in-Worker endpoint**    | No 15-min wall-clock ceiling; same fetcher modules parameterized by date range.                                                  |
-| **Sequential `await` in connectors, not `Promise.all`**        | Worker 6-concurrent-connections ceiling. 2-3s vs 0.5s/fetcher doesn't matter at hourly cadence.                                  |
-| **Manual deploy, no CI auto-deploy**                           | Single-user tool; auto-deploy = more secret surface for negligible gain.                                                         |
+| Decision                                                               | Why                                                                                                                           |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Sibling private repo, not submodule of `personal-website`**          | Different threat model (auth secrets), different deploy cadence, different runtime (server vs static).                        |
+| **Cloudflare-native over GitHub Actions + Turso**                      | One control plane, fewer secret rotation surfaces, manual-refresh natural; GH cron is "lossy under high load" per their docs. |
+| **D1 over Workers Analytics Engine**                                   | WAE has 3-month retention cap and built-in sampling. D1 free tier (5 GB) is 1000× our annual volume.                          |
+| **Cron Trigger → Queues fan-out over Workflows**                       | Per-fetcher retry isolation, configurable backoff up to 24h, DLQ; Workflows is sequential and journals every step.            |
+| **Cloudflare Access over Worker-hosted OAuth**                         | Free, zero auth code we maintain, mobile UX is fine. JWT validation is ~15 lines.                                             |
+| **Tailwind 4 over plain CSS**                                          | Dashboard work is dense and variant-heavy. Iteration speed wins over editorial design.                                        |
+| **Observable Plot for charts**                                         | Native correlation view; single library covers heatmap + lines + bars + sparklines + tooltips.                                |
+| **D1 + markdown hybrid for posts**                                     | SQL-joinable for correlation; markdown stays canonical for editorial.                                                         |
+| **Posts metadata sync at deploy time, not runtime**                    | Single source-of-truth event; no per-isolate sync race; no drift.                                                             |
+| **Identities as static config, not D1 table**                          | Two identities for the foreseeable future; adding more is a code change anyway.                                               |
+| **Daily digest, not per-event push**                                   | Engagement deltas don't need real-time alerting; one consolidated message at 06:00 Vienna.                                    |
+| **Permanent + DLQ failures alert immediately, transient stays silent** | Real problems need attention; transient failures are noise.                                                                   |
+| **Single Discord webhook for digest, not per-identity**                | User wants to see both identities at once.                                                                                    |
+| **Fixed 5-min retry over exponential backoff**                         | Queues doesn't pass retry count; D1 round-trip per retry is overkill at our volume.                                           |
+| **Ko-fi out of scope**                                                 | No public read API, webhook-only is payment-only; GA4 already covers ko-fi.com page traffic.                                  |
+| **Connectors are pure (no D1 access)**                                 | Clean test boundary; consumer Worker owns persistence atomically via `db.batch()`.                                            |
+| **`INSERT OR IGNORE` everywhere**                                      | Natural idempotency from `(source_id, external_id)` and `(source_id, metric, ts, dimensions)` PKs.                            |
+| **Hand-curated fixtures over record-and-replay**                       | Test goal is schema/business logic, not exhaustive API surface.                                                               |
+| **Backfill via local Node scripts, not in-Worker endpoint**            | No 15-min wall-clock ceiling; same fetcher modules parameterized by date range.                                               |
+| **Sequential `await` in connectors, not `Promise.all`**                | Worker 6-concurrent-connections ceiling. 2-3s vs 0.5s/fetcher doesn't matter at hourly cadence.                               |
+| **Manual deploy, no CI auto-deploy**                                   | Single-user tool; auto-deploy = more secret surface for negligible gain.                                                      |

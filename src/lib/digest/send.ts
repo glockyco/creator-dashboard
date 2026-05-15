@@ -8,7 +8,9 @@ export async function maybeDailyDigest(env: Env, now: Date): Promise<DigestSendR
   if (!isViennaDigestHour(now)) return { sent: false, reason: 'outside_digest_hour' };
 
   const dateKey = viennaDateKey(now);
-  const existing = await env.DB.prepare('SELECT digest_date FROM digest_sent WHERE digest_date = ?').bind(dateKey).first<{ digest_date: string }>();
+  const existing = await env.DB.prepare('SELECT digest_date FROM digest_sent WHERE digest_date = ?')
+    .bind(dateKey)
+    .first<{ digest_date: string }>();
   if (existing) return { sent: false, reason: 'already_sent' };
 
   const data = await getDigestData(env.DB, now);
@@ -20,6 +22,8 @@ export async function maybeDailyDigest(env: Env, now: Date): Promise<DigestSendR
   });
   if (!response.ok) throw new Error(`Discord digest webhook failed: ${response.status}`);
 
-  await env.DB.prepare('INSERT INTO digest_sent (digest_date, sent_at) VALUES (?, ?)').bind(dateKey, now.getTime()).run();
+  await env.DB.prepare('INSERT INTO digest_sent (digest_date, sent_at) VALUES (?, ?)')
+    .bind(dateKey, now.getTime())
+    .run();
   return { sent: true, reason: 'sent' };
 }

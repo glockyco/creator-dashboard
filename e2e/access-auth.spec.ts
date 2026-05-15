@@ -12,16 +12,22 @@ test('missing local Access JWT is rejected before route handling', async ({ requ
 });
 
 test('wrong audience local Access JWT is rejected', async ({ request }) => {
-  const response = await request.get('/api/sources/missing/status', { headers: { 'Cf-Access-Jwt-Assertion': await accessToken({ aud: 'wrong-audience' }) } });
+  const response = await request.get('/api/sources/missing/status', {
+    headers: { 'Cf-Access-Jwt-Assertion': await accessToken({ aud: 'wrong-audience' }) }
+  });
   expect(response.status()).toBe(401);
 });
 
 test('wrong issuer local Access JWT is rejected', async ({ request }) => {
-  const response = await request.get('/api/sources/missing/status', { headers: { 'Cf-Access-Jwt-Assertion': await accessToken({ iss: 'https://evil.example' }) } });
+  const response = await request.get('/api/sources/missing/status', {
+    headers: { 'Cf-Access-Jwt-Assertion': await accessToken({ iss: 'https://evil.example' }) }
+  });
   expect(response.status()).toBe(401);
 });
 
 test('expired local Access JWT is rejected', async ({ request }) => {
-  const response = await request.get('/api/sources/missing/status', { headers: { 'Cf-Access-Jwt-Assertion': await accessToken({ exp: 1 }) } });
+  const response = await request.get('/api/sources/missing/status', {
+    headers: { 'Cf-Access-Jwt-Assertion': await accessToken({ exp: 1 }) }
+  });
   expect(response.status()).toBe(401);
 });

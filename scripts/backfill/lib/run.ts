@@ -35,6 +35,10 @@ export async function writeMetricBackfill(rows: MetricPoint[], out: string, batc
 }
 
 export function executeRemote(file: string): void {
-  const result = spawnSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'creator-dashboard', '--remote', '--file', file], { stdio: 'inherit' });
+  const result = spawnSync(
+    'pnpm',
+    ['exec', 'wrangler', 'd1', 'execute', 'creator-dashboard', '--remote', '--file', file],
+    { stdio: 'inherit' }
+  );
   if (result.status !== 0) throw new Error(`wrangler d1 execute failed with status ${result.status ?? 'unknown'}`);
 }

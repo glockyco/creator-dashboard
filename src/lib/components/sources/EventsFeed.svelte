@@ -7,7 +7,10 @@
 <section class="rounded-xl border border-border bg-bg-secondary p-5">
   <div class="mb-4 flex items-center justify-between gap-3">
     <h2 class="text-lg font-semibold">Recent events</h2>
-    {#if events.nextCursor}<a class="text-sm text-fg-muted hover:text-fg-primary" href={`/api/sources/${sourceId}/events?cursor=${events.nextCursor}`}>Next page</a>{/if}
+    {#if events.nextCursor}<a
+        class="text-sm text-fg-muted hover:text-fg-primary"
+        href={`/api/sources/${sourceId}/events?cursor=${events.nextCursor}`}>Next page</a
+      >{/if}
   </div>
   <div class="space-y-3">
     {#each events.items as event}
@@ -19,10 +22,14 @@
         </div>
         <h3 class="mt-2 font-medium">{event.title ?? event.external_id}</h3>
         {#if event.body}<p class="mt-2 text-sm text-fg-muted">{event.body}</p>{/if}
-        {#if event.url}<a class="mt-2 inline-block text-sm text-glockyco hover:underline" href={event.url}>Open upstream</a>{/if}
+        {#if event.url}<a class="mt-2 inline-block text-sm text-glockyco hover:underline" href={event.url}
+            >Open upstream</a
+          >{/if}
       </article>
     {:else}
-      <p class="rounded-lg border border-dashed border-border p-4 text-sm text-fg-muted">No events captured for this source yet.</p>
+      <p class="rounded-lg border border-dashed border-border p-4 text-sm text-fg-muted">
+        No events captured for this source yet.
+      </p>
     {/each}
   </div>
 </section>

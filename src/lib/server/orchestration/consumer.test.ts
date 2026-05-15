@@ -8,7 +8,15 @@ const fetcher = vi.fn<() => Promise<FetcherOutput>>();
 vi.mock('$lib/sources/registry', () => ({
   getSource: (sourceId: string) =>
     sourceId === 'source-a'
-      ? { id: 'source-a', name: 'Source A', identity: 'glockyco', category: 'platform', cadenceHours: 1, fetcher, config: {} }
+      ? {
+          id: 'source-a',
+          name: 'Source A',
+          identity: 'glockyco',
+          category: 'platform',
+          cadenceHours: 1,
+          fetcher,
+          config: {}
+        }
       : undefined
 }));
 
@@ -20,10 +28,20 @@ beforeEach(() => {
   fetcher.mockReset();
 });
 
-type FakeMessage = Message<{ source_id: string; dispatch_ts: number; force: boolean }> & { ack: ReturnType<typeof vi.fn>; retry: ReturnType<typeof vi.fn> };
+type FakeMessage = Message<{ source_id: string; dispatch_ts: number; force: boolean }> & {
+  ack: ReturnType<typeof vi.fn>;
+  retry: ReturnType<typeof vi.fn>;
+};
 
 function message(body: { source_id: string; dispatch_ts: number; force: boolean }): FakeMessage {
-  return { body, ack: vi.fn(), retry: vi.fn(), id: 'msg-1', timestamp: new Date(), attempts: 1 } as unknown as FakeMessage;
+  return {
+    body,
+    ack: vi.fn(),
+    retry: vi.fn(),
+    id: 'msg-1',
+    timestamp: new Date(),
+    attempts: 1
+  } as unknown as FakeMessage;
 }
 
 function dbWithRun(run: { last_run_at: number } | null = null) {

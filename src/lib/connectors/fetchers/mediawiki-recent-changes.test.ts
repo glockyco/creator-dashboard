@@ -4,7 +4,15 @@ import { FetchError } from '../http';
 import fixture from './mediawiki-recent-changes.fixture.json';
 import { fetchMediaWikiRecentChanges } from './mediawiki-recent-changes';
 
-const source = { id: 'erenshor-wiki-recent', name: 'Erenshor Wiki: Recent Changes', identity: 'WoW_Much', category: 'event_feed', cadenceHours: 1, fetcher: fetchMediaWikiRecentChanges, config: { wiki: 'erenshor.wiki.gg' } } as const;
+const source = {
+  id: 'erenshor-wiki-recent',
+  name: 'Erenshor Wiki: Recent Changes',
+  identity: 'WoW_Much',
+  category: 'event_feed',
+  cadenceHours: 1,
+  fetcher: fetchMediaWikiRecentChanges,
+  config: { wiki: 'erenshor.wiki.gg' }
+} as const;
 const env = {} as Env;
 const now = 1777852800000;
 
@@ -17,8 +25,23 @@ describe('fetchMediaWikiRecentChanges', () => {
 
     expect(out.metric_points).toEqual([]);
     expect(out.events).toHaveLength(1);
-    expect(out.events[0]).toMatchObject({ source_id: 'erenshor-wiki-recent', external_id: '9001', kind: 'wiki_edit', author: 'WoW Much', title: 'Erenshor Maps', body: 'Updated route details' });
-    expect(out.events[0].metadata).toMatchObject({ type: 'edit', revid: 1002, old_revid: 1001, namespace: 0, minor: false, bot: false, size_delta: 125 });
+    expect(out.events[0]).toMatchObject({
+      source_id: 'erenshor-wiki-recent',
+      external_id: '9001',
+      kind: 'wiki_edit',
+      author: 'WoW Much',
+      title: 'Erenshor Maps',
+      body: 'Updated route details'
+    });
+    expect(out.events[0].metadata).toMatchObject({
+      type: 'edit',
+      revid: 1002,
+      old_revid: 1001,
+      namespace: 0,
+      minor: false,
+      bot: false,
+      size_delta: 125
+    });
   });
 
   it('identifies itself with a contact-URL User-Agent so Cloudflare-fronted wikis like wiki.gg do not 403', async () => {
@@ -39,7 +62,22 @@ describe('fetchMediaWikiRecentChanges', () => {
         new Response(
           JSON.stringify({
             query: {
-              recentchanges: [{ type: 'edit', ns: 14, title: 'Category:Charms', revid: 40025, old_revid: 32376, rcid: 44709, user: 'Dagarxji', minor: '', oldlen: 352, newlen: 352, timestamp: '2026-05-07T03:54:26Z', comment: 'fixed the link' }]
+              recentchanges: [
+                {
+                  type: 'edit',
+                  ns: 14,
+                  title: 'Category:Charms',
+                  revid: 40025,
+                  old_revid: 32376,
+                  rcid: 44709,
+                  user: 'Dagarxji',
+                  minor: '',
+                  oldlen: 352,
+                  newlen: 352,
+                  timestamp: '2026-05-07T03:54:26Z',
+                  comment: 'fixed the link'
+                }
+              ]
             }
           }),
           { status: 200 }
@@ -54,7 +92,10 @@ describe('fetchMediaWikiRecentChanges', () => {
   });
 
   it('throws ZodError on schema drift', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ query: { recentchanges: [null] } }), { status: 200 })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ query: { recentchanges: [null] } }), { status: 200 }))
+    );
     await expect(fetchMediaWikiRecentChanges({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);
   });
 

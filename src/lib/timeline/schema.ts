@@ -36,14 +36,18 @@ export function parseTimelineFilters(params: URLSearchParams, options: TimelineF
 
 function parseDateParam(value: string | null, name: 'since' | 'until', fallback: string): string {
   if (!value) return fallback;
-  if (!DateParam.safeParse(value).success || day(new Date(`${value}T00:00:00.000Z`)) !== value) throw new Error(`invalid ${name} date`);
+  if (!DateParam.safeParse(value).success || day(new Date(`${value}T00:00:00.000Z`)) !== value)
+    throw new Error(`invalid ${name} date`);
   return value;
 }
 
 function parseSourceIds(value: string | null, knownSourceIds: readonly string[]): string[] {
   if (!value) return [...knownSourceIds];
   const known = new Set(knownSourceIds);
-  const sourceIds = value.split(',').map((source) => source.trim()).filter(Boolean);
+  const sourceIds = value
+    .split(',')
+    .map((source) => source.trim())
+    .filter(Boolean);
   for (const sourceId of sourceIds) {
     if (!known.has(sourceId)) throw new Error(`unknown timeline source: ${sourceId}`);
   }
@@ -52,7 +56,10 @@ function parseSourceIds(value: string | null, knownSourceIds: readonly string[])
 
 function parseOverlays(value: string | null): TimelineOverlay[] {
   if (!value) return ['posts', 'events'];
-  const overlays = value.split(',').map((overlay) => overlay.trim()).filter(Boolean);
+  const overlays = value
+    .split(',')
+    .map((overlay) => overlay.trim())
+    .filter(Boolean);
   if (overlays.length === 0) return [];
   for (const overlay of overlays) {
     if (!overlaySet.has(overlay)) throw new Error(`invalid overlay: ${overlay}`);

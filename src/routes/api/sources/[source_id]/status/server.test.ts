@@ -7,18 +7,32 @@ vi.mock('$lib/sources/registry', () => ({
 
 describe('GET /api/sources/[source_id]/status', () => {
   it('returns 404 for unknown source IDs', async () => {
-    await expect(GET({ params: { source_id: 'missing' }, platform: { env: { DB: { prepare: vi.fn() } } } } as never)).rejects.toMatchObject({ status: 404 });
+    await expect(
+      GET({ params: { source_id: 'missing' }, platform: { env: { DB: { prepare: vi.fn() } } } } as never)
+    ).rejects.toMatchObject({ status: 404 });
   });
 
   it('returns the fetcher status for known sources', async () => {
-    const first = vi.fn().mockResolvedValue({ last_run_at: 1000, last_success_at: 900, last_status: 'success', last_error: null, consecutive_failures: 0 });
+    const first = vi.fn().mockResolvedValue({
+      last_run_at: 1000,
+      last_success_at: 900,
+      last_status: 'success',
+      last_error: null,
+      consecutive_failures: 0
+    });
     const bind = vi.fn(() => ({ first }));
-    const prepare = vi.fn((sql: string) => ({ bind }));
+    const prepare = vi.fn((_sql: string) => ({ bind }));
 
     const response = await GET({ params: { source_id: 'source-a' }, platform: { env: { DB: { prepare } } } } as never);
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ last_run_at: 1000, last_success_at: 900, last_status: 'success', last_error: null, consecutive_failures: 0 });
+    await expect(response.json()).resolves.toEqual({
+      last_run_at: 1000,
+      last_success_at: 900,
+      last_status: 'success',
+      last_error: null,
+      consecutive_failures: 0
+    });
     expect(prepare.mock.calls[0][0]).toContain('FROM fetcher_runs');
     expect(bind).toHaveBeenCalledWith('source-a');
   });
@@ -29,6 +43,12 @@ describe('GET /api/sources/[source_id]/status', () => {
 
     const response = await GET({ params: { source_id: 'source-a' }, platform: { env: { DB: { prepare } } } } as never);
 
-    await expect(response.json()).resolves.toEqual({ last_run_at: null, last_success_at: null, last_status: null, last_error: null, consecutive_failures: 0 });
+    await expect(response.json()).resolves.toEqual({
+      last_run_at: null,
+      last_success_at: null,
+      last_status: null,
+      last_error: null,
+      consecutive_failures: 0
+    });
   });
 });

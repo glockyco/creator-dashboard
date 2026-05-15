@@ -53,7 +53,11 @@ type MetricRow = { ts: number; value: number };
 type PostRow = Omit<LinkedPost, 'tags'> & { tags: string };
 type EventRow = Omit<SourceEvent, 'metadata'> & { metadata: string | null };
 
-export async function getSourceDetail(db: D1Database, sourceId: string, range: SourceDetailRange): Promise<SourceDetail | null> {
+export async function getSourceDetail(
+  db: D1Database,
+  sourceId: string,
+  range: SourceDetailRange
+): Promise<SourceDetail | null> {
   const source = getSource(sourceId);
   if (!source) return null;
 
@@ -68,13 +72,19 @@ export async function getSourceDetail(db: D1Database, sourceId: string, range: S
   return {
     source: withoutFetcher(source),
     metricHistory,
-    secondaryMetrics: config ? config.primary.map((metric) => latestMetricFromPoints(metric, metricHistory[metric] ?? [])) : [],
+    secondaryMetrics: config
+      ? config.primary.map((metric) => latestMetricFromPoints(metric, metricHistory[metric] ?? []))
+      : [],
     linkedPosts: await linkedPosts(db, source.id),
     events: await getSourceEvents(db, source.id, { pageSize: 20 })
   };
 }
 
-export async function getSourceEvents(db: D1Database, sourceId: string, options: SourceEventsOptions = {}): Promise<EventsPage> {
+export async function getSourceEvents(
+  db: D1Database,
+  sourceId: string,
+  options: SourceEventsOptions = {}
+): Promise<EventsPage> {
   const pageSize = options.pageSize ?? 20;
   const where = ['source_id = ?'];
   const params: unknown[] = [sourceId];
@@ -103,11 +113,16 @@ export async function getSourceEvents(db: D1Database, sourceId: string, options:
   const pageRows = rows.slice(0, pageSize);
   return {
     items: pageRows.map(toEvent),
-    nextCursor: rows.length > pageSize ? pageRows.at(-1)?.ts ?? null : null
+    nextCursor: rows.length > pageSize ? (pageRows.at(-1)?.ts ?? null) : null
   };
 }
 
-async function metricHistoryRows(db: D1Database, sourceId: string, metric: string, since: number): Promise<SparkPoint[]> {
+async function metricHistoryRows(
+  db: D1Database,
+  sourceId: string,
+  metric: string,
+  since: number
+): Promise<SparkPoint[]> {
   const result = await db
     .prepare(
       `SELECT ts, value
@@ -134,7 +149,6 @@ async function linkedPosts(db: D1Database, sourceId: string): Promise<LinkedPost
     .all<PostRow>();
   return (result.results ?? []).map((post) => ({ ...post, tags: parseTags(post.tags) }));
 }
-
 
 function toEvent(row: EventRow): SourceEvent {
   return { ...row, metadata: parseMetadata(row.metadata) };

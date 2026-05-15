@@ -1,7 +1,7 @@
-import { spawn } from "node:child_process";
-import { setTimeout as wait } from "node:timers/promises";
-import { afterEach, describe, expect, it } from "vitest";
-import { killDev } from "./kill-dev.ts";
+import { spawn } from 'node:child_process';
+import { setTimeout as wait } from 'node:timers/promises';
+import { afterEach, describe, expect, it } from 'vitest';
+import { killDev } from './kill-dev.ts';
 
 type Spawned = { pid: number; exited: Promise<void>; close: () => Promise<void> };
 
@@ -15,11 +15,9 @@ function spawnMarker(): Spawned {
   // A long-running node process whose `ps` command contains the kill-dev
   // marker pattern, so the suite never depends on a real `vite dev` or
   // `wrangler dev` binary being installed.
-  const child = spawn(
-    process.execPath,
-    ["-e", "setInterval(()=>{}, 1000); /* vite dev marker */"],
-    { stdio: "ignore" }
-  );
+  const child = spawn(process.execPath, ['-e', 'setInterval(()=>{}, 1000); /* vite dev marker */'], {
+    stdio: 'ignore'
+  });
   // Attach the `exit` listener immediately at spawn so we never miss the
   // event when the process dies between killDev's signal and afterEach.
   const exited = new Promise<void>((resolve) => {
@@ -27,12 +25,12 @@ function spawnMarker(): Spawned {
       resolve();
       return;
     }
-    child.once("exit", () => resolve());
+    child.once('exit', () => resolve());
   });
   const close = async () => {
     if (child.exitCode === null && child.signalCode === null) {
       try {
-        child.kill("SIGKILL");
+        child.kill('SIGKILL');
       } catch {
         // already gone
       }
@@ -44,8 +42,8 @@ function spawnMarker(): Spawned {
   return entry;
 }
 
-describe("killDev", () => {
-  it("identifies processes matching the dev command patterns and reports them in dry-run mode", async () => {
+describe('killDev', () => {
+  it('identifies processes matching the dev command patterns and reports them in dry-run mode', async () => {
     const marker = spawnMarker();
     await wait(150);
     const result = await killDev({ dryRun: true });
@@ -54,7 +52,7 @@ describe("killDev", () => {
     expect(result.killed).toEqual([]);
   });
 
-  it("terminates matching processes via SIGTERM and reports the kills", async () => {
+  it('terminates matching processes via SIGTERM and reports the kills', async () => {
     const marker = spawnMarker();
     await wait(150);
     const result = await killDev({ gracePeriodMs: 300 });
@@ -63,7 +61,7 @@ describe("killDev", () => {
     expect(processAlive(marker.pid)).toBe(false);
   });
 
-  it("never includes the killDev process itself as a target", async () => {
+  it('never includes the killDev process itself as a target', async () => {
     const result = await killDev({ dryRun: true });
     expect(result.targets.every((target) => target.pid !== process.pid)).toBe(true);
   });

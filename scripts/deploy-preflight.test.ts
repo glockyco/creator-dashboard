@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { missingProductionSecrets, parseDevVars, parseWranglerPreflight, requiredProductionSecrets } from './deploy-preflight';
+import {
+  missingProductionSecrets,
+  parseDevVars,
+  parseWranglerPreflight,
+  requiredProductionSecrets
+} from './deploy-preflight';
 
 describe('deploy preflight', () => {
   it('rejects the placeholder D1 database id', () => {
-    const result = parseWranglerPreflight('database_id = "<replace with wrangler d1 create creator-dashboard database_id>"');
+    const result = parseWranglerPreflight(
+      'database_id = "<replace with wrangler d1 create creator-dashboard database_id>"'
+    );
     expect(result.errors).toContain('wrangler.toml still contains the placeholder D1 database_id');
   });
 
@@ -62,11 +69,20 @@ crons = ["0 * * * *", "0 4,5 * * *"]
       DISCORD_DIGEST_WEBHOOK: ''
     };
 
-    expect(missingProductionSecrets(source)).toEqual(['ACCESS_TEAM_DOMAIN', 'ACCESS_AUD', 'DISCORD_ALERTS_WEBHOOK', 'DISCORD_DIGEST_WEBHOOK']);
+    expect(missingProductionSecrets(source)).toEqual([
+      'ACCESS_TEAM_DOMAIN',
+      'ACCESS_AUD',
+      'DISCORD_ALERTS_WEBHOOK',
+      'DISCORD_DIGEST_WEBHOOK'
+    ]);
   });
 
   it('parses local dev vars for deploy preflight without comments or quotes', () => {
-    expect(parseDevVars('ACCESS_TEAM_DOMAIN="team.cloudflareaccess.com"\n# comment\nACCESS_AUD=aud-value\nDISCORD_DIGEST_WEBHOOK=https://discord.com/api/webhooks/id/token\n')).toEqual({
+    expect(
+      parseDevVars(
+        'ACCESS_TEAM_DOMAIN="team.cloudflareaccess.com"\n# comment\nACCESS_AUD=aud-value\nDISCORD_DIGEST_WEBHOOK=https://discord.com/api/webhooks/id/token\n'
+      )
+    ).toEqual({
       ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com',
       ACCESS_AUD: 'aud-value',
       DISCORD_DIGEST_WEBHOOK: 'https://discord.com/api/webhooks/id/token'

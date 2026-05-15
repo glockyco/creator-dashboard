@@ -15,7 +15,10 @@ describe('POST /api/refresh/[source_id]', () => {
   it('queues a forced refresh for known source IDs', async () => {
     const send = vi.fn().mockResolvedValue(undefined);
 
-    const response = await POST({ params: { source_id: 'source-a' }, platform: { env: { FETCHER_QUEUE: { send } } } } as never);
+    const response = await POST({
+      params: { source_id: 'source-a' },
+      platform: { env: { FETCHER_QUEUE: { send } } }
+    } as never);
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ queued: true });

@@ -6,7 +6,7 @@ vi.mock('./discord', () => ({ postDiscord: vi.fn().mockResolvedValue(undefined) 
 function envWithExisting(existing: { sent_at: number } | null = null) {
   const first = vi.fn().mockResolvedValue(existing);
   const run = vi.fn().mockResolvedValue(undefined);
-  const prepare = vi.fn((sql: string) => ({ bind: vi.fn(() => ({ first, run })) }));
+  const prepare = vi.fn((_sql: string) => ({ bind: vi.fn(() => ({ first, run })) }));
   return { env: { DB: { prepare }, DISCORD_ALERTS_WEBHOOK: 'https://discord.invalid/webhook' } as unknown as Env, run };
 }
 

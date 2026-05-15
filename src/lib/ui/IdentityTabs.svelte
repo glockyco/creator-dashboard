@@ -17,7 +17,7 @@
       role="tab"
       aria-selected={active === tab.value}
       class={`rounded-full border px-4 py-2 text-sm font-medium transition ${active === tab.value ? `${tab.className} bg-bg-secondary` : 'border-border text-fg-muted hover:bg-bg-secondary hover:text-fg-primary'}`}
-      href={setSearchParam(url, 'identity', tab.value)}
-    >{tab.label}</a>
+      href={setSearchParam(url, 'identity', tab.value)}>{tab.label}</a
+    >
   {/each}
 </div>

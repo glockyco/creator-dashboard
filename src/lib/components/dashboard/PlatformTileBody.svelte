@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { TileSnapshot } from "$lib/dashboard/types";
-  import { formatMetricDelta, formatMetricValue } from "$lib/dashboard/format";
-  import Sparkline from "./Sparkline.svelte";
+  import type { TileSnapshot } from '$lib/dashboard/types';
+  import { formatMetricDelta, formatMetricValue } from '$lib/dashboard/format';
+  import Sparkline from './Sparkline.svelte';
 
   let { snapshot }: { snapshot: TileSnapshot } = $props();
 </script>
@@ -10,10 +10,8 @@
   <div class="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3">
     {#each snapshot.metrics as metric}
       <div class="min-w-0 rounded-xl border border-border bg-bg-primary p-3">
-        <p
-          class="truncate text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-fg-muted"
-        >
-          {metric.metric.replaceAll("_", " ")}
+        <p class="truncate text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-fg-muted">
+          {metric.metric.replaceAll('_', ' ')}
         </p>
         <p class="mt-2 text-2xl font-semibold tracking-tight">
           {formatMetricValue(metric.value)}
@@ -36,9 +34,7 @@
   </div>
   <div class="rounded-xl border border-border bg-bg-primary p-3">
     <div class="mb-2 flex items-center justify-between text-xs text-fg-muted">
-      <span class="font-semibold uppercase tracking-[0.18em]"
-        >Freshness trend</span
-      >
+      <span class="font-semibold uppercase tracking-[0.18em]">Freshness trend</span>
       <span>{snapshot.sparkline.length} points</span>
     </div>
     <Sparkline points={snapshot.sparkline} />

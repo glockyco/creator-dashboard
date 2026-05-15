@@ -2,7 +2,10 @@ import { exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { assertAccessJwt, resetAccessJwksCacheForTests } from './access';
 
-const env = { ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com', ACCESS_AUD: 'aud-test' } as Pick<Env, 'ACCESS_TEAM_DOMAIN' | 'ACCESS_AUD' | 'ACCESS_JWKS_URL'>;
+const env = { ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com', ACCESS_AUD: 'aud-test' } as Pick<
+  Env,
+  'ACCESS_TEAM_DOMAIN' | 'ACCESS_AUD' | 'ACCESS_JWKS_URL'
+>;
 
 let privateKey: Awaited<ReturnType<typeof generateKeyPair>>['privateKey'];
 let jwksBody: string;
@@ -38,21 +41,38 @@ describe('assertAccessJwt', () => {
   });
 
   it('rejects missing, expired, wrong audience, wrong issuer, and malformed tokens', async () => {
-    await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/'), env)).rejects.toMatchObject({ status: 401 });
-    await expect(
-      assertAccessJwt(new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ exp: 1 }) } }), env)
-    ).rejects.toMatchObject({ status: 401 });
-    await expect(
-      assertAccessJwt(new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ aud: 'wrong' }) } }), env)
-    ).rejects.toMatchObject({ status: 401 });
+    await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/'), env)).rejects.toMatchObject({
+      status: 401
+    });
     await expect(
       assertAccessJwt(
-        new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ iss: 'https://evil.example' }) } }),
+        new Request('https://dashboard.glockyco.com/', {
+          headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ exp: 1 }) }
+        }),
         env
       )
     ).rejects.toMatchObject({ status: 401 });
     await expect(
-      assertAccessJwt(new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': 'not-a-jwt' } }), env)
+      assertAccessJwt(
+        new Request('https://dashboard.glockyco.com/', {
+          headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ aud: 'wrong' }) }
+        }),
+        env
+      )
+    ).rejects.toMatchObject({ status: 401 });
+    await expect(
+      assertAccessJwt(
+        new Request('https://dashboard.glockyco.com/', {
+          headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ iss: 'https://evil.example' }) }
+        }),
+        env
+      )
+    ).rejects.toMatchObject({ status: 401 });
+    await expect(
+      assertAccessJwt(
+        new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': 'not-a-jwt' } }),
+        env
+      )
     ).rejects.toMatchObject({ status: 401 });
   });
 
@@ -63,7 +83,9 @@ describe('assertAccessJwt', () => {
     const token = await signedToken();
     const request = new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': token } });
 
-    await expect(assertAccessJwt(request, { ...env, ACCESS_JWKS_URL: 'http://127.0.0.1:9000/jwks' })).resolves.toMatchObject({ email: 'johann@example.com' });
+    await expect(
+      assertAccessJwt(request, { ...env, ACCESS_JWKS_URL: 'http://127.0.0.1:9000/jwks' })
+    ).resolves.toMatchObject({ email: 'johann@example.com' });
     expect(fetchMock).toHaveBeenCalledWith('http://127.0.0.1:9000/jwks', expect.anything());
   });
 

@@ -26,7 +26,12 @@ export async function runGscBackfill(options: GscBackfillOptions = {}): Promise<
   if (env) {
     for (const source of sources) {
       for (const window of windows) {
-        const output = await fetchGscRange({ source: source as never, env, startDate: window.startDate, endDate: window.endDate });
+        const output = await fetchGscRange({
+          source: source as never,
+          env,
+          startDate: window.startDate,
+          endDate: window.endDate
+        });
         rows.push(...output.metric_points);
       }
     }
@@ -39,13 +44,17 @@ export async function runGscBackfill(options: GscBackfillOptions = {}): Promise<
 }
 
 async function loadSourceRecords(): Promise<BackfillSource[]> {
-  const module = (await import(new URL('../src/lib/sources/registry-data.ts', import.meta.url).href)) as { sourceRecords: BackfillSource[] };
+  const module = (await import(new URL('../src/lib/sources/registry-data.ts', import.meta.url).href)) as {
+    sourceRecords: BackfillSource[];
+  };
   return module.sourceRecords;
 }
 
 function filterGscSources(sources: BackfillSource[], env: Pick<Env, 'GSC_PROPERTIES'>): BackfillSource[] {
   const allowed = parseStringSet(env.GSC_PROPERTIES);
-  return sources.filter((source) => source.id.startsWith('gsc-') && (allowed.size === 0 || allowed.has(String(source.config.siteUrl))));
+  return sources.filter(
+    (source) => source.id.startsWith('gsc-') && (allowed.size === 0 || allowed.has(String(source.config.siteUrl)))
+  );
 }
 
 function parseStringSet(value: string): Set<string> {
@@ -54,18 +63,29 @@ function parseStringSet(value: string): Set<string> {
   return new Set(parsed.map((item) => String(item)));
 }
 
-function readBackfillEnvForMode(parsed: { dryRun: boolean; executeRemote: boolean }, env: NodeJS.ProcessEnv | Env | undefined): Env | null {
+function readBackfillEnvForMode(
+  parsed: { dryRun: boolean; executeRemote: boolean },
+  env: NodeJS.ProcessEnv | Env | undefined
+): Env | null {
   try {
     return readBackfillEnv(env ?? process.env);
   } catch (error) {
-    if (parsed.dryRun && !parsed.executeRemote && error instanceof Error && error.message.startsWith('missing required env var ')) return null;
+    if (
+      parsed.dryRun &&
+      !parsed.executeRemote &&
+      error instanceof Error &&
+      error.message.startsWith('missing required env var ')
+    )
+      return null;
     throw error;
   }
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   runGscBackfill()
-    .then((result) => console.log(`wrote ${result.rowCount} GSC metric rows for ${result.sourceCount} sources to ${result.out}`))
+    .then((result) =>
+      console.log(`wrote ${result.rowCount} GSC metric rows for ${result.sourceCount} sources to ${result.out}`)
+    )
     .catch((error: unknown) => {
       console.error(error instanceof Error ? error.message : String(error));
       process.exitCode = 1;

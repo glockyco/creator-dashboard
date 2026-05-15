@@ -8,8 +8,10 @@
         const settings = JSON.parse(localStorage.getItem('creator-dashboard-settings') || 'null');
         if (settings && settings.theme) document.documentElement.dataset.theme = settings.theme;
         if (settings && settings.identityColors) {
-          if (settings.identityColors.glockyco) document.documentElement.style.setProperty('--color-glockyco', settings.identityColors.glockyco);
-          if (settings.identityColors.WoW_Much) document.documentElement.style.setProperty('--color-wowmuch', settings.identityColors.WoW_Much);
+          if (settings.identityColors.glockyco)
+            document.documentElement.style.setProperty('--color-glockyco', settings.identityColors.glockyco);
+          if (settings.identityColors.WoW_Much)
+            document.documentElement.style.setProperty('--color-wowmuch', settings.identityColors.WoW_Much);
         }
       } catch {}
     </script>

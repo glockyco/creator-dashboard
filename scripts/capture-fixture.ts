@@ -42,7 +42,12 @@ type CaptureFixtureOptions = {
 
 const connectorSet = new Set<string>(connectorKinds);
 
-export const redactionPatterns = [/ghp_[A-Za-z0-9_]+/g, /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, /\b7656119\d{10}\b/g, /Bearer\s+[A-Za-z0-9._-]+/g];
+export const redactionPatterns = [
+  /ghp_[A-Za-z0-9_]+/g,
+  /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+  /\b7656119\d{10}\b/g,
+  /Bearer\s+[A-Za-z0-9._-]+/g
+];
 
 export function parseCaptureArgs(args: string[]): CaptureArgs {
   const [connector, ...rest] = args;
@@ -81,8 +86,10 @@ export async function captureFixture(options: CaptureFixtureOptions): Promise<{ 
   }) as typeof fetch;
 
   try {
-    if (source.capture) await source.capture({ source, env: options.env ?? (process.env as Env), now: options.now ?? Date.now() });
-    else if (source.fetcher) await source.fetcher({ source, env: options.env ?? (process.env as Env), now: options.now ?? Date.now() });
+    if (source.capture)
+      await source.capture({ source, env: options.env ?? (process.env as Env), now: options.now ?? Date.now() });
+    else if (source.fetcher)
+      await source.fetcher({ source, env: options.env ?? (process.env as Env), now: options.now ?? Date.now() });
     else throw new Error(`source has no capture function: ${source.id}`);
   } finally {
     globalThis.fetch = originalFetch;
@@ -133,7 +140,12 @@ function required(env: Env, key: keyof Env): string {
   return value;
 }
 
-function source(id: string, connector: ConnectorKind, config: Record<string, unknown>, capture: CaptureSource['capture']): CaptureSource {
+function source(
+  id: string,
+  connector: ConnectorKind,
+  config: Record<string, unknown>,
+  capture: CaptureSource['capture']
+): CaptureSource {
   return { id, connector, config, capture };
 }
 
@@ -141,8 +153,16 @@ const defaultSources: CaptureSource[] = [
   source('github-glockyco', 'github', {}, async ({ env }) => {
     await fetch('https://api.github.com/graphql', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${required(env, 'GITHUB_PAT')}`, 'Content-Type': 'application/json', 'User-Agent': 'creator-dashboard-fixture-capture' },
-      body: JSON.stringify({ query: 'query($login:String!){ user(login:$login){ followers{totalCount} repositories(first:100,ownerAffiliations:OWNER){ totalCount nodes{name stargazerCount isArchived} } contributionsCollection{ contributionCalendar{ weeks{ contributionDays{ date contributionCount } } } } } }', variables: { login: 'glockyco' } })
+      headers: {
+        Authorization: `Bearer ${required(env, 'GITHUB_PAT')}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'creator-dashboard-fixture-capture'
+      },
+      body: JSON.stringify({
+        query:
+          'query($login:String!){ user(login:$login){ followers{totalCount} repositories(first:100,ownerAffiliations:OWNER){ totalCount nodes{name stargazerCount isArchived} } contributionsCollection{ contributionCalendar{ weeks{ contributionDays{ date contributionCount } } } } } }',
+        variables: { login: 'glockyco' }
+      })
     });
   }),
   source('steam-guide-erenshor', 'steam-guide', { publishedfileid: '3500398991' }, captureSteamGuide),
@@ -153,20 +173,26 @@ const defaultSources: CaptureSource[] = [
     await fetch('https://thunderstore.io/c/erenshor/api/v1/package/');
   }),
   source('erenshor-wiki-recent', 'mediawiki-recent-changes', { wiki: 'erenshor.wiki.gg' }, async ({ source }) => {
-    await fetch(`https://${String(source.config?.wiki)}/api.php?action=query&list=recentchanges&rcprop=ids|title|timestamp|user|comment|sizes|flags&format=json`);
-  }),
+    await fetch(
+      `https://${String(source.config?.wiki)}/api.php?action=query&list=recentchanges&rcprop=ids|title|timestamp|user|comment|sizes|flags&format=json`
+    );
+  })
 ];
 
 async function captureSteamGuide({ source, env }: { source: CaptureSource; env: Env }): Promise<void> {
-  const body = new URLSearchParams({ key: required(env, 'STEAM_WEB_API_KEY'), itemcount: '1', 'publishedfileids[0]': String(source.config?.publishedfileid) });
+  const body = new URLSearchParams({
+    key: required(env, 'STEAM_WEB_API_KEY'),
+    itemcount: '1',
+    'publishedfileids[0]': String(source.config?.publishedfileid)
+  });
   await fetch('https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/', { method: 'POST', body });
 }
 
 async function captureSteamReviews({ source }: { source: CaptureSource }): Promise<void> {
-  await fetch(`https://store.steampowered.com/appreviews/${String(source.config?.appid)}?json=1&filter=recent&language=all&purchase_type=all`);
+  await fetch(
+    `https://store.steampowered.com/appreviews/${String(source.config?.appid)}?json=1&filter=recent&language=all&purchase_type=all`
+  );
 }
-
-
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   captureFixture({ args: process.argv.slice(2) })

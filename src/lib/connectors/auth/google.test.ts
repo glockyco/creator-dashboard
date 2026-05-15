@@ -20,7 +20,11 @@ async function envWithServiceAccount(): Promise<Pick<Env, 'GOOGLE_SERVICE_ACCOUN
 describe('getGoogleAccessToken', () => {
   it('signs a service-account JWT, exchanges it, and caches the access token', async () => {
     const env = await envWithServiceAccount();
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ access_token: 'ya29.token', expires_in: 3600 }), { status: 200 }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ access_token: 'ya29.token', expires_in: 3600 }), { status: 200 })
+      );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(getGoogleAccessToken(env, ['scope-a', 'scope-b'])).resolves.toBe('ya29.token');
@@ -38,8 +42,22 @@ describe('getGoogleAccessToken', () => {
 
 describe('getGoogleOAuthAccessToken', () => {
   it('exchanges a refresh token for an access token and caches the result', async () => {
-    const env = { GOOGLE_OAUTH_CLIENT_ID: 'client.apps.googleusercontent.com', GOOGLE_OAUTH_CLIENT_SECRET: 'secret-1', GOOGLE_OAUTH_REFRESH_TOKEN: '1//refresh' } as Pick<Env, 'GOOGLE_OAUTH_CLIENT_ID' | 'GOOGLE_OAUTH_CLIENT_SECRET' | 'GOOGLE_OAUTH_REFRESH_TOKEN'>;
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ access_token: 'ya29.oauth', expires_in: 3600, token_type: 'Bearer', scope: 'https://www.googleapis.com/auth/webmasters.readonly' }), { status: 200 }));
+    const env = {
+      GOOGLE_OAUTH_CLIENT_ID: 'client.apps.googleusercontent.com',
+      GOOGLE_OAUTH_CLIENT_SECRET: 'secret-1',
+      GOOGLE_OAUTH_REFRESH_TOKEN: '1//refresh'
+    } as Pick<Env, 'GOOGLE_OAUTH_CLIENT_ID' | 'GOOGLE_OAUTH_CLIENT_SECRET' | 'GOOGLE_OAUTH_REFRESH_TOKEN'>;
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          access_token: 'ya29.oauth',
+          expires_in: 3600,
+          token_type: 'Bearer',
+          scope: 'https://www.googleapis.com/auth/webmasters.readonly'
+        }),
+        { status: 200 }
+      )
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(getGoogleOAuthAccessToken(env)).resolves.toBe('ya29.oauth');

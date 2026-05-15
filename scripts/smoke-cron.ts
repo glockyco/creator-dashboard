@@ -15,7 +15,8 @@ async function postHourlySmoke(args: SmokeCronArgs, headers: Record<string, stri
   });
   if (!response.ok) throw new Error(`cron smoke failed: ${response.status} ${await response.text()}`);
   const payload = (await response.json()) as { enqueued?: number };
-  if (payload.enqueued !== 1) throw new Error(`cron smoke expected one enqueued job, got ${payload.enqueued ?? 'missing'}`);
+  if (payload.enqueued !== 1)
+    throw new Error(`cron smoke expected one enqueued job, got ${payload.enqueued ?? 'missing'}`);
 }
 
 async function main(): Promise<void> {

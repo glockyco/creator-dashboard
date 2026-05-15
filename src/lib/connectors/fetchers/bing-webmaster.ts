@@ -21,8 +21,21 @@ const BingResponse = z
 const metrics = ['clicks', 'impressions', 'ctr', 'position'] as const;
 
 type BingRow = z.infer<typeof BingRow>;
-type NormalizedRow = { date: string; query: string; page: string; clicks: number; impressions: number; ctr: number; position: number };
-export type BingRangeInput = { source: FetcherInput['source']; env: FetcherInput['env']; startDate: string; endDate: string };
+type NormalizedRow = {
+  date: string;
+  query: string;
+  page: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+};
+export type BingRangeInput = {
+  source: FetcherInput['source'];
+  env: FetcherInput['env'];
+  startDate: string;
+  endDate: string;
+};
 
 export async function fetchBingWebmaster({ source, env, now }: FetcherInput): Promise<FetcherOutput> {
   const date = day(now - 86_400_000);
@@ -34,7 +47,13 @@ export async function fetchBingWebmasterRange({ source, env, endDate }: BingRang
   const url = withBingKey(new URL('https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats'), env);
   url.searchParams.set('siteUrl', config.siteUrl);
   const rows = await fetchJson(url, { schema: BingResponse });
-  return { metric_points: pointsFromRows(source.id, rows.map((row) => normalizeRow(row, endDate))), events: [] };
+  return {
+    metric_points: pointsFromRows(
+      source.id,
+      rows.map((row) => normalizeRow(row, endDate))
+    ),
+    events: []
+  };
 }
 
 function pointsFromRows(sourceId: string, rows: NormalizedRow[]): MetricPoint[] {
@@ -78,11 +97,23 @@ function normalizeDate(value: string | undefined): string | undefined {
 function aggregatePoints(sourceId: string, ts: number, rows: NormalizedRow[]): MetricPoint[] {
   const clicks = rows.reduce((sum, row) => sum + row.clicks, 0);
   const impressions = rows.reduce((sum, row) => sum + row.impressions, 0);
-  const weightedPosition = impressions === 0 ? 0 : rows.reduce((sum, row) => sum + row.position * row.impressions, 0) / impressions;
-  return [point(sourceId, 'clicks', ts, clicks), point(sourceId, 'impressions', ts, impressions), point(sourceId, 'ctr', ts, impressions === 0 ? 0 : clicks / impressions), point(sourceId, 'position', ts, weightedPosition)];
+  const weightedPosition =
+    impressions === 0 ? 0 : rows.reduce((sum, row) => sum + row.position * row.impressions, 0) / impressions;
+  return [
+    point(sourceId, 'clicks', ts, clicks),
+    point(sourceId, 'impressions', ts, impressions),
+    point(sourceId, 'ctr', ts, impressions === 0 ? 0 : clicks / impressions),
+    point(sourceId, 'position', ts, weightedPosition)
+  ];
 }
 
-function point(source_id: string, metric: string, ts: number, value: number, dimensions: JsonRecord | null = null): MetricPoint {
+function point(
+  source_id: string,
+  metric: string,
+  ts: number,
+  value: number,
+  dimensions: JsonRecord | null = null
+): MetricPoint {
   return { source_id, metric, ts, value, dimensions };
 }
 

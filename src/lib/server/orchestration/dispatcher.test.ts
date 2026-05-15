@@ -3,8 +3,24 @@ import { dispatchDueSources } from './dispatcher';
 
 vi.mock('$lib/sources/registry', () => ({
   sources: [
-    { id: 'source-a', name: 'A', identity: 'glockyco', category: 'platform', cadenceHours: 1, fetcher: async () => ({ metric_points: [], events: [] }), config: {} },
-    { id: 'source-b', name: 'B', identity: 'WoW_Much', category: 'analytics', cadenceHours: 24, fetcher: async () => ({ metric_points: [], events: [] }), config: {} }
+    {
+      id: 'source-a',
+      name: 'A',
+      identity: 'glockyco',
+      category: 'platform',
+      cadenceHours: 1,
+      fetcher: async () => ({ metric_points: [], events: [] }),
+      config: {}
+    },
+    {
+      id: 'source-b',
+      name: 'B',
+      identity: 'WoW_Much',
+      category: 'analytics',
+      cadenceHours: 24,
+      fetcher: async () => ({ metric_points: [], events: [] }),
+      config: {}
+    }
   ]
 }));
 

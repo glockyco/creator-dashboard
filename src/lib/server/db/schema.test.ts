@@ -53,12 +53,36 @@ describe('initial D1 schema migration', () => {
 
   it('keeps idempotency keys on metric points, events, alerts, digest, posts, and posts_sources', () => {
     const db = migratedDb();
-    const metricPk = db.prepare('PRAGMA table_info(metric_points)').all().filter((row) => Number(row.pk) > 0).map((row) => row.name);
-    const eventPk = db.prepare('PRAGMA table_info(events)').all().filter((row) => Number(row.pk) > 0).map((row) => row.name);
-    const alertPk = db.prepare('PRAGMA table_info(alerts_sent)').all().filter((row) => Number(row.pk) > 0).map((row) => row.name);
-    const digestPk = db.prepare('PRAGMA table_info(digest_sent)').all().filter((row) => Number(row.pk) > 0).map((row) => row.name);
-    const postPk = db.prepare('PRAGMA table_info(posts_index)').all().filter((row) => Number(row.pk) > 0).map((row) => row.name);
-    const postSourcePk = db.prepare('PRAGMA table_info(posts_sources)').all().filter((row) => Number(row.pk) > 0).map((row) => row.name);
+    const metricPk = db
+      .prepare('PRAGMA table_info(metric_points)')
+      .all()
+      .filter((row) => Number(row.pk) > 0)
+      .map((row) => row.name);
+    const eventPk = db
+      .prepare('PRAGMA table_info(events)')
+      .all()
+      .filter((row) => Number(row.pk) > 0)
+      .map((row) => row.name);
+    const alertPk = db
+      .prepare('PRAGMA table_info(alerts_sent)')
+      .all()
+      .filter((row) => Number(row.pk) > 0)
+      .map((row) => row.name);
+    const digestPk = db
+      .prepare('PRAGMA table_info(digest_sent)')
+      .all()
+      .filter((row) => Number(row.pk) > 0)
+      .map((row) => row.name);
+    const postPk = db
+      .prepare('PRAGMA table_info(posts_index)')
+      .all()
+      .filter((row) => Number(row.pk) > 0)
+      .map((row) => row.name);
+    const postSourcePk = db
+      .prepare('PRAGMA table_info(posts_sources)')
+      .all()
+      .filter((row) => Number(row.pk) > 0)
+      .map((row) => row.name);
 
     expect(metricPk).toEqual(['source_id', 'metric', 'ts', 'dimensions']);
     expect(eventPk).toEqual(['source_id', 'external_id']);

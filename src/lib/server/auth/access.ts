@@ -35,7 +35,10 @@ export async function assertAccessJwt(request: Request, env: AccessJwtEnv): Prom
       issuer,
       audience: env.ACCESS_AUD
     });
-    return { email: typeof payload.email === 'string' ? payload.email : null, claims: payload as Record<string, unknown> };
+    return {
+      email: typeof payload.email === 'string' ? payload.email : null,
+      claims: payload as Record<string, unknown>
+    };
   } catch (cause) {
     throw new AuthError('invalid Access JWT', { cause });
   }

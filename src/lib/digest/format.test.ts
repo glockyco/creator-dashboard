@@ -31,15 +31,58 @@ const digest: DigestData = {
     { source_id: 'bing-ak-compendium-org', metric: 'clicks', ts: LATEST_TS, value: 0 }
   ],
   events: [
-    { source_id: 'steam-reviews-ak', external_id: 'review-1', ts: LATEST_TS, kind: 'review', author: null, title: 'Good review', url: 'https://example.test/review' },
-    { source_id: 'erenshor-wiki-recent', external_id: 'wiki-1', ts: LATEST_TS, kind: 'wiki_edit', author: 'Editor', title: 'Map page', url: 'https://example.test/wiki' }
+    {
+      source_id: 'steam-reviews-ak',
+      external_id: 'review-1',
+      ts: LATEST_TS,
+      kind: 'review',
+      author: null,
+      title: 'Good review',
+      url: 'https://example.test/review'
+    },
+    {
+      source_id: 'erenshor-wiki-recent',
+      external_id: 'wiki-1',
+      ts: LATEST_TS,
+      kind: 'wiki_edit',
+      author: 'Editor',
+      title: 'Map page',
+      url: 'https://example.test/wiki'
+    }
   ],
-  posts: [{ slug: 'post-1', posted_at: LATEST_TS, author: 'glockyco', platform: 'site', url: 'https://example.test/post', title: 'Post title', tags: ['dev'], body_excerpt: null }],
+  posts: [
+    {
+      slug: 'post-1',
+      posted_at: LATEST_TS,
+      author: 'glockyco',
+      platform: 'site',
+      url: 'https://example.test/post',
+      title: 'Post title',
+      tags: ['dev'],
+      body_excerpt: null
+    }
+  ],
   runs: [
-    { source_id: 'github-glockyco', last_run_at: LATEST_TS, last_success_at: LATEST_TS, last_status: 'success', last_error: null, consecutive_failures: 0 },
-    { source_id: 'gsc-ak-compendium', last_run_at: LATEST_TS, last_success_at: null, last_status: 'failed', last_error: 'forbidden', consecutive_failures: 2 }
+    {
+      source_id: 'github-glockyco',
+      last_run_at: LATEST_TS,
+      last_success_at: LATEST_TS,
+      last_status: 'success',
+      last_error: null,
+      consecutive_failures: 0
+    },
+    {
+      source_id: 'gsc-ak-compendium',
+      last_run_at: LATEST_TS,
+      last_success_at: null,
+      last_status: 'failed',
+      last_error: 'forbidden',
+      consecutive_failures: 2
+    }
   ],
-  failures: [{ source_id: 'gsc-ak-compendium', ts: LATEST_TS, tier: 'permanent', status_code: 403, error_message: 'forbidden' }]
+  failures: [
+    { source_id: 'gsc-ak-compendium', ts: LATEST_TS, tier: 'permanent', status_code: 403, error_message: 'forbidden' }
+  ]
 };
 
 describe('formatDigest', () => {

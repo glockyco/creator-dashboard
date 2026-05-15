@@ -56,7 +56,9 @@ export async function getTimeline(db: D1Database, filters: TimelineFilters): Pro
   return {
     sources: visibleSources.map(withoutFetcher),
     metricSeries: toMetricSeries(visibleSources, metricRows),
-    events: filters.overlays.includes('events') ? await readEvents(db, sourceIds, filters.sinceTs, filters.untilTs) : [],
+    events: filters.overlays.includes('events')
+      ? await readEvents(db, sourceIds, filters.sinceTs, filters.untilTs)
+      : [],
     posts: filters.overlays.includes('posts') ? await readPosts(db, sourceIds, filters.sinceTs, filters.untilTs) : []
   };
 }
@@ -109,7 +111,9 @@ function toMetricSeries(visibleSources: SourceDef[], rows: MetricRow[]): Timelin
     series.push({
       source_id: source.id,
       metric,
-      points: rows.filter((row) => row.source_id === source.id && row.metric === metric).map((row) => ({ ts: row.ts, value: row.value, dimensions: parseObject(row.dimensions) as JsonRecord | null }))
+      points: rows
+        .filter((row) => row.source_id === source.id && row.metric === metric)
+        .map((row) => ({ ts: row.ts, value: row.value, dimensions: parseObject(row.dimensions) as JsonRecord | null }))
     });
   }
   return series;

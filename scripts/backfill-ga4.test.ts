@@ -16,7 +16,9 @@ const source = {
 } as unknown as SourceDef;
 
 const env = {
-  GOOGLE_OAUTH_CLIENT_ID: 'cid', GOOGLE_OAUTH_CLIENT_SECRET: 'cs', GOOGLE_OAUTH_REFRESH_TOKEN: 'rt',
+  GOOGLE_OAUTH_CLIENT_ID: 'cid',
+  GOOGLE_OAUTH_CLIENT_SECRET: 'cs',
+  GOOGLE_OAUTH_REFRESH_TOKEN: 'rt',
   GSC_PROPERTIES: '[]',
   GA4_PROPERTY_ID: '123456789',
   BING_WEBMASTER_API_KEY: 'bing-key',
@@ -28,8 +30,25 @@ const env = {
 
 describe('runGa4Backfill', () => {
   it('uses the GA4 connector date-range helper and writes a dry-run SQL batch', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ rows: [{ dimensionValues: [{ value: '20260102' }], metricValues: [{ value: '5' }, { value: '6' }, { value: '7' }, { value: '8' }] }] }), { status: 200 })));
-    const writer = vi.fn<(rows: MetricPoint[], out: string, batchSize?: number) => Promise<string>>().mockResolvedValue('BEGIN;\nINSERT OR IGNORE INTO metric_points ...;\nCOMMIT;\n');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            rows: [
+              {
+                dimensionValues: [{ value: '20260102' }],
+                metricValues: [{ value: '5' }, { value: '6' }, { value: '7' }, { value: '8' }]
+              }
+            ]
+          }),
+          { status: 200 }
+        )
+      )
+    );
+    const writer = vi
+      .fn<(rows: MetricPoint[], out: string, batchSize?: number) => Promise<string>>()
+      .mockResolvedValue('BEGIN;\nINSERT OR IGNORE INTO metric_points ...;\nCOMMIT;\n');
 
     const result = await runGa4Backfill({
       args: ['--dry-run', '--out', '.tmp/backfill-ga4.sql'],

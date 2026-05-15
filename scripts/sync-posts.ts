@@ -10,7 +10,9 @@ export type PostEntry = { path: string; markdown: string };
 export type SyncPost = NormalizedPost & { body_hash: string };
 
 export function syncPostsFromEntries(entries: PostEntry[], knownSourceIds: ReadonlySet<string>): SyncPost[] {
-  return entries.map((entry) => withBodyHash(normalizePost({ path: entry.path, markdown: entry.markdown, knownSourceIds }))).sort((a, b) => b.posted_at_ms - a.posted_at_ms);
+  return entries
+    .map((entry) => withBodyHash(normalizePost({ path: entry.path, markdown: entry.markdown, knownSourceIds })))
+    .sort((a, b) => b.posted_at_ms - a.posted_at_ms);
 }
 
 export type SyncPostsArgs = { out: string; executeRemote: boolean };
@@ -40,11 +42,16 @@ export function buildSyncSql(posts: SyncPost[]): string {
     );
     for (const sourceId of post.related_sources) {
       sourceLinks.push({ slug: post.slug, sourceId });
-      lines.push('INSERT OR IGNORE INTO posts_sources (slug, source_id)', `VALUES (${sqlString(post.slug)}, ${sqlString(sourceId)});`);
+      lines.push(
+        'INSERT OR IGNORE INTO posts_sources (slug, source_id)',
+        `VALUES (${sqlString(post.slug)}, ${sqlString(sourceId)});`
+      );
     }
   }
   if (sourceLinks.length > 0) {
-    const keepLinks = sourceLinks.map((link) => `(slug = ${sqlString(link.slug)} AND source_id = ${sqlString(link.sourceId)})`).join(' OR ');
+    const keepLinks = sourceLinks
+      .map((link) => `(slug = ${sqlString(link.slug)} AND source_id = ${sqlString(link.sourceId)})`)
+      .join(' OR ');
     lines.push(`DELETE FROM posts_sources WHERE NOT (${keepLinks});`);
   } else {
     lines.push('DELETE FROM posts_sources;');
@@ -78,7 +85,10 @@ function sqlString(value: string): string {
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   try {
     const parsed = parseSyncPostsArgs(process.argv.slice(2));
-    const posts = syncPostsFromEntries(await readPostEntries('posts'), new Set(sourceRecords.map((source) => source.id)));
+    const posts = syncPostsFromEntries(
+      await readPostEntries('posts'),
+      new Set(sourceRecords.map((source) => source.id))
+    );
     await mkdir(dirname(parsed.out), { recursive: true });
     await writeFile(parsed.out, buildSyncSql(posts));
     console.log(`wrote ${parsed.out}`);

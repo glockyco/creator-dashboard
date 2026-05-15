@@ -12,7 +12,12 @@ vi.mock('$lib/digest/send', () => ({
 }));
 
 function controller(cron: string): ScheduledController {
-  return { cron, scheduledTime: 1_778_400_000_000, type: 'scheduled', noRetry: vi.fn() } as unknown as ScheduledController;
+  return {
+    cron,
+    scheduledTime: 1_778_400_000_000,
+    type: 'scheduled',
+    noRetry: vi.fn()
+  } as unknown as ScheduledController;
 }
 
 const env = {} as Env;

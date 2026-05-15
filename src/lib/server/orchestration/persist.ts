@@ -1,15 +1,30 @@
 import type { FetcherOutput } from '$lib/types/domain';
 
-export function successStatements(db: D1Database, sourceId: string, now: number, output: FetcherOutput): D1PreparedStatement[] {
+export function successStatements(
+  db: D1Database,
+  sourceId: string,
+  now: number,
+  output: FetcherOutput
+): D1PreparedStatement[] {
   return [
     ...output.metric_points.map((point) =>
       db
-        .prepare('INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES (?, ?, ?, ?, ?)')
-        .bind(point.source_id, point.metric, point.ts, point.value, point.dimensions ? JSON.stringify(point.dimensions) : null)
+        .prepare(
+          'INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES (?, ?, ?, ?, ?)'
+        )
+        .bind(
+          point.source_id,
+          point.metric,
+          point.ts,
+          point.value,
+          point.dimensions ? JSON.stringify(point.dimensions) : null
+        )
     ),
     ...output.events.map((event) =>
       db
-        .prepare('INSERT OR IGNORE INTO events (source_id, external_id, ts, kind, author, title, body, url, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        .prepare(
+          'INSERT OR IGNORE INTO events (source_id, external_id, ts, kind, author, title, body, url, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        )
         .bind(
           event.source_id,
           event.external_id,
@@ -23,7 +38,8 @@ export function successStatements(db: D1Database, sourceId: string, now: number,
         )
     ),
     db
-      .prepare(`
+      .prepare(
+        `
       INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures)
       VALUES (?, ?, ?, 'success', NULL, 0)
       ON CONFLICT(source_id) DO UPDATE SET
@@ -32,7 +48,8 @@ export function successStatements(db: D1Database, sourceId: string, now: number,
         last_status = 'success',
         last_error = NULL,
         consecutive_failures = 0
-    `)
+    `
+      )
       .bind(sourceId, now, now)
   ];
 }

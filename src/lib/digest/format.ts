@@ -1,7 +1,11 @@
 import { findPointAt24hPrior } from '$lib/dashboard/delta';
 import type { DigestData } from './query';
 
-export type DiscordEmbed = { title: string; color?: number; fields: Array<{ name: string; value: string; inline?: boolean }> };
+export type DiscordEmbed = {
+  title: string;
+  color?: number;
+  fields: Array<{ name: string; value: string; inline?: boolean }>;
+};
 export type DiscordMessage = { content: string; embeds: DiscordEmbed[] };
 
 type MetricState = { latest: number | null; previous: number | null; delta: number | null };
@@ -53,21 +57,32 @@ function githubField(data: DigestData): string {
   const followers = metric(data, 'github-glockyco', 'followers');
   const stars = metric(data, 'github-glockyco', 'total_stars');
   const repos = metric(data, 'github-glockyco', 'public_repos');
-  return [`Followers: ${formatState(followers)}`, `Stars: ${formatState(stars)}`, `Repos: ${formatLatest(repos.latest)}`].join('\n');
+  return [
+    `Followers: ${formatState(followers)}`,
+    `Stars: ${formatState(stars)}`,
+    `Repos: ${formatLatest(repos.latest)}`
+  ].join('\n');
 }
 
 function steamGuidesField(data: DigestData): string {
   const erenshor = metric(data, 'steam-guide-erenshor', 'views');
   const ak = metric(data, 'steam-guide-ak', 'views');
   const totalDelta = sumNumbers([erenshor.delta, ak.delta]);
-  return [`Steam guide views: ${formatSigned(totalDelta)}`, `Erenshor: ${formatState(erenshor)}`, `AK: ${formatState(ak)}`].join('\n');
+  return [
+    `Steam guide views: ${formatSigned(totalDelta)}`,
+    `Erenshor: ${formatState(erenshor)}`,
+    `AK: ${formatState(ak)}`
+  ].join('\n');
 }
 
 function steamReviewsField(data: DigestData): string {
   const reviewEvents = data.events.filter((event) => event.kind === 'review').length;
   const erenshorTotal = metric(data, 'steam-reviews-erenshor', 'review_total').latest;
   const akTotal = metric(data, 'steam-reviews-ak', 'review_total').latest;
-  return [`Steam review events: ${reviewEvents}`, `Totals: Erenshor ${formatLatest(erenshorTotal)}, AK ${formatLatest(akTotal)}`].join('\n');
+  return [
+    `Steam review events: ${reviewEvents}`,
+    `Totals: Erenshor ${formatLatest(erenshorTotal)}, AK ${formatLatest(akTotal)}`
+  ].join('\n');
 }
 
 function thunderstoreField(data: DigestData): string {
@@ -78,7 +93,10 @@ function thunderstoreField(data: DigestData): string {
 
 function wikiField(data: DigestData): string {
   const edits = data.events.filter((event) => event.kind === 'wiki_edit');
-  const titles = edits.slice(0, 3).map((event) => (event.url ? `[${event.title ?? 'Untitled'}](${event.url})` : (event.title ?? 'Untitled'))).join(', ');
+  const titles = edits
+    .slice(0, 3)
+    .map((event) => (event.url ? `[${event.title ?? 'Untitled'}](${event.url})` : (event.title ?? 'Untitled')))
+    .join(', ');
   return [`Wiki edit events: ${edits.length}`, titles || 'No wiki edits'].join('\n');
 }
 
@@ -105,7 +123,10 @@ function siteLine(data: DigestData, sourceId: string): string {
 
 function postsField(data: DigestData): string {
   if (data.posts.length === 0) return 'No new posts';
-  return data.posts.slice(0, 5).map((post) => `${post.author} · ${post.platform} · [${post.title}](${post.url})`).join('\n');
+  return data.posts
+    .slice(0, 5)
+    .map((post) => `${post.author} · ${post.platform} · [${post.title}](${post.url})`)
+    .join('\n');
 }
 
 function runsField(data: DigestData): string {
@@ -140,7 +161,9 @@ function metric(data: DigestData, sourceId: string, name: string): MetricState {
 }
 
 function sumLatest(data: DigestData, sourceIds: string[], name: string): number | null {
-  const values = sourceIds.map((sourceId) => metric(data, sourceId, name).latest).filter((value): value is number => value !== null);
+  const values = sourceIds
+    .map((sourceId) => metric(data, sourceId, name).latest)
+    .filter((value): value is number => value !== null);
   return values.length > 0 ? sumNumbers(values) : null;
 }
 

@@ -19,7 +19,9 @@ function postsDb() {
 
 function rowsFor(sql: string) {
   if (sql.includes('metric_points')) {
-    return [{ source_id: 'thunderstore-wowmuch', metric: 'total_downloads', before_value: 100, after_value: 140, delta: 40 }];
+    return [
+      { source_id: 'thunderstore-wowmuch', metric: 'total_downloads', before_value: 100, after_value: 140, delta: 40 }
+    ];
   }
   return [
     {
@@ -69,7 +71,9 @@ describe('getPost', () => {
   it('loads one indexed post by slug', async () => {
     const { db, calls } = postsDb();
 
-    await expect(getPost(db, '2026-04-12-wow-much-040-release')).resolves.toMatchObject({ slug: '2026-04-12-wow-much-040-release' });
+    await expect(getPost(db, '2026-04-12-wow-much-040-release')).resolves.toMatchObject({
+      slug: '2026-04-12-wow-much-040-release'
+    });
     expect(calls[0].params).toEqual(['2026-04-12-wow-much-040-release']);
   });
 });

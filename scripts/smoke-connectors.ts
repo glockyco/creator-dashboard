@@ -18,11 +18,31 @@ type SmokeSource = {
   category: string;
   cadenceHours: number;
   config: Record<string, unknown>;
-  fetcher: (input: { source: SmokeSource; env: Env; now: number }) => Promise<{ metric_points: SmokeMetric[]; events: SmokeEvent[] }>;
+  fetcher: (input: {
+    source: SmokeSource;
+    env: Env;
+    now: number;
+  }) => Promise<{ metric_points: SmokeMetric[]; events: SmokeEvent[] }>;
 };
 
-type SmokeMetric = { source_id: string; metric: string; ts: number; value: number; dimensions: Record<string, unknown> | null };
-type SmokeEvent = { source_id: string; external_id: string; ts: number; kind: string; author: string | null; title: string | null; body: string | null; url: string | null; metadata: Record<string, unknown> | null };
+type SmokeMetric = {
+  source_id: string;
+  metric: string;
+  ts: number;
+  value: number;
+  dimensions: Record<string, unknown> | null;
+};
+type SmokeEvent = {
+  source_id: string;
+  external_id: string;
+  ts: number;
+  kind: string;
+  author: string | null;
+  title: string | null;
+  body: string | null;
+  url: string | null;
+  metadata: Record<string, unknown> | null;
+};
 
 export type SmokeResult = {
   source_id: string;
@@ -73,14 +93,21 @@ export function parseDevVars(text: string): Record<string, string> {
 export function secretRequirements(sourceId: string): string[] {
   if (sourceId.startsWith('github-')) return ['GITHUB_PAT'];
   if (sourceId.startsWith('steam-guide-')) return ['STEAM_WEB_API_KEY'];
-  if (sourceId.startsWith('gsc-')) return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN'];
+  if (sourceId.startsWith('gsc-'))
+    return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN'];
   if (sourceId.startsWith('bing-')) return ['BING_WEBMASTER_API_KEY'];
   if (sourceId.startsWith('cf-analytics-')) return ['CF_API_TOKEN', 'CF_ACCOUNT_ID', 'CF_ANALYTICS_SITE_TAGS'];
-  if (sourceId.startsWith('ga4') || sourceId.includes('-ga4-')) return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GA4_PROPERTY_ID'];
+  if (sourceId.startsWith('ga4') || sourceId.includes('-ga4-'))
+    return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GA4_PROPERTY_ID'];
   return [];
 }
 
-export async function runSmokeSources(options: { sources: SmokeSource[]; env: Record<string, string>; args: SmokeArgs; now?: number }): Promise<SmokeResult[]> {
+export async function runSmokeSources(options: {
+  sources: SmokeSource[];
+  env: Record<string, string>;
+  args: SmokeArgs;
+  now?: number;
+}): Promise<SmokeResult[]> {
   const selected = selectSources(options.sources, options.args);
   const results: SmokeResult[] = [];
   for (const source of selected) {
@@ -92,7 +119,11 @@ export async function runSmokeSources(options: { sources: SmokeSource[]; env: Re
 
     const started = Date.now();
     try {
-      const output = await source.fetcher({ source, env: options.env as unknown as Env, now: options.now ?? Date.now() });
+      const output = await source.fetcher({
+        source,
+        env: options.env as unknown as Env,
+        now: options.now ?? Date.now()
+      });
       results.push({
         source_id: source.id,
         name: source.name,
@@ -100,8 +131,12 @@ export async function runSmokeSources(options: { sources: SmokeSource[]; env: Re
         metric_points: output.metric_points.length,
         events: output.events.length,
         duration_ms: Date.now() - started,
-        sample_metrics: output.metric_points.slice(0, 3).map((point) => ({ metric: point.metric, value: point.value, dimensions: point.dimensions })),
-        sample_events: output.events.slice(0, 3).map((event) => ({ kind: event.kind, title: event.title, ts: event.ts }))
+        sample_metrics: output.metric_points
+          .slice(0, 3)
+          .map((point) => ({ metric: point.metric, value: point.value, dimensions: point.dimensions })),
+        sample_events: output.events
+          .slice(0, 3)
+          .map((event) => ({ kind: event.kind, title: event.title, ts: event.ts }))
       });
     } catch (error) {
       results.push({
@@ -127,7 +162,11 @@ async function main(): Promise<void> {
   const results = await runSmokeSources({ sources, env, args });
   if (args.json) console.log(JSON.stringify(results, null, 2));
   else printResults(results);
-  if (results.some((result) => result.status === 'failed') || (args.strict && results.some((result) => result.status === 'skipped'))) process.exitCode = 1;
+  if (
+    results.some((result) => result.status === 'failed') ||
+    (args.strict && results.some((result) => result.status === 'skipped'))
+  )
+    process.exitCode = 1;
 }
 
 async function readDevVarsIfPresent(path: string): Promise<Record<string, string>> {
@@ -158,22 +197,39 @@ function selectSources(sources: SmokeSource[], args: SmokeArgs): SmokeSource[] {
 }
 
 function skipped(source: SmokeSource, missing: string[]): SmokeResult {
-  return { source_id: source.id, name: source.name, status: 'skipped', metric_points: 0, events: 0, duration_ms: 0, missing_secrets: missing, sample_metrics: [], sample_events: [] };
+  return {
+    source_id: source.id,
+    name: source.name,
+    status: 'skipped',
+    metric_points: 0,
+    events: 0,
+    duration_ms: 0,
+    missing_secrets: missing,
+    sample_metrics: [],
+    sample_events: []
+  };
 }
 
 function printResults(results: SmokeResult[]): void {
   for (const result of results) {
     if (result.status === 'ok') {
-      console.log(`ok ${result.source_id}: ${result.metric_points} metric points, ${result.events} events (${result.duration_ms}ms)`);
-      for (const metric of result.sample_metrics) console.log(`  metric ${metric.metric}=${metric.value}${metric.dimensions ? ` ${JSON.stringify(metric.dimensions)}` : ''}`);
+      console.log(
+        `ok ${result.source_id}: ${result.metric_points} metric points, ${result.events} events (${result.duration_ms}ms)`
+      );
+      for (const metric of result.sample_metrics)
+        console.log(
+          `  metric ${metric.metric}=${metric.value}${metric.dimensions ? ` ${JSON.stringify(metric.dimensions)}` : ''}`
+        );
       for (const event of result.sample_events) console.log(`  event ${event.kind}: ${event.title ?? '<untitled>'}`);
-    } else if (result.status === 'skipped') console.log(`skipped ${result.source_id}: missing ${result.missing_secrets?.join(', ')}`);
+    } else if (result.status === 'skipped')
+      console.log(`skipped ${result.source_id}: missing ${result.missing_secrets?.join(', ')}`);
     else console.log(`failed ${result.source_id}: ${result.error}`);
   }
 }
 
 function stripQuotes(value: string): string {
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) return value.slice(1, -1);
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))
+    return value.slice(1, -1);
   return value;
 }
 

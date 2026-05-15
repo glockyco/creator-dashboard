@@ -8,8 +8,21 @@ const auth = vi.hoisted(() => ({ getGoogleOAuthAccessToken: vi.fn(async () => 'g
 
 vi.mock('../auth/google', () => ({ getGoogleOAuthAccessToken: auth.getGoogleOAuthAccessToken }));
 
-const source = { id: 'ga4', name: 'GA4', identity: 'glockyco', category: 'analytics', cadenceHours: 24, fetcher: fetchGa4, config: {} } as const;
-const env = { GOOGLE_OAUTH_CLIENT_ID: 'cid', GOOGLE_OAUTH_CLIENT_SECRET: 'cs', GOOGLE_OAUTH_REFRESH_TOKEN: 'rt', GA4_PROPERTY_ID: '123456' } as Env;
+const source = {
+  id: 'ga4',
+  name: 'GA4',
+  identity: 'glockyco',
+  category: 'analytics',
+  cadenceHours: 24,
+  fetcher: fetchGa4,
+  config: {}
+} as const;
+const env = {
+  GOOGLE_OAUTH_CLIENT_ID: 'cid',
+  GOOGLE_OAUTH_CLIENT_SECRET: 'cs',
+  GOOGLE_OAUTH_REFRESH_TOKEN: 'rt',
+  GA4_PROPERTY_ID: '123456'
+} as Env;
 const now = Date.UTC(2026, 4, 2);
 
 beforeEach(() => vi.unstubAllGlobals());
@@ -30,7 +43,10 @@ describe('fetchGa4', () => {
   });
 
   it('throws ZodError on schema drift', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ rows: [{ metricValues: [] }] }), { status: 200 })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ rows: [{ metricValues: [] }] }), { status: 200 }))
+    );
     await expect(fetchGa4({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);
   });
 

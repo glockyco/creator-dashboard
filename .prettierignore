@@ -1,0 +1,16 @@
+# Generated
+.svelte-kit/
+.wrangler/
+.tmp/
+build/
+dist/
+node_modules/
+test-results/
+playwright-report/
+posts/
+
+# Lockfiles
+pnpm-lock.yaml
+
+# Fixtures (treated as opaque test data)
+**/*.fixture.json

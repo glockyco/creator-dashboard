@@ -15,7 +15,9 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
   }
 
   if (!force) {
-    const run = await env.DB.prepare('SELECT last_run_at FROM fetcher_runs WHERE source_id = ?').bind(source_id).first<{ last_run_at: number }>();
+    const run = await env.DB.prepare('SELECT last_run_at FROM fetcher_runs WHERE source_id = ?')
+      .bind(source_id)
+      .first<{ last_run_at: number }>();
     const cadenceMs = source.cadenceHours * 3_600_000;
     if (run && now - run.last_run_at < cadenceMs - 300_000) {
       message.ack();
@@ -26,20 +28,21 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
   try {
     const output = await source.fetcher({ source, env, now });
     await env.DB.batch(successStatements(env.DB, source_id, now, output));
-    log('info', 'source fetch succeeded', { source_id, metric_points: output.metric_points.length, events: output.events.length });
+    log('info', 'source fetch succeeded', {
+      source_id,
+      metric_points: output.metric_points.length,
+      events: output.events.length
+    });
     message.ack();
   } catch (err) {
     const failure = classify(err);
     const errorMessage = err instanceof Error ? err.message : String(err);
     await env.DB.batch([
-      env.DB.prepare('INSERT INTO fetcher_failures (source_id, ts, tier, status_code, error_message) VALUES (?, ?, ?, ?, ?)').bind(
-        source_id,
-        now,
-        failure.tier,
-        failure.statusCode,
-        errorMessage
-      ),
-      env.DB.prepare(`
+      env.DB.prepare(
+        'INSERT INTO fetcher_failures (source_id, ts, tier, status_code, error_message) VALUES (?, ?, ?, ?, ?)'
+      ).bind(source_id, now, failure.tier, failure.statusCode, errorMessage),
+      env.DB.prepare(
+        `
         INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures)
         VALUES (?, ?, NULL, ?, ?, 1)
         ON CONFLICT(source_id) DO UPDATE SET
@@ -47,7 +50,8 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
           last_status = excluded.last_status,
           last_error = excluded.last_error,
           consecutive_failures = fetcher_runs.consecutive_failures + 1
-      `).bind(source_id, now, `${failure.tier}_failure`, errorMessage)
+      `
+      ).bind(source_id, now, `${failure.tier}_failure`, errorMessage)
     ]);
 
     if (failure.tier === 'permanent') {

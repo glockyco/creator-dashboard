@@ -4,8 +4,20 @@ import { FetchError } from '../http';
 import fixture from './cf-analytics.fixture.json';
 import { fetchCfAnalytics } from './cf-analytics';
 
-const source = { id: 'cf-analytics-erenshor-maps', name: 'Cloudflare Analytics: Erenshor Maps', identity: 'WoW_Much', category: 'analytics', cadenceHours: 24, fetcher: fetchCfAnalytics, config: {} } as const;
-const env = { CF_API_TOKEN: 'cf-test', CF_ACCOUNT_ID: 'acct-test', CF_ANALYTICS_SITE_TAGS: '{"cf-analytics-erenshor-maps":"site-tag-test"}' } as Env;
+const source = {
+  id: 'cf-analytics-erenshor-maps',
+  name: 'Cloudflare Analytics: Erenshor Maps',
+  identity: 'WoW_Much',
+  category: 'analytics',
+  cadenceHours: 24,
+  fetcher: fetchCfAnalytics,
+  config: {}
+} as const;
+const env = {
+  CF_API_TOKEN: 'cf-test',
+  CF_ACCOUNT_ID: 'acct-test',
+  CF_ANALYTICS_SITE_TAGS: '{"cf-analytics-erenshor-maps":"site-tag-test"}'
+} as Env;
 const now = Date.UTC(2026, 4, 2);
 
 beforeEach(() => vi.unstubAllGlobals());
@@ -35,7 +47,10 @@ describe('fetchCfAnalytics', () => {
   });
 
   it('throws ZodError on schema drift', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { viewer: {} } }), { status: 200 })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { viewer: {} } }), { status: 200 }))
+    );
     await expect(fetchCfAnalytics({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);
   });
 

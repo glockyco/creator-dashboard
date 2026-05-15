@@ -40,14 +40,23 @@ export function missingProductionSecrets(source: Record<string, string | undefin
   return requiredProductionSecrets().filter((name) => isMissingOrPlaceholder(source[name]));
 }
 
-
 export function parseWranglerPreflight(text: string): { errors: string[] } {
   const errors: string[] = [];
   if (text.includes(D1_PLACEHOLDER)) errors.push('wrangler.toml still contains the placeholder D1 database_id');
-  if (!text.includes('binding       = "DB"') && !text.includes('binding = "DB"')) errors.push('wrangler.toml is missing DB D1 binding');
-  if (!text.includes('binding = "FETCHER_QUEUE"')) errors.push('wrangler.toml is missing FETCHER_QUEUE producer binding');
-  if (!text.includes('queue   = "creator-dashboard-fetchers"') && !text.includes('queue = "creator-dashboard-fetchers"')) errors.push('wrangler.toml is missing creator-dashboard-fetchers queue');
-  if (!text.includes('dead_letter_queue  = "creator-dashboard-fetcher-dlq"') && !text.includes('dead_letter_queue = "creator-dashboard-fetcher-dlq"')) errors.push('wrangler.toml is missing creator-dashboard-fetcher-dlq dead-letter binding');
+  if (!text.includes('binding       = "DB"') && !text.includes('binding = "DB"'))
+    errors.push('wrangler.toml is missing DB D1 binding');
+  if (!text.includes('binding = "FETCHER_QUEUE"'))
+    errors.push('wrangler.toml is missing FETCHER_QUEUE producer binding');
+  if (
+    !text.includes('queue   = "creator-dashboard-fetchers"') &&
+    !text.includes('queue = "creator-dashboard-fetchers"')
+  )
+    errors.push('wrangler.toml is missing creator-dashboard-fetchers queue');
+  if (
+    !text.includes('dead_letter_queue  = "creator-dashboard-fetcher-dlq"') &&
+    !text.includes('dead_letter_queue = "creator-dashboard-fetcher-dlq"')
+  )
+    errors.push('wrangler.toml is missing creator-dashboard-fetcher-dlq dead-letter binding');
   if (!text.includes('"0 * * * *"')) errors.push('wrangler.toml is missing hourly fetch cron');
   if (!text.includes('"0 4,5 * * *"')) errors.push('wrangler.toml is missing Vienna digest cron');
   return { errors };
@@ -68,10 +77,10 @@ function isMissingOrPlaceholder(value: string | undefined): boolean {
 }
 
 function stripQuotes(value: string): string {
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) return value.slice(1, -1);
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))
+    return value.slice(1, -1);
   return value;
 }
-
 
 async function main(): Promise<void> {
   const wrangler = await readFile('wrangler.toml', 'utf8');

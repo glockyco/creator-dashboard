@@ -1,14 +1,8 @@
-import { sources, type SourceDef } from "$lib/sources/registry";
-import { sourceMetrics } from "$lib/sources/metrics";
-import type { IdentityFilter } from "$lib/types/domain";
-import type {
-  FetcherStatus,
-  LatestEvent,
-  LatestMetric,
-  SparkPoint,
-  TileSnapshot,
-} from "$lib/dashboard/types";
-import { latestMetricFromPoints } from "$lib/dashboard/delta";
+import { sources, type SourceDef } from '$lib/sources/registry';
+import { sourceMetrics } from '$lib/sources/metrics';
+import type { IdentityFilter } from '$lib/types/domain';
+import type { FetcherStatus, LatestEvent, LatestMetric, SparkPoint, TileSnapshot } from '$lib/dashboard/types';
+import { latestMetricFromPoints } from '$lib/dashboard/delta';
 
 export type DashboardFilters = {
   identity?: IdentityFilter;
@@ -39,28 +33,23 @@ const emptyStatus: FetcherStatus = {
   last_success_at: null,
   last_status: null,
   last_error: null,
-  consecutive_failures: 0,
+  consecutive_failures: 0
 };
 
-export async function getDashboardSnapshots(
-  db: D1Database,
-  filters: DashboardFilters = {},
-): Promise<TileSnapshot[]> {
+export async function getDashboardSnapshots(db: D1Database, filters: DashboardFilters = {}): Promise<TileSnapshot[]> {
   const since = filters.since ?? Date.now() - defaultWindowMs;
   const visibleSources = sources.filter((source) =>
-    filters.identity && filters.identity !== "all"
-      ? source.identity === filters.identity
-      : true,
+    filters.identity && filters.identity !== 'all' ? source.identity === filters.identity : true
   );
   const visibleConfigs = visibleSources
     .map((source) => ({ source, metrics: sourceMetrics[source.id] }))
     .filter(
       (
-        entry,
+        entry
       ): entry is {
         source: SourceDef;
         metrics: NonNullable<(typeof sourceMetrics)[string]>;
-      } => Boolean(entry.metrics),
+      } => Boolean(entry.metrics)
     );
 
   if (visibleConfigs.length === 0) return [];
@@ -71,8 +60,8 @@ export async function getDashboardSnapshots(
     latestEvents(db, visibleConfigs),
     fetcherStatuses(
       db,
-      visibleConfigs.map(({ source }) => source.id),
-    ),
+      visibleConfigs.map(({ source }) => source.id)
+    )
   ]);
   const metricRowsByKey = groupMetricRows(metricRowsResult);
   const eventsBySource = groupBySource(eventRows);
@@ -80,20 +69,15 @@ export async function getDashboardSnapshots(
 
   for (const { source, metrics } of visibleConfigs) {
     const primary = metrics.primary.map((metric) =>
-      toLatestMetric(
-        metric,
-        metricRowsByKey.get(metricKey(source.id, metric)) ?? [],
-      ),
+      toLatestMetric(metric, metricRowsByKey.get(metricKey(source.id, metric)) ?? [])
     );
 
     snapshots.push({
       source: withoutFetcher(source),
       metrics: primary,
-      sparkline: toSparkline(
-        metricRowsByKey.get(metricKey(source.id, metrics.sparkline)) ?? [],
-      ),
+      sparkline: toSparkline(metricRowsByKey.get(metricKey(source.id, metrics.sparkline)) ?? []),
       latestEvents: (eventsBySource.get(source.id) ?? []).map(toLatestEvent),
-      status: statusBySource.get(source.id) ?? emptyStatus,
+      status: statusBySource.get(source.id) ?? emptyStatus
     });
   }
 
@@ -106,14 +90,10 @@ async function metricRows(
     source: SourceDef;
     metrics: NonNullable<(typeof sourceMetrics)[string]>;
   }[],
-  since: number,
+  since: number
 ): Promise<MetricPointRow[]> {
   const sourceIds = entries.map(({ source }) => source.id);
-  const metricNames = [
-    ...new Set(
-      entries.flatMap(({ metrics }) => [...metrics.primary, metrics.sparkline]),
-    ),
-  ];
+  const metricNames = [...new Set(entries.flatMap(({ metrics }) => [...metrics.primary, metrics.sparkline]))];
   const result = await db
     .prepare(
       `SELECT source_id, metric, ts, value, dimensions
@@ -122,7 +102,7 @@ async function metricRows(
          AND metric IN (${placeholders(metricNames.length)})
          AND ts >= ?
          AND dimensions IS NULL
-       ORDER BY source_id ASC, metric ASC, ts ASC`,
+       ORDER BY source_id ASC, metric ASC, ts ASC`
     )
     .bind(...sourceIds, ...metricNames, since)
     .all<MetricPointRow>();
@@ -134,17 +114,17 @@ async function latestEvents(
   entries: {
     source: SourceDef;
     metrics: NonNullable<(typeof sourceMetrics)[string]>;
-  }[],
+  }[]
 ): Promise<EventRow[]> {
   const clauses: string[] = [];
   const params: string[] = [];
 
   for (const { source, metrics } of entries) {
     if (metrics.eventKind) {
-      clauses.push("(source_id = ? AND kind = ?)");
+      clauses.push('(source_id = ? AND kind = ?)');
       params.push(source.id, metrics.eventKind);
     } else {
-      clauses.push("(source_id = ?)");
+      clauses.push('(source_id = ?)');
       params.push(source.id);
     }
   }
@@ -156,10 +136,10 @@ async function latestEvents(
          SELECT source_id, external_id, ts, kind, author, title, url,
            ROW_NUMBER() OVER (PARTITION BY source_id ORDER BY ts DESC) AS row_number
          FROM events
-         WHERE ${clauses.join(" OR ")}
+         WHERE ${clauses.join(' OR ')}
        )
        WHERE row_number <= 3
-       ORDER BY source_id ASC, ts DESC`,
+       ORDER BY source_id ASC, ts DESC`
     )
     .bind(...params)
     .all<EventRow>();
@@ -168,15 +148,12 @@ async function latestEvents(
 
 type FetcherStatusRow = FetcherStatus & { source_id: string };
 
-async function fetcherStatuses(
-  db: D1Database,
-  sourceIds: string[],
-): Promise<FetcherStatusRow[]> {
+async function fetcherStatuses(db: D1Database, sourceIds: string[]): Promise<FetcherStatusRow[]> {
   const result = await db
     .prepare(
       `SELECT source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures
        FROM fetcher_runs
-       WHERE source_id IN (${placeholders(sourceIds.length)})`,
+       WHERE source_id IN (${placeholders(sourceIds.length)})`
     )
     .bind(...sourceIds)
     .all<FetcherStatusRow>();
@@ -196,7 +173,7 @@ function toLatestEvent(row: EventRow): LatestEvent {
     kind: row.kind,
     title: row.title,
     author: row.author,
-    url: row.url,
+    url: row.url
   };
 }
 
@@ -204,9 +181,7 @@ function toSparkline(rows: MetricPointRow[]): SparkPoint[] {
   return rows.map((row) => ({ ts: row.ts, value: row.value }));
 }
 
-function groupMetricRows(
-  rows: MetricPointRow[],
-): Map<string, MetricPointRow[]> {
+function groupMetricRows(rows: MetricPointRow[]): Map<string, MetricPointRow[]> {
   const grouped = new Map<string, MetricPointRow[]>();
   for (const row of rows) {
     const key = metricKey(row.source_id, row.metric);
@@ -215,9 +190,7 @@ function groupMetricRows(
   return grouped;
 }
 
-function groupBySource<T extends { source_id: string }>(
-  rows: T[],
-): Map<string, T[]> {
+function groupBySource<T extends { source_id: string }>(rows: T[]): Map<string, T[]> {
   const grouped = new Map<string, T[]>();
   for (const row of rows) {
     grouped.set(row.source_id, [...(grouped.get(row.source_id) ?? []), row]);
@@ -238,10 +211,10 @@ function metricKey(sourceId: string, metric: string): string {
 }
 
 function placeholders(count: number): string {
-  return Array.from({ length: count }, () => "?").join(", ");
+  return Array.from({ length: count }, () => '?').join(', ');
 }
 
-function withoutFetcher(source: SourceDef): Omit<SourceDef, "fetcher"> {
+function withoutFetcher(source: SourceDef): Omit<SourceDef, 'fetcher'> {
   const { fetcher: _fetcher, ...serializable } = source;
   return serializable;
 }

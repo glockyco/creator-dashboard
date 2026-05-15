@@ -22,15 +22,27 @@ const CfResponse = z.object({
 });
 
 type CfRow = z.infer<typeof CfRow>;
-export type CfAnalyticsRangeInput = { source: FetcherInput['source']; env: FetcherInput['env']; startDate: string; endDate: string };
+export type CfAnalyticsRangeInput = {
+  source: FetcherInput['source'];
+  env: FetcherInput['env'];
+  startDate: string;
+  endDate: string;
+};
 
 export async function fetchCfAnalytics({ source, env, now }: FetcherInput): Promise<FetcherOutput> {
   const date = new Date(now - 86_400_000).toISOString().slice(0, 10);
   const output = await fetchCfAnalyticsRange({ source, env, startDate: date, endDate: date });
-  return output.metric_points.length > 0 ? output : { metric_points: pointsFromRow(source.id, { dimensions: { date }, sum: { visits: 0 }, count: 0 }), events: [] };
+  return output.metric_points.length > 0
+    ? output
+    : { metric_points: pointsFromRow(source.id, { dimensions: { date }, sum: { visits: 0 }, count: 0 }), events: [] };
 }
 
-export async function fetchCfAnalyticsRange({ source, env, startDate, endDate }: CfAnalyticsRangeInput): Promise<FetcherOutput> {
+export async function fetchCfAnalyticsRange({
+  source,
+  env,
+  startDate,
+  endDate
+}: CfAnalyticsRangeInput): Promise<FetcherOutput> {
   const siteTag = SiteTags.parse(JSON.parse(env.CF_ANALYTICS_SITE_TAGS))[source.id];
   if (!siteTag) throw new Error(`missing Cloudflare Web Analytics site tag for ${source.id}`);
   const accountTag = env.CF_ACCOUNT_ID;

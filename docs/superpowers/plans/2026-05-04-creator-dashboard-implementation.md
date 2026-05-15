@@ -168,6 +168,7 @@ creator-dashboard/
 ### Task 1: Create SvelteKit and Cloudflare project configuration
 
 **Files:**
+
 - Create: `package.json`
 - Create: `svelte.config.js`
 - Create: `vite.config.ts`
@@ -481,6 +482,7 @@ git commit -m "chore: scaffold creator dashboard app"
 ### Task 2: Add domain types, identities, source registry skeleton
 
 **Files:**
+
 - Create: `src/app.d.ts`
 - Create: `src/lib/identities.ts`
 - Create: `src/lib/identities.test.ts`
@@ -680,10 +682,25 @@ describe('source registry', () => {
   });
 
   it('rejects invalid identity, category, cadence, and fetcher', () => {
-    expect(() => SourceDef.parse({ id: 'x', name: 'x', identity: 'bad', category: 'platform', cadenceHours: 1, fetcher })).toThrow();
-    expect(() => SourceDef.parse({ id: 'x', name: 'x', identity: 'glockyco', category: 'bad', cadenceHours: 1, fetcher })).toThrow();
-    expect(() => SourceDef.parse({ id: 'x', name: 'x', identity: 'glockyco', category: 'platform', cadenceHours: 0, fetcher })).toThrow();
-    expect(() => SourceDef.parse({ id: 'x', name: 'x', identity: 'glockyco', category: 'platform', cadenceHours: 1, fetcher: 'nope' })).toThrow();
+    expect(() =>
+      SourceDef.parse({ id: 'x', name: 'x', identity: 'bad', category: 'platform', cadenceHours: 1, fetcher })
+    ).toThrow();
+    expect(() =>
+      SourceDef.parse({ id: 'x', name: 'x', identity: 'glockyco', category: 'bad', cadenceHours: 1, fetcher })
+    ).toThrow();
+    expect(() =>
+      SourceDef.parse({ id: 'x', name: 'x', identity: 'glockyco', category: 'platform', cadenceHours: 0, fetcher })
+    ).toThrow();
+    expect(() =>
+      SourceDef.parse({
+        id: 'x',
+        name: 'x',
+        identity: 'glockyco',
+        category: 'platform',
+        cadenceHours: 1,
+        fetcher: 'nope'
+      })
+    ).toThrow();
   });
 });
 ```
@@ -710,6 +727,7 @@ git commit -m "feat: add identities and source registry skeleton"
 ### Task 3: Add initial D1 schema migration
 
 **Files:**
+
 - Create: `migrations/0001_initial_schema.sql`
 - Create: `src/lib/server/db/schema.test.ts`
 
@@ -855,6 +873,7 @@ git commit -m "feat: add initial d1 schema"
 ### Task 4: Add Cloudflare Access JWT verification
 
 **Files:**
+
 - Create: `src/lib/server/auth/access.ts`
 - Create: `src/lib/server/auth/access.test.ts`
 - Create: `src/hooks.server.ts`
@@ -873,7 +892,14 @@ const env = { ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com', ACCESS_AUD: 'aud-
 async function signedToken(overrides: { aud?: string; iss?: string; exp?: number } = {}) {
   const { privateKey, publicKey } = await generateKeyPair('RS256');
   const jwk = await exportJWK(publicKey);
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ keys: [{ ...jwk, kid: 'test-key', alg: 'RS256', use: 'sig' }] }))));
+  vi.stubGlobal(
+    'fetch',
+    vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ keys: [{ ...jwk, kid: 'test-key', alg: 'RS256', use: 'sig' }] }))
+      )
+  );
   const token = await new SignJWT({ email: 'johann@example.com' })
     .setProtectedHeader({ alg: 'RS256', kid: 'test-key' })
     .setIssuer(overrides.iss ?? 'https://team.cloudflareaccess.com')
@@ -891,11 +917,39 @@ describe('assertAccessJwt', () => {
   });
 
   it('rejects missing, expired, wrong audience, wrong issuer, and malformed tokens', async () => {
-    await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/'), env)).rejects.toMatchObject({ status: 401 });
-    await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ exp: 1 }) } }), env)).rejects.toMatchObject({ status: 401 });
-    await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ aud: 'wrong' }) } }), env)).rejects.toMatchObject({ status: 401 });
-    await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ iss: 'https://evil.example' }) } }), env)).rejects.toMatchObject({ status: 401 });
-    await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': 'not-a-jwt' } }), env)).rejects.toMatchObject({ status: 401 });
+    await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/'), env)).rejects.toMatchObject({
+      status: 401
+    });
+    await expect(
+      assertAccessJwt(
+        new Request('https://dashboard.glockyco.com/', {
+          headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ exp: 1 }) }
+        }),
+        env
+      )
+    ).rejects.toMatchObject({ status: 401 });
+    await expect(
+      assertAccessJwt(
+        new Request('https://dashboard.glockyco.com/', {
+          headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ aud: 'wrong' }) }
+        }),
+        env
+      )
+    ).rejects.toMatchObject({ status: 401 });
+    await expect(
+      assertAccessJwt(
+        new Request('https://dashboard.glockyco.com/', {
+          headers: { 'Cf-Access-Jwt-Assertion': await signedToken({ iss: 'https://evil.example' }) }
+        }),
+        env
+      )
+    ).rejects.toMatchObject({ status: 401 });
+    await expect(
+      assertAccessJwt(
+        new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': 'not-a-jwt' } }),
+        env
+      )
+    ).rejects.toMatchObject({ status: 401 });
   });
 });
 ```
@@ -918,7 +972,10 @@ export type AccessUser = {
   claims: Record<string, unknown>;
 };
 
-export async function assertAccessJwt(request: Request, env: Pick<Env, 'ACCESS_TEAM_DOMAIN' | 'ACCESS_AUD'>): Promise<AccessUser> {
+export async function assertAccessJwt(
+  request: Request,
+  env: Pick<Env, 'ACCESS_TEAM_DOMAIN' | 'ACCESS_AUD'>
+): Promise<AccessUser> {
   const token = request.headers.get('Cf-Access-Jwt-Assertion');
   if (!token) throw new AuthError('missing Access JWT');
 
@@ -934,7 +991,10 @@ export async function assertAccessJwt(request: Request, env: Pick<Env, 'ACCESS_T
       issuer,
       audience: env.ACCESS_AUD
     });
-    return { email: typeof payload.email === 'string' ? payload.email : null, claims: payload as Record<string, unknown> };
+    return {
+      email: typeof payload.email === 'string' ? payload.email : null,
+      claims: payload as Record<string, unknown>
+    };
   } catch (cause) {
     throw new AuthError('invalid Access JWT', { cause });
   }
@@ -981,6 +1041,7 @@ git commit -m "feat: verify cloudflare access jwt"
 ### Task 5: Add Worker wrapper for fetch, scheduled, and queue
 
 **Files:**
+
 - Create: `src/lib/server/worker/scheduled.ts`
 - Create: `src/lib/server/worker/queue.ts`
 - Create: `src/worker.ts`
@@ -994,7 +1055,14 @@ git commit -m "feat: verify cloudflare access jwt"
 
 ```ts
 export async function scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-  console.log(JSON.stringify({ level: 'info', message: 'scheduled handler reached', cron: controller.cron, ts: new Date().toISOString() }));
+  console.log(
+    JSON.stringify({
+      level: 'info',
+      message: 'scheduled handler reached',
+      cron: controller.cron,
+      ts: new Date().toISOString()
+    })
+  );
 }
 ```
 
@@ -1004,7 +1072,15 @@ export async function scheduled(controller: ScheduledController, env: Env, ctx: 
 import type { JobMsg } from '$lib/types/orchestration';
 
 export async function queue(batch: MessageBatch<JobMsg>, env: Env, ctx: ExecutionContext): Promise<void> {
-  console.log(JSON.stringify({ level: 'info', message: 'queue handler reached', queue: batch.queue, messages: batch.messages.length, ts: new Date().toISOString() }));
+  console.log(
+    JSON.stringify({
+      level: 'info',
+      message: 'queue handler reached',
+      queue: batch.queue,
+      messages: batch.messages.length,
+      ts: new Date().toISOString()
+    })
+  );
   batch.ackAll();
 }
 ```
@@ -1061,7 +1137,7 @@ curl "http://localhost:8787/__scheduled?cron=0+*+*+*+*"
 Expected Worker log includes:
 
 ```json
-{"level":"info","message":"scheduled handler reached","cron":"0 * * * *"}
+{ "level": "info", "message": "scheduled handler reached", "cron": "0 * * * *" }
 ```
 
 - [ ] **Step 4: Commit**
@@ -1075,13 +1151,14 @@ git commit -m "feat: add cloudflare worker handler wrapper"
 
 **Execution-order correction discovered during implementation:** Task 8 (shared connector contract, especially `FetchError`) must be completed before Task 6, because orchestration error classification imports and tests against `FetchError`. This does not enable any production sources early; the source registry remains empty until the Tier 1 connector task.
 
-
 **Second execution-order correction discovered during implementation:** Task 6 also needs the alert dedupe and DLQ primitives that were originally listed in Task 7, because `consumer.ts` calls `maybeSendAlert()` for permanent failures and `worker/queue.ts` dispatches DLQ batches. Implement `src/lib/server/alerts/discord.ts`, `src/lib/server/alerts/dedup.ts`, and `src/lib/server/orchestration/dlq.ts` with tests as part of orchestration, then Task 7 focuses on manual refresh and Health UI.
+
 ## Phase 2: Orchestration core
 
 ### Task 6: Add dispatcher, queue consumer, persistence, and error classification
 
 **Files:**
+
 - Create: `src/lib/server/log.ts`
 - Create: `src/lib/server/orchestration/errors.ts`
 - Create: `src/lib/server/orchestration/persist.ts`
@@ -1113,7 +1190,12 @@ import { z } from 'zod';
 import { FetchError } from '$lib/connectors/http';
 
 export type FailureTier = 'transient' | 'rate_limited' | 'permanent';
-export type Failure = { tier: FailureTier; statusCode: number | null; retryAfterSeconds: number | null; errorClass: string };
+export type Failure = {
+  tier: FailureTier;
+  statusCode: number | null;
+  retryAfterSeconds: number | null;
+  errorClass: string;
+};
 
 export function parseRetryAfter(headers: Headers): number | null {
   const value = headers.get('Retry-After');
@@ -1126,12 +1208,22 @@ export function parseRetryAfter(headers: Headers): number | null {
 }
 
 export function classify(err: unknown): Failure {
-  if (err instanceof z.ZodError) return { tier: 'permanent', statusCode: null, retryAfterSeconds: null, errorClass: 'schema_drift' };
+  if (err instanceof z.ZodError)
+    return { tier: 'permanent', statusCode: null, retryAfterSeconds: null, errorClass: 'schema_drift' };
   if (err instanceof FetchError) {
-    if (err.status === 429) return { tier: 'rate_limited', statusCode: 429, retryAfterSeconds: parseRetryAfter(err.headers) ?? 600, errorClass: 'rate_limited' };
-    if (err.status === 401 || err.status === 403) return { tier: 'permanent', statusCode: err.status, retryAfterSeconds: null, errorClass: 'auth_dead' };
-    if (err.status === 404) return { tier: 'permanent', statusCode: 404, retryAfterSeconds: null, errorClass: 'not_found' };
-    if (err.status >= 500) return { tier: 'transient', statusCode: err.status, retryAfterSeconds: 300, errorClass: 'upstream_5xx' };
+    if (err.status === 429)
+      return {
+        tier: 'rate_limited',
+        statusCode: 429,
+        retryAfterSeconds: parseRetryAfter(err.headers) ?? 600,
+        errorClass: 'rate_limited'
+      };
+    if (err.status === 401 || err.status === 403)
+      return { tier: 'permanent', statusCode: err.status, retryAfterSeconds: null, errorClass: 'auth_dead' };
+    if (err.status === 404)
+      return { tier: 'permanent', statusCode: 404, retryAfterSeconds: null, errorClass: 'not_found' };
+    if (err.status >= 500)
+      return { tier: 'transient', statusCode: err.status, retryAfterSeconds: 300, errorClass: 'upstream_5xx' };
   }
   return { tier: 'transient', statusCode: null, retryAfterSeconds: 300, errorClass: 'network_or_unknown' };
 }
@@ -1144,17 +1236,46 @@ export function classify(err: unknown): Failure {
 ```ts
 import type { FetcherOutput } from '$lib/types/domain';
 
-export function successStatements(db: D1Database, sourceId: string, now: number, output: FetcherOutput): D1PreparedStatement[] {
+export function successStatements(
+  db: D1Database,
+  sourceId: string,
+  now: number,
+  output: FetcherOutput
+): D1PreparedStatement[] {
   return [
     ...output.metric_points.map((point) =>
-      db.prepare('INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES (?, ?, ?, ?, ?)')
-        .bind(point.source_id, point.metric, point.ts, point.value, point.dimensions ? JSON.stringify(point.dimensions) : null)
+      db
+        .prepare(
+          'INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES (?, ?, ?, ?, ?)'
+        )
+        .bind(
+          point.source_id,
+          point.metric,
+          point.ts,
+          point.value,
+          point.dimensions ? JSON.stringify(point.dimensions) : null
+        )
     ),
     ...output.events.map((event) =>
-      db.prepare('INSERT OR IGNORE INTO events (source_id, external_id, ts, kind, author, title, body, url, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(event.source_id, event.external_id, event.ts, event.kind, event.author, event.title, event.body, event.url, event.metadata ? JSON.stringify(event.metadata) : null)
+      db
+        .prepare(
+          'INSERT OR IGNORE INTO events (source_id, external_id, ts, kind, author, title, body, url, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        )
+        .bind(
+          event.source_id,
+          event.external_id,
+          event.ts,
+          event.kind,
+          event.author,
+          event.title,
+          event.body,
+          event.url,
+          event.metadata ? JSON.stringify(event.metadata) : null
+        )
     ),
-    db.prepare(`
+    db
+      .prepare(
+        `
       INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures)
       VALUES (?, ?, ?, 'success', NULL, 0)
       ON CONFLICT(source_id) DO UPDATE SET
@@ -1163,7 +1284,9 @@ export function successStatements(db: D1Database, sourceId: string, now: number,
         last_status = 'success',
         last_error = NULL,
         consecutive_failures = 0
-    `).bind(sourceId, now, now)
+    `
+      )
+      .bind(sourceId, now, now)
   ];
 }
 ```
@@ -1178,7 +1301,9 @@ import type { JobMsg } from '$lib/types/orchestration';
 import { log } from '$lib/server/log';
 
 export async function dispatchDueSources(env: Env, now = Date.now()): Promise<number> {
-  const messages = sources.map((source) => ({ body: { source_id: source.id, dispatch_ts: now, force: false } satisfies JobMsg }));
+  const messages = sources.map((source) => ({
+    body: { source_id: source.id, dispatch_ts: now, force: false } satisfies JobMsg
+  }));
   if (messages.length > 0) await env.FETCHER_QUEUE.sendBatch(messages);
   log('info', 'dispatched source jobs', { enqueued: messages.length });
   return messages.length;
@@ -1207,7 +1332,9 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
   }
 
   if (!force) {
-    const run = await env.DB.prepare('SELECT last_run_at FROM fetcher_runs WHERE source_id = ?').bind(source_id).first<{ last_run_at: number }>();
+    const run = await env.DB.prepare('SELECT last_run_at FROM fetcher_runs WHERE source_id = ?')
+      .bind(source_id)
+      .first<{ last_run_at: number }>();
     const cadenceMs = source.cadenceHours * 3_600_000;
     if (run && now - run.last_run_at < cadenceMs - 300_000) {
       message.ack();
@@ -1218,15 +1345,21 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
   try {
     const output = await source.fetcher({ source, env, now });
     await env.DB.batch(successStatements(env.DB, source_id, now, output));
-    log('info', 'source fetch succeeded', { source_id, metric_points: output.metric_points.length, events: output.events.length });
+    log('info', 'source fetch succeeded', {
+      source_id,
+      metric_points: output.metric_points.length,
+      events: output.events.length
+    });
     message.ack();
   } catch (err) {
     const failure = classify(err);
     const errorMessage = err instanceof Error ? err.message : String(err);
     await env.DB.batch([
-      env.DB.prepare('INSERT INTO fetcher_failures (source_id, ts, tier, status_code, error_message) VALUES (?, ?, ?, ?, ?)')
-        .bind(source_id, now, failure.tier, failure.statusCode, errorMessage),
-      env.DB.prepare(`
+      env.DB.prepare(
+        'INSERT INTO fetcher_failures (source_id, ts, tier, status_code, error_message) VALUES (?, ?, ?, ?, ?)'
+      ).bind(source_id, now, failure.tier, failure.statusCode, errorMessage),
+      env.DB.prepare(
+        `
         INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures)
         VALUES (?, ?, NULL, ?, ?, 1)
         ON CONFLICT(source_id) DO UPDATE SET
@@ -1234,7 +1367,8 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
           last_status = excluded.last_status,
           last_error = excluded.last_error,
           consecutive_failures = fetcher_runs.consecutive_failures + 1
-      `).bind(source_id, now, `${failure.tier}_failure`, errorMessage)
+      `
+      ).bind(source_id, now, `${failure.tier}_failure`, errorMessage)
     ]);
 
     if (failure.tier === 'permanent') {
@@ -1299,6 +1433,7 @@ git commit -m "feat: add queue orchestration core"
 ### Task 7: Add alert dedupe, DLQ handling, manual refresh, and Health page
 
 **Files:**
+
 - Create: `src/lib/server/alerts/discord.ts`
 - Create: `src/lib/server/alerts/dedup.ts`
 - Create: `src/lib/server/alerts/dedup.test.ts`
@@ -1331,13 +1466,27 @@ export async function postDiscord(webhook: string, content: string): Promise<voi
 ```ts
 import { postDiscord } from './discord';
 
-export async function maybeSendAlert(env: Env, sourceId: string, tier: 'permanent' | 'dlq', errorClass: string, message: string, now = Date.now()): Promise<boolean> {
+export async function maybeSendAlert(
+  env: Env,
+  sourceId: string,
+  tier: 'permanent' | 'dlq',
+  errorClass: string,
+  message: string,
+  now = Date.now()
+): Promise<boolean> {
   const alertKey = `${tier}:${sourceId}:${errorClass}`;
-  const existing = await env.DB.prepare('SELECT sent_at FROM alerts_sent WHERE alert_key = ?').bind(alertKey).first<{ sent_at: number }>();
+  const existing = await env.DB.prepare('SELECT sent_at FROM alerts_sent WHERE alert_key = ?')
+    .bind(alertKey)
+    .first<{ sent_at: number }>();
   if (existing && now - existing.sent_at < 24 * 3_600_000) return false;
 
-  await postDiscord(env.DISCORD_ALERTS_WEBHOOK, `creator-dashboard ${tier} failure: ${sourceId} (${errorClass})\n${message}`);
-  await env.DB.prepare('INSERT OR REPLACE INTO alerts_sent (alert_key, sent_at) VALUES (?, ?)').bind(alertKey, now).run();
+  await postDiscord(
+    env.DISCORD_ALERTS_WEBHOOK,
+    `creator-dashboard ${tier} failure: ${sourceId} (${errorClass})\n${message}`
+  );
+  await env.DB.prepare('INSERT OR REPLACE INTO alerts_sent (alert_key, sent_at) VALUES (?, ?)')
+    .bind(alertKey, now)
+    .run();
   return true;
 }
 ```
@@ -1352,7 +1501,9 @@ import { maybeSendAlert } from '$lib/server/alerts/dedup';
 
 export async function consumeDlqMessage(message: Message<JobMsg>, env: Env, now = Date.now()): Promise<void> {
   const sourceId = message.body.source_id;
-  await env.DB.prepare('INSERT INTO fetcher_failures (source_id, ts, tier, status_code, error_message) VALUES (?, ?, ?, ?, ?)')
+  await env.DB.prepare(
+    'INSERT INTO fetcher_failures (source_id, ts, tier, status_code, error_message) VALUES (?, ?, ?, ?, ?)'
+  )
     .bind(sourceId, now, 'dlq', null, 'Exhausted retries')
     .run();
   await maybeSendAlert(env, sourceId, 'dlq', 'exhausted_retries', 'Failed after 5 retries', now);
@@ -1391,8 +1542,16 @@ export const POST: RequestHandler = async ({ params, platform }) => {
 ```ts
 export async function getHealthSnapshot(db: D1Database) {
   const [runs, failures, alerts] = await Promise.all([
-    db.prepare('SELECT source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures FROM fetcher_runs ORDER BY source_id').all(),
-    db.prepare('SELECT id, source_id, ts, tier, status_code, error_message FROM fetcher_failures ORDER BY ts DESC LIMIT 100').all(),
+    db
+      .prepare(
+        'SELECT source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures FROM fetcher_runs ORDER BY source_id'
+      )
+      .all(),
+    db
+      .prepare(
+        'SELECT id, source_id, ts, tier, status_code, error_message FROM fetcher_failures ORDER BY ts DESC LIMIT 100'
+      )
+      .all(),
     db.prepare('SELECT alert_key, sent_at FROM alerts_sent ORDER BY sent_at DESC LIMIT 100').all()
   ]);
   return { runs: runs.results, failures: failures.results, alerts: alerts.results };
@@ -1439,6 +1598,7 @@ git commit -m "feat: add orchestration health and alerts"
 ### Task 8: Add connector shared contract, HTTP boundary, auth helpers, and README
 
 **Files:**
+
 - Create: `src/lib/connectors/types.ts`
 - Create: `src/lib/connectors/http.ts`
 - Create: `src/lib/connectors/http.test.ts`
@@ -1582,6 +1742,7 @@ git commit -m "feat: add connector contract and http boundary"
 ### Task 9: Implement Tier 1 connectors and enable seven Tier 1 sources
 
 **Files:**
+
 - Create/modify: `src/lib/connectors/fetchers/index.ts`
 - Create: `src/lib/connectors/fetchers/github.ts`
 - Create: `src/lib/connectors/fetchers/github.test.ts`
@@ -1624,7 +1785,7 @@ export { fetchMediaWikiRecentChanges as mediaWikiRecentChanges } from './mediawi
   { metric: 'public_repos', dimensions: null },
   { metric: 'contributions', dimensions: null },
   { metric: 'repo_stars', dimensions: { repo: string, archived: 'true' | 'false' } }
-]
+];
 ```
 
 It emits `events: []`. Do not add recent activity events.
@@ -1638,14 +1799,18 @@ It emits `events: []`. Do not add recent activity events.
   { metric: 'views', dimensions: null },
   { metric: 'rating', dimensions: null },
   { metric: 'ratings', dimensions: null }
-]
+];
 ```
 
 It supports source configs:
 
 ```ts
-{ publishedfileid: '3500398991' }
-{ publishedfileid: '3616580411' }
+{
+  publishedfileid: '3500398991';
+}
+{
+  publishedfileid: '3616580411';
+}
 ```
 
 - [ ] **Step 4: Implement Steam Reviews connector events**
@@ -1685,7 +1850,7 @@ If `query_summary` is stable in the fixture, also emit metrics `review_total`, `
   { metric: 'total_downloads', dimensions: null },
   { metric: 'package_count', dimensions: null },
   { metric: 'package_downloads', dimensions: { package: string } }
-]
+];
 ```
 
 - [ ] **Step 6: Implement MediaWiki recent changes events**
@@ -1710,13 +1875,69 @@ If `query_summary` is stable in the fixture, also emit metrics `review_total`, `
 
 ```ts
 export const sources: SourceDef[] = z.array(SourceDef).parse([
-  { id: 'github-glockyco', identity: 'glockyco', name: 'GitHub @glockyco', category: 'platform', cadenceHours: 1, fetcher: fetchers.github, config: {} },
-  { id: 'steam-guide-erenshor', identity: 'WoW_Much', name: 'Steam Guide: Erenshor Maps', category: 'platform', cadenceHours: 1, fetcher: fetchers.steamGuide, config: { publishedfileid: '3500398991' } },
-  { id: 'steam-guide-ak', identity: 'WoW_Much', name: 'Steam Guide: AK Compendium', category: 'platform', cadenceHours: 1, fetcher: fetchers.steamGuide, config: { publishedfileid: '3616580411' } },
-  { id: 'steam-reviews-erenshor', identity: 'WoW_Much', name: 'Steam Reviews: Erenshor', category: 'event_feed', cadenceHours: 1, fetcher: fetchers.steamReviews, config: { appid: '2382520' } },
-  { id: 'steam-reviews-ak', identity: 'WoW_Much', name: 'Steam Reviews: Ancient Kingdoms', category: 'event_feed', cadenceHours: 1, fetcher: fetchers.steamReviews, config: { appid: '2241380' } },
-  { id: 'thunderstore-wowmuch', identity: 'WoW_Much', name: 'Thunderstore: WoW_Much', category: 'platform', cadenceHours: 1, fetcher: fetchers.thunderstoreTeam, config: { namespace: 'WoW_Much', community: 'erenshor' } },
-  { id: 'erenshor-wiki-recent', identity: 'WoW_Much', name: 'Erenshor Wiki: Recent Changes', category: 'event_feed', cadenceHours: 1, fetcher: fetchers.mediaWikiRecentChanges, config: { wiki: 'erenshor.wiki.gg' } }
+  {
+    id: 'github-glockyco',
+    identity: 'glockyco',
+    name: 'GitHub @glockyco',
+    category: 'platform',
+    cadenceHours: 1,
+    fetcher: fetchers.github,
+    config: {}
+  },
+  {
+    id: 'steam-guide-erenshor',
+    identity: 'WoW_Much',
+    name: 'Steam Guide: Erenshor Maps',
+    category: 'platform',
+    cadenceHours: 1,
+    fetcher: fetchers.steamGuide,
+    config: { publishedfileid: '3500398991' }
+  },
+  {
+    id: 'steam-guide-ak',
+    identity: 'WoW_Much',
+    name: 'Steam Guide: AK Compendium',
+    category: 'platform',
+    cadenceHours: 1,
+    fetcher: fetchers.steamGuide,
+    config: { publishedfileid: '3616580411' }
+  },
+  {
+    id: 'steam-reviews-erenshor',
+    identity: 'WoW_Much',
+    name: 'Steam Reviews: Erenshor',
+    category: 'event_feed',
+    cadenceHours: 1,
+    fetcher: fetchers.steamReviews,
+    config: { appid: '2382520' }
+  },
+  {
+    id: 'steam-reviews-ak',
+    identity: 'WoW_Much',
+    name: 'Steam Reviews: Ancient Kingdoms',
+    category: 'event_feed',
+    cadenceHours: 1,
+    fetcher: fetchers.steamReviews,
+    config: { appid: '2241380' }
+  },
+  {
+    id: 'thunderstore-wowmuch',
+    identity: 'WoW_Much',
+    name: 'Thunderstore: WoW_Much',
+    category: 'platform',
+    cadenceHours: 1,
+    fetcher: fetchers.thunderstoreTeam,
+    config: { namespace: 'WoW_Much', community: 'erenshor' }
+  },
+  {
+    id: 'erenshor-wiki-recent',
+    identity: 'WoW_Much',
+    name: 'Erenshor Wiki: Recent Changes',
+    category: 'event_feed',
+    cadenceHours: 1,
+    fetcher: fetchers.mediaWikiRecentChanges,
+    config: { wiki: 'erenshor.wiki.gg' }
+  }
 ]);
 ```
 
@@ -1746,6 +1967,7 @@ git commit -m "feat: add tier one source connectors"
 ### Task 10: Add fixture capture script
 
 **Files:**
+
 - Create: `scripts/capture-fixture.ts`
 - Create: `scripts/capture-fixture.test.ts`
 
@@ -1798,6 +2020,7 @@ git commit -m "test: add connector fixture capture utility"
 ### Task 11: Add dashboard query layer and metric registry
 
 **Files:**
+
 - Create: `src/lib/sources/metrics.ts`
 - Create: `src/lib/sources/metrics.test.ts`
 - Create: `src/lib/dashboard/types.ts`
@@ -1814,8 +2037,16 @@ export const sourceMetrics: Record<string, { primary: string[]; sparkline: strin
   'github-glockyco': { primary: ['followers', 'total_stars', 'public_repos'], sparkline: 'contributions' },
   'steam-guide-erenshor': { primary: ['views', 'rating', 'ratings'], sparkline: 'views' },
   'steam-guide-ak': { primary: ['views', 'rating', 'ratings'], sparkline: 'views' },
-  'steam-reviews-erenshor': { primary: ['review_total', 'review_positive', 'review_negative'], sparkline: 'review_total', eventKind: 'review' },
-  'steam-reviews-ak': { primary: ['review_total', 'review_positive', 'review_negative'], sparkline: 'review_total', eventKind: 'review' },
+  'steam-reviews-erenshor': {
+    primary: ['review_total', 'review_positive', 'review_negative'],
+    sparkline: 'review_total',
+    eventKind: 'review'
+  },
+  'steam-reviews-ak': {
+    primary: ['review_total', 'review_positive', 'review_negative'],
+    sparkline: 'review_total',
+    eventKind: 'review'
+  },
   'thunderstore-wowmuch': { primary: ['total_downloads', 'package_count'], sparkline: 'total_downloads' },
   'erenshor-wiki-recent': { primary: ['wiki_change_count'], sparkline: 'wiki_change_count', eventKind: 'wiki_edit' }
 };
@@ -1833,8 +2064,20 @@ import type { SourceDef } from '$lib/sources/registry';
 export type SparkPoint = { ts: number; value: number };
 export type LatestMetric = { metric: string; value: number | null; previousValue: number | null; delta: number | null };
 export type LatestEvent = { ts: number; kind: string; title: string | null; author: string | null; url: string | null };
-export type FetcherStatus = { last_run_at: number | null; last_success_at: number | null; last_status: string | null; last_error: string | null; consecutive_failures: number };
-export type TileSnapshot = { source: Omit<SourceDef, 'fetcher'>; metrics: LatestMetric[]; sparkline: SparkPoint[]; latestEvents: LatestEvent[]; status: FetcherStatus };
+export type FetcherStatus = {
+  last_run_at: number | null;
+  last_success_at: number | null;
+  last_status: string | null;
+  last_error: string | null;
+  consecutive_failures: number;
+};
+export type TileSnapshot = {
+  source: Omit<SourceDef, 'fetcher'>;
+  metrics: LatestMetric[];
+  sparkline: SparkPoint[];
+  latestEvents: LatestEvent[];
+  status: FetcherStatus;
+};
 ```
 
 - [ ] **Step 3: Implement `getDashboardSnapshots(db, filters)`**
@@ -1880,6 +2123,7 @@ git commit -m "feat: add dashboard query model"
 ### Task 12: Add dashboard UI shell, tiles, identity tabs, and refresh polling
 
 **Files:**
+
 - Create: `src/lib/ui/AppShell.svelte`
 - Create: `src/lib/ui/HeaderBar.svelte`
 - Create: `src/lib/ui/SidebarNav.svelte`
@@ -1976,6 +2220,7 @@ git commit -m "feat: add dashboard tiles and navigation"
 ### Task 13: Add per-source drill-down route
 
 **Files:**
+
 - Create: `src/lib/server/source-detail.ts`
 - Create: `src/lib/server/source-detail.test.ts`
 - Create: `src/routes/sources/[id]/+page.server.ts`
@@ -2032,6 +2277,7 @@ git commit -m "feat: add source detail pages"
 ### Task 14: Add posts schema, normalizer, runtime loader, and sync script
 
 **Files:**
+
 - Create: `posts/.gitkeep`
 - Create: `src/lib/posts/schema.ts`
 - Create: `src/lib/posts/normalize.ts`
@@ -2138,6 +2384,7 @@ git commit -m "feat: add posts metadata sync"
 ### Task 15: Add posts list, detail, markdown body, and performance panel
 
 **Files:**
+
 - Create: `src/lib/server/posts.ts`
 - Create: `src/lib/server/posts.test.ts`
 - Create: `src/routes/posts/+page.server.ts`
@@ -2156,8 +2403,12 @@ git commit -m "feat: add posts metadata sync"
 `src/lib/server/posts.ts` exports:
 
 ```ts
-export async function listPosts(db: D1Database, filters: { author?: string; tag?: string; related_source?: string }) { /* query posts_index/posts_sources */ }
-export async function getPostPerformance(db: D1Database, slug: string) { /* before/after metric windows for related sources */ }
+export async function listPosts(db: D1Database, filters: { author?: string; tag?: string; related_source?: string }) {
+  /* query posts_index/posts_sources */
+}
+export async function getPostPerformance(db: D1Database, slug: string) {
+  /* before/after metric windows for related sources */
+}
 ```
 
 Performance SQL uses `posts_index` + `posts_sources` and correlated `metric_points` subqueries for a before/after window around `posted_at`.
@@ -2202,6 +2453,7 @@ git commit -m "feat: add posts pages"
 ### Task 16: Add analytics source registry entries and authenticated connectors
 
 **Files:**
+
 - Modify: `src/lib/connectors/fetchers/index.ts`
 - Create: `src/lib/connectors/fetchers/gsc.ts`
 - Create: `src/lib/connectors/fetchers/gsc.test.ts`
@@ -2324,6 +2576,7 @@ git commit -m "feat: add authenticated analytics connectors"
 ### Task 17: Add shared backfill utilities
 
 **Files:**
+
 - Create: `scripts/backfill/lib/env.ts`
 - Create: `scripts/backfill/lib/sql.ts`
 - Create: `scripts/backfill/lib/windows.ts`
@@ -2336,7 +2589,17 @@ git commit -m "feat: add authenticated analytics connectors"
 `env.ts` reads local process env names matching Worker secrets:
 
 ```ts
-const required = ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GSC_PROPERTIES', 'BING_WEBMASTER_API_KEY', 'BING_PROPERTIES', 'CF_API_TOKEN', 'CF_ACCOUNT_ID', 'CF_ANALYTICS_SITE_TAGS'];
+const required = [
+  'GOOGLE_OAUTH_CLIENT_ID',
+  'GOOGLE_OAUTH_CLIENT_SECRET',
+  'GOOGLE_OAUTH_REFRESH_TOKEN',
+  'GSC_PROPERTIES',
+  'BING_WEBMASTER_API_KEY',
+  'BING_PROPERTIES',
+  'CF_API_TOKEN',
+  'CF_ACCOUNT_ID',
+  'CF_ANALYTICS_SITE_TAGS'
+];
 ```
 
 Include `GA4_PROPERTY_ID` only for GA4 backfill.
@@ -2385,6 +2648,7 @@ git commit -m "feat: add analytics backfill utilities"
 ### Task 18: Add analytics backfill scripts
 
 **Files:**
+
 - Create: `scripts/backfill-gsc.ts`
 - Create: `scripts/backfill-gsc.test.ts`
 - Create: `scripts/backfill-ga4.ts`
@@ -2455,6 +2719,7 @@ git commit -m "feat: add analytics backfill scripts"
 ### Task 19: Add timeline correlation view
 
 **Files:**
+
 - Create: `src/lib/timeline/schema.ts`
 - Create: `src/lib/timeline/schema.test.ts`
 - Create: `src/lib/server/timeline.ts`
@@ -2520,6 +2785,7 @@ git commit -m "feat: add timeline correlation view"
 **Reason:** Unit tests and fixture tests verify parser intent, but they do not prove current upstream schemas, URLs, credentials, or runtime imports work. Before adding digest logic, add a live smoke harness and run public sources.
 
 **Files:**
+
 - Create: `scripts/smoke-connectors.ts`
 - Create: `scripts/smoke-connectors.test.ts`
 - Modify: `package.json`
@@ -2542,6 +2808,7 @@ pnpm smoke:connectors -- --source github-glockyco --strict
 Run `pnpm smoke:public`. If a public connector fails against live upstream JSON, add a targeted failing fixture test for that live shape, fix the connector schema/mapping, and rerun smoke.
 
 Observed first smoke drift:
+
 - Steam reviews can return `weighted_vote_score` as either number or string.
 - Thunderstore `/api/experimental/package/` is paginated and uses `total_downloads`; community-scoped v1 package lists remain more suitable for team aggregate metrics.
 - MediaWiki flag fields can be empty strings when flags are present.
@@ -2560,11 +2827,10 @@ git add package.json scripts/smoke-connectors.ts scripts/smoke-connectors.test.t
 git commit -m "test: add real connector smoke checks"
 ```
 
-
-
 ### Task 20: Add daily digest with Vienna guard and dedupe
 
 **Files:**
+
 - Create: `src/lib/digest/vienna.ts`
 - Create: `src/lib/digest/vienna.test.ts`
 - Create: `src/lib/digest/query.ts`
@@ -2586,13 +2852,20 @@ git commit -m "test: add real connector smoke checks"
 
 ```ts
 export function viennaDateKey(now: Date): string {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Vienna', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Vienna',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(now);
   const get = (type: string) => parts.find((part) => part.type === type)?.value;
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
 export function isViennaDigestHour(now: Date): boolean {
-  const hour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Vienna', hour: 'numeric', hour12: false }).format(now));
+  const hour = Number(
+    new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Vienna', hour: 'numeric', hour12: false }).format(now)
+  );
   return hour === 6;
 }
 ```
@@ -2636,6 +2909,7 @@ git commit -m "feat: add daily digest"
 ### Task 21: Add Settings page and mobile refinement
 
 **Files:**
+
 - Create: `src/lib/settings/schema.ts`
 - Create: `src/lib/settings/store.svelte.ts`
 - Create: `src/lib/settings/settings.test.ts`

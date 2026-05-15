@@ -20,13 +20,19 @@ export async function runBingBackfill(options: BingBackfillOptions = {}): Promis
   const parsed = parseBackfillArgs(options.args ?? process.argv.slice(2), '.tmp/backfill-bing.sql');
   const env = readBackfillEnvForMode(parsed, options.env);
   const sources = env ? filterBingSources(options.sources ?? (await loadSourceRecords()), env) : [];
-  const windows = options.windows ?? singleWindow('1970-01-01', new Date(Date.now() - 86_400_000).toISOString().slice(0, 10));
+  const windows =
+    options.windows ?? singleWindow('1970-01-01', new Date(Date.now() - 86_400_000).toISOString().slice(0, 10));
   const rows: MetricPoint[] = [];
 
   if (env) {
     for (const source of sources) {
       for (const window of windows) {
-        const output = await fetchBingWebmasterRange({ source: source as never, env, startDate: window.startDate, endDate: window.endDate });
+        const output = await fetchBingWebmasterRange({
+          source: source as never,
+          env,
+          startDate: window.startDate,
+          endDate: window.endDate
+        });
         rows.push(...output.metric_points);
       }
     }
@@ -39,13 +45,17 @@ export async function runBingBackfill(options: BingBackfillOptions = {}): Promis
 }
 
 async function loadSourceRecords(): Promise<BackfillSource[]> {
-  const module = (await import(new URL('../src/lib/sources/registry-data.ts', import.meta.url).href)) as { sourceRecords: BackfillSource[] };
+  const module = (await import(new URL('../src/lib/sources/registry-data.ts', import.meta.url).href)) as {
+    sourceRecords: BackfillSource[];
+  };
   return module.sourceRecords;
 }
 
 function filterBingSources(sources: BackfillSource[], env: Pick<Env, 'BING_PROPERTIES'>): BackfillSource[] {
   const allowed = parseStringSet(env.BING_PROPERTIES);
-  return sources.filter((source) => source.id.startsWith('bing-') && (allowed.size === 0 || allowed.has(String(source.config.siteUrl))));
+  return sources.filter(
+    (source) => source.id.startsWith('bing-') && (allowed.size === 0 || allowed.has(String(source.config.siteUrl)))
+  );
 }
 
 function parseStringSet(value: string): Set<string> {
@@ -54,18 +64,29 @@ function parseStringSet(value: string): Set<string> {
   return new Set(parsed.map((item) => String(item)));
 }
 
-function readBackfillEnvForMode(parsed: { dryRun: boolean; executeRemote: boolean }, env: NodeJS.ProcessEnv | Env | undefined): Env | null {
+function readBackfillEnvForMode(
+  parsed: { dryRun: boolean; executeRemote: boolean },
+  env: NodeJS.ProcessEnv | Env | undefined
+): Env | null {
   try {
     return readBackfillEnv(env ?? process.env);
   } catch (error) {
-    if (parsed.dryRun && !parsed.executeRemote && error instanceof Error && error.message.startsWith('missing required env var ')) return null;
+    if (
+      parsed.dryRun &&
+      !parsed.executeRemote &&
+      error instanceof Error &&
+      error.message.startsWith('missing required env var ')
+    )
+      return null;
     throw error;
   }
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   runBingBackfill()
-    .then((result) => console.log(`wrote ${result.rowCount} Bing metric rows for ${result.sourceCount} sources to ${result.out}`))
+    .then((result) =>
+      console.log(`wrote ${result.rowCount} Bing metric rows for ${result.sourceCount} sources to ${result.out}`)
+    )
     .catch((error: unknown) => {
       console.error(error instanceof Error ? error.message : String(error));
       process.exitCode = 1;

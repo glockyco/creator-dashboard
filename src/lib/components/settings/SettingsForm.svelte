@@ -8,7 +8,10 @@
   let { store }: { store: SettingsStore } = $props();
 </script>
 
-<form class="space-y-6 rounded-xl border border-border bg-bg-secondary p-5" onsubmit={(event) => event.preventDefault()}>
+<form
+  class="space-y-6 rounded-xl border border-border bg-bg-secondary p-5"
+  onsubmit={(event) => event.preventDefault()}
+>
   <ThemeToggle {store} />
   <DefaultDateRangeSelect {store} />
   <IdentityColorInputs {store} />

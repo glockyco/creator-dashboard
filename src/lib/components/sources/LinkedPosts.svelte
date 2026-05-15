@@ -15,7 +15,9 @@
         {#if post.tags.length > 0}<p class="mt-2 text-xs text-fg-muted">{post.tags.join(', ')}</p>{/if}
       </a>
     {:else}
-      <p class="rounded-lg border border-dashed border-border p-4 text-sm text-fg-muted">No posts linked to this source yet.</p>
+      <p class="rounded-lg border border-dashed border-border p-4 text-sm text-fg-muted">
+        No posts linked to this source yet.
+      </p>
     {/each}
   </div>
 </section>

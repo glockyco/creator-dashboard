@@ -19,13 +19,21 @@ export type Ga4BackfillOptions = {
 export async function runGa4Backfill(options: Ga4BackfillOptions = {}): Promise<BackfillResult> {
   const parsed = parseBackfillArgs(options.args ?? process.argv.slice(2), '.tmp/backfill-ga4.sql');
   const sources = filterGa4Sources(options.sources ?? (await loadSourceRecords()));
-  const env = sources.length > 0 ? readBackfillEnv(options.env ?? process.env, { includeGa4: true }) : (options.env ?? process.env) as Env;
+  const env =
+    sources.length > 0
+      ? readBackfillEnv(options.env ?? process.env, { includeGa4: true })
+      : ((options.env ?? process.env) as Env);
   const windows = options.windows ?? ga4MonthlyWindows();
   const rows: MetricPoint[] = [];
 
   for (const source of sources) {
     for (const window of windows) {
-      const output = await fetchGa4Range({ source: source as never, env, startDate: window.startDate, endDate: window.endDate });
+      const output = await fetchGa4Range({
+        source: source as never,
+        env,
+        startDate: window.startDate,
+        endDate: window.endDate
+      });
       rows.push(...output.metric_points);
     }
   }
@@ -37,7 +45,9 @@ export async function runGa4Backfill(options: Ga4BackfillOptions = {}): Promise<
 }
 
 async function loadSourceRecords(): Promise<BackfillSource[]> {
-  const module = (await import(new URL('../src/lib/sources/registry-data.ts', import.meta.url).href)) as { sourceRecords: BackfillSource[] };
+  const module = (await import(new URL('../src/lib/sources/registry-data.ts', import.meta.url).href)) as {
+    sourceRecords: BackfillSource[];
+  };
   return module.sourceRecords;
 }
 
@@ -47,7 +57,9 @@ function filterGa4Sources(sources: BackfillSource[]): BackfillSource[] {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   runGa4Backfill()
-    .then((result) => console.log(`wrote ${result.rowCount} GA4 metric rows for ${result.sourceCount} sources to ${result.out}`))
+    .then((result) =>
+      console.log(`wrote ${result.rowCount} GA4 metric rows for ${result.sourceCount} sources to ${result.out}`)
+    )
     .catch((error: unknown) => {
       console.error(error instanceof Error ? error.message : String(error));
       process.exitCode = 1;

@@ -6,7 +6,15 @@ const fetcher = vi.fn();
 vi.mock('$lib/sources/registry', () => ({
   getSource: (sourceId: string) =>
     sourceId === 'github-glockyco'
-      ? { id: 'github-glockyco', identity: 'glockyco', name: 'GitHub @glockyco', category: 'platform', cadenceHours: 1, fetcher, config: {} }
+      ? {
+          id: 'github-glockyco',
+          identity: 'glockyco',
+          name: 'GitHub @glockyco',
+          category: 'platform',
+          cadenceHours: 1,
+          fetcher,
+          config: {}
+        }
       : undefined
 }));
 
@@ -28,17 +36,56 @@ function sourceDetailDb() {
 function rowsFor(sql: string, params: unknown[]) {
   if (sql.includes('FROM metric_points')) {
     const metric = params[1];
-    if (metric === 'followers') return [{ ts: 86_400_000, value: 10 }, { ts: 172_800_000, value: 12 }];
-    if (metric === 'contributions') return [{ ts: 86_400_000, value: 3 }, { ts: 172_800_000, value: 4 }];
+    if (metric === 'followers')
+      return [
+        { ts: 86_400_000, value: 10 },
+        { ts: 172_800_000, value: 12 }
+      ];
+    if (metric === 'contributions')
+      return [
+        { ts: 86_400_000, value: 3 },
+        { ts: 172_800_000, value: 4 }
+      ];
     return [];
   }
   if (sql.includes('FROM posts_sources')) {
-    return [{ slug: 'release-notes', posted_at: 1_500, author: 'glockyco', platform: 'site', url: 'https://example.test/post', title: 'Release notes', tags: '["release"]', body_excerpt: 'Shipped.' }];
+    return [
+      {
+        slug: 'release-notes',
+        posted_at: 1_500,
+        author: 'glockyco',
+        platform: 'site',
+        url: 'https://example.test/post',
+        title: 'Release notes',
+        tags: '["release"]',
+        body_excerpt: 'Shipped.'
+      }
+    ];
   }
   if (sql.includes('FROM events')) {
     return [
-      { source_id: 'github-glockyco', external_id: 'evt-2', ts: 3_000, kind: 'release', author: 'glockyco', title: 'Second', body: 'Body 2', url: 'https://example.test/2', metadata: '{"tag":"v2"}' },
-      { source_id: 'github-glockyco', external_id: 'evt-1', ts: 2_000, kind: 'release', author: 'glockyco', title: 'First', body: 'Body 1', url: 'https://example.test/1', metadata: null }
+      {
+        source_id: 'github-glockyco',
+        external_id: 'evt-2',
+        ts: 3_000,
+        kind: 'release',
+        author: 'glockyco',
+        title: 'Second',
+        body: 'Body 2',
+        url: 'https://example.test/2',
+        metadata: '{"tag":"v2"}'
+      },
+      {
+        source_id: 'github-glockyco',
+        external_id: 'evt-1',
+        ts: 2_000,
+        kind: 'release',
+        author: 'glockyco',
+        title: 'First',
+        body: 'Body 1',
+        url: 'https://example.test/1',
+        metadata: null
+      }
     ];
   }
   return [];
@@ -56,23 +103,67 @@ describe('getSourceDetail', () => {
     const detail = await getSourceDetail(db, 'github-glockyco', { since: 500 });
 
     expect(detail).toEqual({
-      source: { id: 'github-glockyco', identity: 'glockyco', name: 'GitHub @glockyco', category: 'platform', cadenceHours: 1, config: {} },
+      source: {
+        id: 'github-glockyco',
+        identity: 'glockyco',
+        name: 'GitHub @glockyco',
+        category: 'platform',
+        cadenceHours: 1,
+        config: {}
+      },
       metricHistory: {
-        followers: [{ ts: 86_400_000, value: 10 }, { ts: 172_800_000, value: 12 }],
+        followers: [
+          { ts: 86_400_000, value: 10 },
+          { ts: 172_800_000, value: 12 }
+        ],
         total_stars: [],
         public_repos: [],
-        contributions: [{ ts: 86_400_000, value: 3 }, { ts: 172_800_000, value: 4 }]
+        contributions: [
+          { ts: 86_400_000, value: 3 },
+          { ts: 172_800_000, value: 4 }
+        ]
       },
       secondaryMetrics: [
         { metric: 'followers', value: 12, previousValue: 10, delta: 2 },
         { metric: 'total_stars', value: null, previousValue: null, delta: null },
         { metric: 'public_repos', value: null, previousValue: null, delta: null }
       ],
-      linkedPosts: [{ slug: 'release-notes', posted_at: 1_500, author: 'glockyco', platform: 'site', url: 'https://example.test/post', title: 'Release notes', tags: ['release'], body_excerpt: 'Shipped.' }],
+      linkedPosts: [
+        {
+          slug: 'release-notes',
+          posted_at: 1_500,
+          author: 'glockyco',
+          platform: 'site',
+          url: 'https://example.test/post',
+          title: 'Release notes',
+          tags: ['release'],
+          body_excerpt: 'Shipped.'
+        }
+      ],
       events: {
         items: [
-          { source_id: 'github-glockyco', external_id: 'evt-2', ts: 3_000, kind: 'release', author: 'glockyco', title: 'Second', body: 'Body 2', url: 'https://example.test/2', metadata: { tag: 'v2' } },
-          { source_id: 'github-glockyco', external_id: 'evt-1', ts: 2_000, kind: 'release', author: 'glockyco', title: 'First', body: 'Body 1', url: 'https://example.test/1', metadata: null }
+          {
+            source_id: 'github-glockyco',
+            external_id: 'evt-2',
+            ts: 3_000,
+            kind: 'release',
+            author: 'glockyco',
+            title: 'Second',
+            body: 'Body 2',
+            url: 'https://example.test/2',
+            metadata: { tag: 'v2' }
+          },
+          {
+            source_id: 'github-glockyco',
+            external_id: 'evt-1',
+            ts: 2_000,
+            kind: 'release',
+            author: 'glockyco',
+            title: 'First',
+            body: 'Body 1',
+            url: 'https://example.test/1',
+            metadata: null
+          }
         ],
         nextCursor: null
       }
@@ -83,13 +174,43 @@ describe('getSourceDetail', () => {
 
 describe('getSourceEvents', () => {
   it('applies cursor and kind filters and returns a next cursor when another page exists', async () => {
-    const prepare = vi.fn((sql: string) => ({
-      bind: (...params: unknown[]) => ({
+    const prepare = vi.fn((_sql: string) => ({
+      bind: (..._params: unknown[]) => ({
         all: async () => ({
           results: [
-            { source_id: 'github-glockyco', external_id: 'evt-3', ts: 3_000, kind: 'release', author: null, title: 'Third', body: null, url: null, metadata: null },
-            { source_id: 'github-glockyco', external_id: 'evt-2', ts: 2_000, kind: 'release', author: null, title: 'Second', body: null, url: null, metadata: null },
-            { source_id: 'github-glockyco', external_id: 'evt-1', ts: 1_000, kind: 'release', author: null, title: 'First', body: null, url: null, metadata: null }
+            {
+              source_id: 'github-glockyco',
+              external_id: 'evt-3',
+              ts: 3_000,
+              kind: 'release',
+              author: null,
+              title: 'Third',
+              body: null,
+              url: null,
+              metadata: null
+            },
+            {
+              source_id: 'github-glockyco',
+              external_id: 'evt-2',
+              ts: 2_000,
+              kind: 'release',
+              author: null,
+              title: 'Second',
+              body: null,
+              url: null,
+              metadata: null
+            },
+            {
+              source_id: 'github-glockyco',
+              external_id: 'evt-1',
+              ts: 1_000,
+              kind: 'release',
+              author: null,
+              title: 'First',
+              body: null,
+              url: null,
+              metadata: null
+            }
           ]
         })
       })

@@ -27,7 +27,9 @@ describe('successStatements', () => {
   it('creates idempotent metric/event inserts and success run upsert', () => {
     const { db, statements } = fakeDb();
     const output: FetcherOutput = {
-      metric_points: [{ source_id: 'source-a', metric: 'followers', ts: 1714838400000, value: 3, dimensions: { account: 'main' } }],
+      metric_points: [
+        { source_id: 'source-a', metric: 'followers', ts: 1714838400000, value: 3, dimensions: { account: 'main' } }
+      ],
       events: [
         {
           source_id: 'source-a',

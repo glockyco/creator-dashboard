@@ -1,17 +1,31 @@
 import { accessHeaders } from '../e2e/support/access-auth.ts';
 
 export type SmokeIngestArgs = { sourceId: string; baseUrl: string; timeoutMs: number };
-export type FetcherStatusShape = { last_status: string | null; last_success_at: number | null; consecutive_failures: number };
+export type FetcherStatusShape = {
+  last_status: string | null;
+  last_success_at: number | null;
+  consecutive_failures: number;
+};
 
 export function parseSmokeIngestArgs(argv: string[]): SmokeIngestArgs {
-  const parsed: SmokeIngestArgs = { sourceId: 'steam-reviews-erenshor', baseUrl: 'http://127.0.0.1:8788', timeoutMs: 60_000 };
+  const parsed: SmokeIngestArgs = {
+    sourceId: 'steam-reviews-erenshor',
+    baseUrl: 'http://127.0.0.1:8788',
+    timeoutMs: 60_000
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const value = argv[index + 1];
-    if (arg === '--source' && value) { parsed.sourceId = value; index += 1; }
-    else if (arg === '--base-url' && value) { parsed.baseUrl = value; index += 1; }
-    else if (arg === '--timeout-ms' && value) { parsed.timeoutMs = Number(value); index += 1; }
-    else throw new Error(`unknown or incomplete argument: ${arg}`);
+    if (arg === '--source' && value) {
+      parsed.sourceId = value;
+      index += 1;
+    } else if (arg === '--base-url' && value) {
+      parsed.baseUrl = value;
+      index += 1;
+    } else if (arg === '--timeout-ms' && value) {
+      parsed.timeoutMs = Number(value);
+      index += 1;
+    } else throw new Error(`unknown or incomplete argument: ${arg}`);
   }
   return parsed;
 }

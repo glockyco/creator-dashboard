@@ -16,8 +16,21 @@ const metrics = ['clicks', 'impressions', 'ctr', 'position'] as const;
 const rowLimit = 25_000;
 
 type GscRow = z.infer<typeof GscRow>;
-type NormalizedRow = { date: string; query: string; page: string; clicks: number; impressions: number; ctr: number; position: number };
-export type GscRangeInput = { source: FetcherInput['source']; env: FetcherInput['env']; startDate: string; endDate: string };
+type NormalizedRow = {
+  date: string;
+  query: string;
+  page: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+};
+export type GscRangeInput = {
+  source: FetcherInput['source'];
+  env: FetcherInput['env'];
+  startDate: string;
+  endDate: string;
+};
 
 export async function fetchGsc({ source, env, now }: FetcherInput): Promise<FetcherOutput> {
   const date = day(now - 86_400_000);
@@ -30,17 +43,33 @@ export async function fetchGscRange({ source, env, startDate, endDate }: GscRang
   const rows: GscRow[] = [];
 
   for (let startRow = 0; ; startRow += rowLimit) {
-    const response = await fetchJson(`https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(config.siteUrl)}/searchAnalytics/query`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ startDate, endDate, dimensions: ['date', 'query', 'page'], rowLimit, startRow, dataState: 'all' }),
-      schema: GscResponse
-    });
+    const response = await fetchJson(
+      `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(config.siteUrl)}/searchAnalytics/query`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          startDate,
+          endDate,
+          dimensions: ['date', 'query', 'page'],
+          rowLimit,
+          startRow,
+          dataState: 'all'
+        }),
+        schema: GscResponse
+      }
+    );
     rows.push(...response.rows);
     if (response.rows.length < rowLimit) break;
   }
 
-  return { metric_points: pointsFromRows(source.id, rows.map((row) => normalizeRow(row, startDate))), events: [] };
+  return {
+    metric_points: pointsFromRows(
+      source.id,
+      rows.map((row) => normalizeRow(row, startDate))
+    ),
+    events: []
+  };
 }
 
 function pointsFromRows(sourceId: string, rows: NormalizedRow[]): MetricPoint[] {
@@ -77,11 +106,23 @@ function normalizeRow(row: GscRow, defaultDate: string): NormalizedRow {
 function aggregatePoints(sourceId: string, ts: number, rows: NormalizedRow[]): MetricPoint[] {
   const clicks = rows.reduce((sum, row) => sum + row.clicks, 0);
   const impressions = rows.reduce((sum, row) => sum + row.impressions, 0);
-  const weightedPosition = impressions === 0 ? 0 : rows.reduce((sum, row) => sum + row.position * row.impressions, 0) / impressions;
-  return [point(sourceId, 'clicks', ts, clicks), point(sourceId, 'impressions', ts, impressions), point(sourceId, 'ctr', ts, impressions === 0 ? 0 : clicks / impressions), point(sourceId, 'position', ts, weightedPosition)];
+  const weightedPosition =
+    impressions === 0 ? 0 : rows.reduce((sum, row) => sum + row.position * row.impressions, 0) / impressions;
+  return [
+    point(sourceId, 'clicks', ts, clicks),
+    point(sourceId, 'impressions', ts, impressions),
+    point(sourceId, 'ctr', ts, impressions === 0 ? 0 : clicks / impressions),
+    point(sourceId, 'position', ts, weightedPosition)
+  ];
 }
 
-function point(source_id: string, metric: string, ts: number, value: number, dimensions: JsonRecord | null = null): MetricPoint {
+function point(
+  source_id: string,
+  metric: string,
+  ts: number,
+  value: number,
+  dimensions: JsonRecord | null = null
+): MetricPoint {
   return { source_id, metric, ts, value, dimensions };
 }
 

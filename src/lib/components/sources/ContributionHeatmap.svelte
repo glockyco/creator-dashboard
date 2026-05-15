@@ -13,7 +13,9 @@
         title={`${new Date(point.ts).toISOString().slice(0, 10)}: ${point.value}`}
       ></div>
     {:else}
-      <p class="col-span-14 rounded-lg border border-dashed border-border p-4 text-sm text-fg-muted">No contribution history captured yet.</p>
+      <p class="col-span-14 rounded-lg border border-dashed border-border p-4 text-sm text-fg-muted">
+        No contribution history captured yet.
+      </p>
     {/each}
   </div>
 </section>

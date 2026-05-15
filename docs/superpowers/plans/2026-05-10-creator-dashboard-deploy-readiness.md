@@ -23,6 +23,7 @@
 ## Task 1: Sync planning artifacts and resource checklist
 
 **Files:**
+
 - Modify: `docs/superpowers/specs/2026-05-04-creator-dashboard-design.md`
 - Modify: `docs/superpowers/plans/2026-05-04-creator-dashboard-implementation.md`
 - Create: `docs/superpowers/plans/2026-05-10-creator-dashboard-deploy-readiness.md`
@@ -95,6 +96,7 @@ git commit -m "docs: sync deploy readiness plan"
 ## Task 2: Resolve GA4 live integration
 
 **Files:**
+
 - Modify: `src/lib/connectors/fetchers/ga4.ts`
 - Modify: `src/lib/connectors/fetchers/ga4.test.ts`
 - Modify: `src/lib/sources/registry-data.ts`
@@ -191,7 +193,8 @@ Update `src/lib/sources/registry.test.ts` and `src/lib/sources/metrics.test.ts` 
 Change GA4 smoke requirements in `scripts/smoke-connectors.ts` to:
 
 ```ts
-if (sourceId.startsWith('ga4') || sourceId.includes('-ga4-')) return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GA4_PROPERTY_ID'];
+if (sourceId.startsWith('ga4') || sourceId.includes('-ga4-'))
+  return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GA4_PROPERTY_ID'];
 ```
 
 Update `scripts/smoke-connectors.test.ts` for that requirement list.
@@ -229,6 +232,7 @@ git commit -m "feat: enable ga4 analytics source"
 ## Task 3: Split deploy scripts and add preflight validation
 
 **Files:**
+
 - Modify: `package.json`
 - Create: `scripts/deploy-preflight.ts`
 - Create: `scripts/deploy-preflight.test.ts`
@@ -243,7 +247,9 @@ import { parseWranglerPreflight, requiredProductionSecrets } from './deploy-pref
 
 describe('deploy preflight', () => {
   it('rejects the placeholder D1 database id', () => {
-    const result = parseWranglerPreflight('database_id = "<replace with wrangler d1 create creator-dashboard database_id>"');
+    const result = parseWranglerPreflight(
+      'database_id = "<replace with wrangler d1 create creator-dashboard database_id>"'
+    );
     expect(result.errors).toContain('wrangler.toml still contains the placeholder D1 database_id');
   });
 
@@ -330,10 +336,20 @@ export function requiredProductionSecrets(): string[] {
 export function parseWranglerPreflight(text: string): { errors: string[] } {
   const errors: string[] = [];
   if (text.includes(D1_PLACEHOLDER)) errors.push('wrangler.toml still contains the placeholder D1 database_id');
-  if (!text.includes('binding       = "DB"') && !text.includes('binding = "DB"')) errors.push('wrangler.toml is missing DB D1 binding');
-  if (!text.includes('binding = "FETCHER_QUEUE"')) errors.push('wrangler.toml is missing FETCHER_QUEUE producer binding');
-  if (!text.includes('queue   = "creator-dashboard-fetchers"') && !text.includes('queue = "creator-dashboard-fetchers"')) errors.push('wrangler.toml is missing creator-dashboard-fetchers queue');
-  if (!text.includes('dead_letter_queue  = "creator-dashboard-fetcher-dlq"') && !text.includes('dead_letter_queue = "creator-dashboard-fetcher-dlq"')) errors.push('wrangler.toml is missing creator-dashboard-fetcher-dlq dead-letter binding');
+  if (!text.includes('binding       = "DB"') && !text.includes('binding = "DB"'))
+    errors.push('wrangler.toml is missing DB D1 binding');
+  if (!text.includes('binding = "FETCHER_QUEUE"'))
+    errors.push('wrangler.toml is missing FETCHER_QUEUE producer binding');
+  if (
+    !text.includes('queue   = "creator-dashboard-fetchers"') &&
+    !text.includes('queue = "creator-dashboard-fetchers"')
+  )
+    errors.push('wrangler.toml is missing creator-dashboard-fetchers queue');
+  if (
+    !text.includes('dead_letter_queue  = "creator-dashboard-fetcher-dlq"') &&
+    !text.includes('dead_letter_queue = "creator-dashboard-fetcher-dlq"')
+  )
+    errors.push('wrangler.toml is missing creator-dashboard-fetcher-dlq dead-letter binding');
   if (!text.includes('"0 * * * *"')) errors.push('wrangler.toml is missing hourly fetch cron');
   if (!text.includes('"0 4,5 * * *"')) errors.push('wrangler.toml is missing Vienna digest cron');
   return { errors };
@@ -395,6 +411,7 @@ git commit -m "chore: add deploy preflight checks"
 ## Task 4: Add local ingest smoke through refresh endpoint and queue consumer
 
 **Files:**
+
 - Create: `scripts/smoke-ingest.ts`
 - Create: `scripts/smoke-ingest.test.ts`
 - Modify: `scripts/e2e-server.ts` only if reusable bootstrap extraction is necessary
@@ -409,16 +426,31 @@ import { parseSmokeIngestArgs, statusReachedSuccess } from './smoke-ingest';
 
 describe('smoke-ingest helpers', () => {
   it('defaults to a safe public source and local base url', () => {
-    expect(parseSmokeIngestArgs([])).toEqual({ sourceId: 'steam-reviews-erenshor', baseUrl: 'http://127.0.0.1:8788', timeoutMs: 60_000 });
+    expect(parseSmokeIngestArgs([])).toEqual({
+      sourceId: 'steam-reviews-erenshor',
+      baseUrl: 'http://127.0.0.1:8788',
+      timeoutMs: 60_000
+    });
   });
 
   it('accepts explicit source and timeout', () => {
-    expect(parseSmokeIngestArgs(['--source', 'github-glockyco', '--base-url', 'https://dashboard.glockyco.com', '--timeout-ms', '5000'])).toEqual({ sourceId: 'github-glockyco', baseUrl: 'https://dashboard.glockyco.com', timeoutMs: 5_000 });
+    expect(
+      parseSmokeIngestArgs([
+        '--source',
+        'github-glockyco',
+        '--base-url',
+        'https://dashboard.glockyco.com',
+        '--timeout-ms',
+        '5000'
+      ])
+    ).toEqual({ sourceId: 'github-glockyco', baseUrl: 'https://dashboard.glockyco.com', timeoutMs: 5_000 });
   });
 
   it('recognizes a successful fetcher status', () => {
     expect(statusReachedSuccess({ last_status: 'success', last_success_at: 123, consecutive_failures: 0 })).toBe(true);
-    expect(statusReachedSuccess({ last_status: 'permanent_failure', last_success_at: null, consecutive_failures: 1 })).toBe(false);
+    expect(
+      statusReachedSuccess({ last_status: 'permanent_failure', last_success_at: null, consecutive_failures: 1 })
+    ).toBe(false);
   });
 });
 ```
@@ -447,17 +479,31 @@ Implementation outline:
 import { accessHeaders } from '../e2e/support/access-auth';
 
 export type SmokeIngestArgs = { sourceId: string; baseUrl: string; timeoutMs: number };
-export type FetcherStatusShape = { last_status: string | null; last_success_at: number | null; consecutive_failures: number };
+export type FetcherStatusShape = {
+  last_status: string | null;
+  last_success_at: number | null;
+  consecutive_failures: number;
+};
 
 export function parseSmokeIngestArgs(argv: string[]): SmokeIngestArgs {
-  const parsed: SmokeIngestArgs = { sourceId: 'steam-reviews-erenshor', baseUrl: 'http://127.0.0.1:8788', timeoutMs: 60_000 };
+  const parsed: SmokeIngestArgs = {
+    sourceId: 'steam-reviews-erenshor',
+    baseUrl: 'http://127.0.0.1:8788',
+    timeoutMs: 60_000
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const value = argv[index + 1];
-    if (arg === '--source' && value) { parsed.sourceId = value; index += 1; }
-    else if (arg === '--base-url' && value) { parsed.baseUrl = value; index += 1; }
-    else if (arg === '--timeout-ms' && value) { parsed.timeoutMs = Number(value); index += 1; }
-    else throw new Error(`unknown or incomplete argument: ${arg}`);
+    if (arg === '--source' && value) {
+      parsed.sourceId = value;
+      index += 1;
+    } else if (arg === '--base-url' && value) {
+      parsed.baseUrl = value;
+      index += 1;
+    } else if (arg === '--timeout-ms' && value) {
+      parsed.timeoutMs = Number(value);
+      index += 1;
+    } else throw new Error(`unknown or incomplete argument: ${arg}`);
   }
   return parsed;
 }
@@ -515,6 +561,7 @@ git commit -m "test: add local ingest smoke"
 ## Task 5: Add bounded cron/queue smoke
 
 **Files:**
+
 - Create: `scripts/smoke-cron.ts`
 - Create: `scripts/smoke-cron.test.ts`
 - Create: `src/routes/api/smoke/hourly/+server.ts`
@@ -536,7 +583,9 @@ it('can dispatch only selected sources for smoke verification', async () => {
   const count = await dispatchDueSources(env, 123, { sourceIds: ['steam-reviews-erenshor'] });
 
   expect(count).toBe(1);
-  expect(queue.sendBatch).toHaveBeenCalledWith([{ body: { source_id: 'steam-reviews-erenshor', dispatch_ts: 123, force: false } }]);
+  expect(queue.sendBatch).toHaveBeenCalledWith([
+    { body: { source_id: 'steam-reviews-erenshor', dispatch_ts: 123, force: false } }
+  ]);
 });
 ```
 
@@ -553,10 +602,16 @@ Expected: fail because `dispatchDueSources` has no options parameter.
 Change `dispatchDueSources` signature:
 
 ```ts
-export async function dispatchDueSources(env: Env, now = Date.now(), options: { sourceIds?: string[] } = {}): Promise<number> {
+export async function dispatchDueSources(
+  env: Env,
+  now = Date.now(),
+  options: { sourceIds?: string[] } = {}
+): Promise<number> {
   const allowed = options.sourceIds ? new Set(options.sourceIds) : null;
   const dueSources = allowed ? sources.filter((source) => allowed.has(source.id)) : sources;
-  const messages = dueSources.map((source) => ({ body: { source_id: source.id, dispatch_ts: now, force: false } satisfies JobMsg }));
+  const messages = dueSources.map((source) => ({
+    body: { source_id: source.id, dispatch_ts: now, force: false } satisfies JobMsg
+  }));
   if (messages.length > 0) await env.FETCHER_QUEUE.sendBatch(messages);
   log('info', 'dispatched source jobs', { enqueued: messages.length });
   return messages.length;
@@ -573,7 +628,11 @@ import { parseSmokeCronArgs } from './smoke-cron';
 
 describe('smoke-cron args', () => {
   it('defaults to hourly cron and safe source', () => {
-    expect(parseSmokeCronArgs([])).toEqual({ sourceId: 'steam-reviews-erenshor', baseUrl: 'http://127.0.0.1:8788', timeoutMs: 60_000 });
+    expect(parseSmokeCronArgs([])).toEqual({
+      sourceId: 'steam-reviews-erenshor',
+      baseUrl: 'http://127.0.0.1:8788',
+      timeoutMs: 60_000
+    });
   });
 });
 ```
@@ -603,6 +662,7 @@ git commit -m "test: add bounded cron queue smoke"
 ## Task 6: Remote resource provisioning and configuration
 
 **Files:**
+
 - Modify: `wrangler.toml`
 - Modify: `.dev.vars.example` only if a new smoke-only flag is introduced
 - No secrets committed
@@ -669,6 +729,7 @@ git commit -m "chore: configure cloudflare deploy resources"
 ## Task 7: Remote deploy and post-deploy verification
 
 **Files:**
+
 - Create: `scripts/verify-deploy.ts`
 - Create: `scripts/verify-deploy.test.ts`
 - Modify: `package.json`
@@ -683,7 +744,11 @@ import { parseVerifyDeployArgs } from './verify-deploy';
 
 describe('verify-deploy args', () => {
   it('defaults to production dashboard and safe source', () => {
-    expect(parseVerifyDeployArgs([])).toEqual({ baseUrl: 'https://dashboard.glockyco.com', sourceId: 'steam-reviews-erenshor', timeoutMs: 120_000 });
+    expect(parseVerifyDeployArgs([])).toEqual({
+      baseUrl: 'https://dashboard.glockyco.com',
+      sourceId: 'steam-reviews-erenshor',
+      timeoutMs: 120_000
+    });
   });
 });
 ```

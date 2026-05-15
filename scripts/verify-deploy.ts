@@ -4,14 +4,24 @@ import { pollStatus, type SmokeIngestArgs } from './smoke-ingest.ts';
 export type VerifyDeployArgs = SmokeIngestArgs;
 
 export function parseVerifyDeployArgs(argv: string[]): VerifyDeployArgs {
-  const parsed: VerifyDeployArgs = { sourceId: 'steam-reviews-erenshor', baseUrl: 'https://dashboard.glockyco.com', timeoutMs: 120_000 };
+  const parsed: VerifyDeployArgs = {
+    sourceId: 'steam-reviews-erenshor',
+    baseUrl: 'https://dashboard.glockyco.com',
+    timeoutMs: 120_000
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const value = argv[index + 1];
-    if (arg === '--source' && value) { parsed.sourceId = value; index += 1; }
-    else if (arg === '--base-url' && value) { parsed.baseUrl = value; index += 1; }
-    else if (arg === '--timeout-ms' && value) { parsed.timeoutMs = Number(value); index += 1; }
-    else throw new Error(`unknown or incomplete argument: ${arg}`);
+    if (arg === '--source' && value) {
+      parsed.sourceId = value;
+      index += 1;
+    } else if (arg === '--base-url' && value) {
+      parsed.baseUrl = value;
+      index += 1;
+    } else if (arg === '--timeout-ms' && value) {
+      parsed.timeoutMs = Number(value);
+      index += 1;
+    } else throw new Error(`unknown or incomplete argument: ${arg}`);
   }
   return parsed;
 }

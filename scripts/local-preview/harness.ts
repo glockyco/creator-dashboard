@@ -1,8 +1,8 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
-import { createServer, type Server } from "node:http";
-import { spawn, spawnSync, type ChildProcess } from "node:child_process";
-import { once } from "node:events";
-import { exportJWK, generateKeyPair, type JWK } from "jose";
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { createServer, type Server } from 'node:http';
+import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
+import { once } from 'node:events';
+import { exportJWK, generateKeyPair, type JWK } from 'jose';
 
 export type AccessFixture = {
   issuerDomain: string;
@@ -32,9 +32,9 @@ export type StartedProcess = {
   stop: () => void;
 };
 
-export const defaultIssuerDomain = "team.cloudflareaccess.com";
-export const defaultAudience = "creator-dashboard-e2e";
-export const defaultKid = "e2e-key";
+export const defaultIssuerDomain = 'team.cloudflareaccess.com';
+export const defaultAudience = 'creator-dashboard-e2e';
+export const defaultKid = 'e2e-key';
 
 export const e2eSeedSql = `DELETE FROM posts_sources;
 DELETE FROM posts_index;
@@ -66,25 +66,25 @@ INSERT OR IGNORE INTO events (source_id, external_id, ts, kind, author, title, b
 
 export function buildWranglerDevArgs(options: WranglerDevOptions): string[] {
   return [
-    "exec",
-    "wrangler",
-    "dev",
-    "--port",
+    'exec',
+    'wrangler',
+    'dev',
+    '--port',
     String(options.workerPort),
-    "--persist-to",
+    '--persist-to',
     options.persistPath,
-    "--show-interactive-dev-session",
-    "false",
-    "--log-level",
-    "error",
-    "--var",
+    '--show-interactive-dev-session',
+    'false',
+    '--log-level',
+    'error',
+    '--var',
     `ACCESS_TEAM_DOMAIN:${options.issuerDomain}`,
-    "--var",
+    '--var',
     `ACCESS_AUD:${options.audience}`,
-    "--var",
+    '--var',
     `ACCESS_JWKS_URL:${options.jwksUrl}`,
-    "--var",
-    `SMOKE_ENDPOINTS_ENABLED:${String(options.smokeEndpointsEnabled)}`,
+    '--var',
+    `SMOKE_ENDPOINTS_ENABLED:${String(options.smokeEndpointsEnabled)}`
   ];
 }
 
@@ -98,15 +98,12 @@ export async function createAccessFixture(options: {
   const audience = options.audience ?? defaultAudience;
   const kid = options.kid ?? defaultKid;
   const issuer = `https://${issuerDomain}`;
-  const pair = await generateKeyPair("RS256", { extractable: true });
+  const pair = await generateKeyPair('RS256', { extractable: true });
   const publicJwk = await exportJWK(pair.publicKey);
   const privateJwk = await exportJWK(pair.privateKey);
-  const jwks = { keys: [{ ...publicJwk, kid, alg: "RS256", use: "sig" }] };
-  await mkdir(".tmp", { recursive: true });
-  await writeFile(
-    options.authPath,
-    JSON.stringify({ privateJwk, issuer, audience, kid }, null, 2),
-  );
+  const jwks = { keys: [{ ...publicJwk, kid, alg: 'RS256', use: 'sig' }] };
+  await mkdir('.tmp', { recursive: true });
+  await writeFile(options.authPath, JSON.stringify({ privateJwk, issuer, audience, kid }, null, 2));
   return { issuerDomain, issuer, audience, kid, jwks, privateJwk };
 }
 
@@ -116,32 +113,31 @@ export async function resetAndSeedD1(options: {
   seedSql: string;
   reset: boolean;
 }): Promise<void> {
-  if (options.reset)
-    await rm(options.persistPath, { force: true, recursive: true });
-  await mkdir(".tmp", { recursive: true });
+  if (options.reset) await rm(options.persistPath, { force: true, recursive: true });
+  await mkdir('.tmp', { recursive: true });
   await writeFile(options.seedPath, options.seedSql);
   runChecked([
-    "exec",
-    "wrangler",
-    "d1",
-    "migrations",
-    "apply",
-    "creator-dashboard",
-    "--local",
-    "--persist-to",
-    options.persistPath,
+    'exec',
+    'wrangler',
+    'd1',
+    'migrations',
+    'apply',
+    'creator-dashboard',
+    '--local',
+    '--persist-to',
+    options.persistPath
   ]);
   runChecked([
-    "exec",
-    "wrangler",
-    "d1",
-    "execute",
-    "creator-dashboard",
-    "--local",
-    "--persist-to",
+    'exec',
+    'wrangler',
+    'd1',
+    'execute',
+    'creator-dashboard',
+    '--local',
+    '--persist-to',
     options.persistPath,
-    "--file",
-    options.seedPath,
+    '--file',
+    options.seedPath
   ]);
 }
 
@@ -151,29 +147,22 @@ export async function startJwksServer(options: {
   jwks: { keys: JWK[] };
 }): Promise<StartedServer> {
   const server = createServer((request, response) => {
-    if (request.url !== "/jwks") {
-      response.writeHead(404).end("not found");
+    if (request.url !== '/jwks') {
+      response.writeHead(404).end('not found');
       return;
     }
-    response
-      .writeHead(200, { "Content-Type": "application/json" })
-      .end(JSON.stringify(options.jwks));
+    response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(options.jwks));
   });
-  await new Promise<void>((resolve) =>
-    server.listen(options.port, options.host, resolve),
-  );
+  await new Promise<void>((resolve) => server.listen(options.port, options.host, resolve));
   return { server, stop: () => closeServer(server) };
 }
 
 export function startWranglerDev(args: string[]): StartedProcess {
-  const child = spawn("pnpm", args, { stdio: "inherit" });
-  return { process: child, stop: () => child.kill("SIGTERM") };
+  const child = spawn('pnpm', args, { stdio: 'inherit' });
+  return { process: child, stop: () => child.kill('SIGTERM') };
 }
 
-export async function waitForHttp(
-  url: string,
-  timeoutMs: number,
-): Promise<void> {
+export async function waitForHttp(url: string, timeoutMs: number): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   let lastError: unknown;
   while (Date.now() < deadline) {
@@ -187,26 +176,21 @@ export async function waitForHttp(
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(
-    `timed out waiting for ${url}: ${lastError instanceof Error ? lastError.message : String(lastError)}`,
+    `timed out waiting for ${url}: ${lastError instanceof Error ? lastError.message : String(lastError)}`
   );
 }
 
-export async function assertPortsAvailable(
-  ports: number[],
-  host = "127.0.0.1",
-): Promise<void> {
+export async function assertPortsAvailable(ports: number[], host = '127.0.0.1'): Promise<void> {
   for (const port of ports) {
     const server = createServer();
-    server.on("error", () => undefined);
+    server.on('error', () => undefined);
     try {
       await new Promise<void>((resolve, reject) => {
-        server.once("error", reject);
+        server.once('error', reject);
         server.listen(port, host, resolve);
       });
     } catch {
-      throw new Error(
-        `port ${port} is already in use; stop the existing process or choose another port`,
-      );
+      throw new Error(`port ${port} is already in use; stop the existing process or choose another port`);
     } finally {
       if (server.listening) await closeServer(server);
     }
@@ -214,15 +198,12 @@ export async function assertPortsAvailable(
 }
 
 function runChecked(args: string[]): void {
-  const result = spawnSync("pnpm", args, { stdio: "inherit" });
-  if (result.status !== 0)
-    throw new Error(
-      `pnpm ${args.join(" ")} failed with status ${result.status ?? "unknown"}`,
-    );
+  const result = spawnSync('pnpm', args, { stdio: 'inherit' });
+  if (result.status !== 0) throw new Error(`pnpm ${args.join(' ')} failed with status ${result.status ?? 'unknown'}`);
 }
 
 async function closeServer(server: Server): Promise<void> {
   if (!server.listening) return;
   server.close();
-  await once(server, "close");
+  await once(server, 'close');
 }
