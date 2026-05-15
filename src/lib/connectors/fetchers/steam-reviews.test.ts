@@ -21,6 +21,17 @@ describe('fetchSteamReviews', () => {
     expect(out.events[0].metadata).toMatchObject({ voted_up: true, votes_up: 3, playtime_forever: 500 });
   });
 
+  it('identifies itself with a contact-URL User-Agent so Akamai-fronted Steam endpoints do not 403', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 }));
+    vi.stubGlobal('fetch', fetchSpy);
+
+    await fetchSteamReviews({ source, env, now });
+
+    const init = fetchSpy.mock.calls[0]?.[1] as RequestInit | undefined;
+    const headers = new Headers(init?.headers ?? {});
+    expect(headers.get('user-agent')).toMatch(/creator-dashboard\/[0-9]+\.[0-9]+ \(\+https?:\/\/[^)]+\)/);
+  });
+
   it('accepts live Steam weighted vote scores as either numbers or strings', async () => {
     vi.stubGlobal(
       'fetch',

@@ -32,7 +32,10 @@ export async function fetchSteamReviews({ source, now }: FetcherInput): Promise<
   url.searchParams.set('language', 'all');
   url.searchParams.set('purchase_type', 'all');
 
-  const data = await fetchJson(url, { schema: Response });
+  const data = await fetchJson(url, {
+    schema: Response,
+    headers: { 'User-Agent': 'creator-dashboard/1.0 (+https://dashboard.glockyco.com)' }
+  });
   const metrics = data.query_summary
     ? [
         { source_id: source.id, metric: 'review_total', ts: now, value: data.query_summary.total_reviews, dimensions: null },
