@@ -47,6 +47,10 @@ function slugFromPath(path: string): string {
 }
 
 function excerpt(body: string): string {
-  const firstParagraph = body.split(/\n\s*\n/)[0]?.replace(/\s+/g, ' ').trim() ?? '';
+  const firstParagraph =
+    body
+      .split(/\n\s*\n/)[0]
+      ?.replace(/\s+/g, ' ')
+      .trim() ?? '';
   return firstParagraph.length > 240 ? `${firstParagraph.slice(0, 237)}...` : firstParagraph;
 }

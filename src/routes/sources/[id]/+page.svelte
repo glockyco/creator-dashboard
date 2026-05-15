@@ -22,7 +22,7 @@
   {/if}
 
   <div class="grid gap-4 xl:grid-cols-2">
-    {#each metricEntries as [metric, points]}
+    {#each metricEntries as [metric, points] (metric)}
       {#if !(data.detail.source.id === 'github-glockyco' && metric === 'contributions')}
         <MetricPanel {metric} {points} />
       {/if}

@@ -8,7 +8,7 @@
 
 <div class="space-y-4">
   <div class="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3">
-    {#each snapshot.metrics as metric}
+    {#each snapshot.metrics as metric (metric.metric)}
       <div class="min-w-0 rounded-xl border border-border bg-bg-primary p-3">
         <p class="truncate text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-fg-muted">
           {metric.metric.replaceAll('_', ' ')}

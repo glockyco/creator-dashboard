@@ -5,6 +5,8 @@
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { resolve } from '$app/paths';
+  import type { RouteId } from '$app/types';
   import { page } from '$app/state';
   import { Drawer } from 'vaul-svelte';
   import LayoutDashboard from '@lucide/svelte/icons/layout-dashboard';
@@ -17,7 +19,7 @@
   import Menu from '@lucide/svelte/icons/menu';
 
   type Item = {
-    href: string;
+    href: RouteId;
     label: string;
     icon: typeof LayoutDashboard;
     /** Optional alternate path prefix that should still mark this item active. */
@@ -93,7 +95,7 @@
             {@const active = isActive(item, page.url.pathname)}
             <li>
               <a
-                href={item.href}
+                href={resolve(item.href as '/')}
                 aria-current={active ? 'page' : undefined}
                 onclick={() => (drawerOpen = false)}
                 class={`flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary ${active ? 'bg-bg-primary text-fg-primary' : 'text-fg-muted hover:bg-bg-primary/70 hover:text-fg-primary'}`}
@@ -145,7 +147,7 @@
       {@const active = isActive(item, page.url.pathname)}
       <li class={isCollapsed ? '' : 'w-full'}>
         <a
-          href={item.href}
+          href={resolve(item.href as '/')}
           aria-current={active ? 'page' : undefined}
           title={isCollapsed ? item.label : undefined}
           class={`flex items-center gap-3 rounded-xl text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary ${isCollapsed ? 'h-10 w-10 justify-center' : 'min-h-11 w-full px-3 py-2'} ${active ? 'bg-bg-primary text-fg-primary' : 'text-fg-muted hover:bg-bg-primary/70 hover:text-fg-primary'}`}

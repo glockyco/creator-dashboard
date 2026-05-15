@@ -6,9 +6,9 @@ export function parseIdentityParam(value: string | null): IdentityFilter {
   return Identity.parse(value);
 }
 
-export function setSearchParam(url: URL, key: string, value: string | null): string {
+export function setSearchParam(url: URL, key: string, value: string | null): `/${string}` {
   const next = new URL(url);
   if (value === null || value === '' || value === 'all') next.searchParams.delete(key);
   else next.searchParams.set(key, value);
-  return `${next.pathname}${next.search}`;
+  return `${next.pathname}${next.search}` as `/${string}`;
 }

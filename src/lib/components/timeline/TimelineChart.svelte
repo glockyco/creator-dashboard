@@ -2,7 +2,7 @@
   import { browser } from '$app/environment';
   import type { TimelineData } from '$lib/server/timeline';
   import type { TimelineOverlay } from '$lib/timeline/schema';
-  import { sourceName } from '$lib/timeline/domain.svelte';
+  import { sourceName } from '$lib/timeline/domain';
 
   let { timeline, overlays }: { timeline: TimelineData; overlays: TimelineOverlay[] } = $props();
   let container: HTMLDivElement;
@@ -63,6 +63,7 @@
         Plot.ruleX(posts, { x: 'date', stroke: 'var(--color-post)', strokeWidth: 2, strokeDasharray: '3,3' })
       ]
     });
+    // eslint-disable-next-line svelte/no-dom-manipulating -- Observable Plot returns a real SVG node; replaceChildren is the supported mount path.
     container.replaceChildren(plot);
   }
 </script>

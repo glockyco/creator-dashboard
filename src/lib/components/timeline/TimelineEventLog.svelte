@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { TimelineData } from '$lib/server/timeline';
   import type { TimelineOverlay } from '$lib/timeline/schema';
-  import { formatTimelineDate, sourceName, timelineLog } from '$lib/timeline/domain.svelte';
+  import { formatTimelineDate, sourceName, timelineLog } from '$lib/timeline/domain';
 
   let { timeline, overlays }: { timeline: TimelineData; overlays: TimelineOverlay[] } = $props();
   const items = $derived(timelineLog(timeline.events, timeline.posts, overlays));
@@ -22,6 +22,7 @@
             </p>
             <h3 class="mt-1 font-medium">
               {#if item.url}
+                <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- item.url is upstream content (external) -->
                 <a class="hover:underline" href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
               {:else}
                 {item.title}

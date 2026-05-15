@@ -13,7 +13,7 @@
 <fieldset class="space-y-3">
   <legend class="text-sm font-semibold text-fg-primary">Theme</legend>
   <div class="grid gap-2 sm:grid-cols-3">
-    {#each themes as theme}
+    {#each themes as theme (theme)}
       <button
         type="button"
         class={`min-h-11 rounded-lg border px-4 py-3 text-left text-sm capitalize ${store.current.theme === theme ? 'border-glockyco bg-bg-primary text-fg-primary' : 'border-border text-fg-muted hover:bg-bg-primary hover:text-fg-primary'}`}

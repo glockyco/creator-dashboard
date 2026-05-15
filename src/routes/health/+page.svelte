@@ -60,7 +60,7 @@
             >
           </thead>
           <tbody class="divide-y divide-border">
-            {#each data.runs as run}
+            {#each data.runs as run (run.source_id)}
               <tr class="align-top">
                 <td class="px-3 py-3 font-mono text-fg-primary">{run.source_id}</td>
                 <td class="px-3 py-3"
@@ -96,7 +96,7 @@
         </div>
       {:else}
         <div class="space-y-3">
-          {#each data.failures as failure}
+          {#each data.failures as failure (`${failure.source_id}::${failure.ts}`)}
             <article class="rounded-lg border border-border bg-bg-primary p-4">
               <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -128,7 +128,7 @@
         </div>
       {:else}
         <div class="space-y-3">
-          {#each data.alerts as alert}
+          {#each data.alerts as alert (alert.alert_key)}
             <div class="rounded-lg border border-border bg-bg-primary p-4">
               <p class="font-mono text-sm text-fg-primary">{alert.alert_key}</p>
               <p class="mt-1 text-sm text-fg-muted">

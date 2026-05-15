@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import type { SourceDetail } from '$lib/server/source-detail';
 
   let { detail }: { detail: SourceDetail } = $props();
 </script>
 
 <section class="rounded-xl border border-border bg-bg-secondary p-5">
-  <a class="text-sm text-fg-muted hover:text-fg-primary" href="/">← Dashboard</a>
+  <a class="text-sm text-fg-muted hover:text-fg-primary" href={resolve('/')}>← Dashboard</a>
   <div class="mt-4 flex flex-wrap items-start justify-between gap-4">
     <div>
       <div class="flex items-center gap-2">

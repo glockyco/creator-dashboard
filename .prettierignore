@@ -7,10 +7,11 @@ dist/
 node_modules/
 test-results/
 playwright-report/
-posts/
+/posts/
 
 # Lockfiles
 pnpm-lock.yaml
 
 # Fixtures (treated as opaque test data)
 **/*.fixture.json
+**/__fixtures__/

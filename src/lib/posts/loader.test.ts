@@ -8,7 +8,11 @@ const knownSourceIds = new Set(['thunderstore-wowmuch']);
 
 describe('normalizePost', () => {
   it('normalizes markdown into Worker-safe runtime metadata', () => {
-    const post = normalizePost({ path: '/posts/2026-04-12-wow-much-040-release.md', markdown: validPost, knownSourceIds });
+    const post = normalizePost({
+      path: '/posts/2026-04-12-wow-much-040-release.md',
+      markdown: validPost,
+      knownSourceIds
+    });
 
     expect(post).toMatchObject({
       slug: '2026-04-12-wow-much-040-release',
@@ -26,7 +30,9 @@ describe('normalizePost', () => {
   });
 
   it('rejects related source IDs outside the registry', () => {
-    expect(() => normalizePost({ path: '/posts/bad.md', markdown: unknownSource, knownSourceIds })).toThrow('unknown related source');
+    expect(() => normalizePost({ path: '/posts/bad.md', markdown: unknownSource, knownSourceIds })).toThrow(
+      'unknown related source'
+    );
   });
 });
 

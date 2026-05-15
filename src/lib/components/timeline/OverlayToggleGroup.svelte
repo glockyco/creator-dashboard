@@ -1,15 +1,22 @@
 <script lang="ts">
+  import { SvelteSet } from 'svelte/reactivity';
   import type { TimelineOverlay } from '$lib/timeline/schema';
 
   let { overlays }: { overlays: TimelineOverlay[] } = $props();
-  let selected = $state(new Set<TimelineOverlay>());
+
+  // svelte-ignore state_referenced_locally
+  // Local toggle state mirrors the `overlays` prop (URL-driven on initial load,
+  // and re-synced via the $effect below whenever the URL changes via back/forward
+  // or filter submit). Held as a `const SvelteSet` mutated in place so we don't
+  // trip svelte/prefer-writable-derived (which fires on `let x = $state(); $effect(() => x = …)`).
+  const selected = new SvelteSet<TimelineOverlay>(overlays);
 
   $effect(() => {
-    selected = new Set(overlays);
+    selected.clear();
+    for (const overlay of overlays) selected.add(overlay);
   });
 
   function toggle(overlay: TimelineOverlay) {
-    selected = new Set(selected);
     if (selected.has(overlay)) selected.delete(overlay);
     else selected.add(overlay);
   }

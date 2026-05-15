@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import type { FetcherStatus, TileSnapshot } from '$lib/dashboard/types';
   import AnalyticsTileBody from './AnalyticsTileBody.svelte';
   import EventFeedTileBody from './EventFeedTileBody.svelte';
@@ -34,7 +35,7 @@
     <h2 class="min-w-0 truncate text-lg font-semibold tracking-tight text-fg-primary">
       <a
         class="rounded-sm outline-none hover:text-glockyco focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary"
-        href={`/sources/${snapshot.source.id}`}>{snapshot.source.name}</a
+        href={resolve('/sources/[id]', { id: snapshot.source.id })}>{snapshot.source.name}</a
       >
     </h2>
     <ManualRefreshButton sourceId={snapshot.source.id} {tone} {statusLabel} onStatus={updateStatus} />
