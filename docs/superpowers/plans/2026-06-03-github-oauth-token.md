@@ -30,6 +30,7 @@
 The credential is no longer a PAT. This is a pure rename across runtime, scripts, and tests; the existing suite passing under the new name is the test.
 
 **Files:**
+
 - Modify: `src/app.d.ts:15`
 - Modify: `src/lib/connectors/auth/github.ts:1-2`
 - Modify: `scripts/deploy-preflight.ts:11`
@@ -45,7 +46,7 @@ The credential is no longer a PAT. This is a pure rename across runtime, scripts
 In `src/app.d.ts`, line 15:
 
 ```ts
-    GITHUB_TOKEN: string;
+GITHUB_TOKEN: string;
 ```
 
 In `src/lib/connectors/auth/github.ts` (whole file):
@@ -71,7 +72,7 @@ export const githubHeaders = (env: Pick<Env, 'GITHUB_TOKEN'>) => ({
 `scripts/smoke-connectors.ts`, line 94 (inside `secretRequirements`):
 
 ```ts
-  if (sourceId.startsWith('github-')) return ['GITHUB_TOKEN'];
+if (sourceId.startsWith('github-')) return ['GITHUB_TOKEN'];
 ```
 
 `scripts/capture-fixture.ts`, line 157 (the github capture source header):
@@ -111,7 +112,7 @@ const env = { GITHUB_TOKEN: 'gho_test' } as Env;
 `scripts/smoke-connectors.test.ts`, line 71:
 
 ```ts
-    expect(secretRequirements('github-glockyco')).toEqual(['GITHUB_TOKEN']);
+expect(secretRequirements('github-glockyco')).toEqual(['GITHUB_TOKEN']);
 ```
 
 `scripts/deploy-preflight.test.ts`, line 42:
@@ -147,6 +148,7 @@ git commit -m "refactor(github): rename GITHUB_PAT secret to GITHUB_TOKEN"
 The OAuth token is `gho_`-prefixed; the current redaction regex only catches `ghp_`. Cover the whole `gh<letter>_` family so a captured fixture never leaks an OAuth/installation/refresh token.
 
 **Files:**
+
 - Modify: `scripts/capture-fixture.ts:46`
 - Test: `scripts/capture-fixture.test.ts`
 
@@ -155,11 +157,11 @@ The OAuth token is `gho_`-prefixed; the current redaction regex only catches `gh
 In `scripts/capture-fixture.test.ts`, add inside the `describe('capture-fixture utility', …)` block (after the existing redaction test, around line 33):
 
 ```ts
-  it('redacts oauth and app token prefixes, not just classic PATs', () => {
-    expect(redactFixtureText('gho_oauth123 ghu_user456 ghs_app789 ghr_refreshABC')).toBe(
-      '[redacted] [redacted] [redacted] [redacted]'
-    );
-  });
+it('redacts oauth and app token prefixes, not just classic PATs', () => {
+  expect(redactFixtureText('gho_oauth123 ghu_user456 ghs_app789 ghr_refreshABC')).toBe(
+    '[redacted] [redacted] [redacted] [redacted]'
+  );
+});
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
@@ -194,6 +196,7 @@ git commit -m "fix(capture-fixture): redact all gh*_ token prefixes"
 A reproducible CLI that runs the OAuth Device Authorization Grant and prints the `gho_` token. Pure functions are exported for tests; `main()` runs under a `process.argv[1]` guard, matching `scripts/smoke-ingest.ts`.
 
 **Files:**
+
 - Create: `scripts/github-oauth-authorize.ts`
 - Test: `scripts/github-oauth-authorize.test.ts`
 
@@ -383,7 +386,11 @@ export async function pollForToken(device: DeviceCode, clientId: string, deps: D
         grant_type: GRANT_TYPE
       }).toString()
     });
-    const body = (await response.json()) as Partial<TokenResult> & { error?: string; error_description?: string; interval?: number };
+    const body = (await response.json()) as Partial<TokenResult> & {
+      error?: string;
+      error_description?: string;
+      interval?: number;
+    };
 
     if (body.access_token) {
       return { access_token: body.access_token, scope: body.scope ?? '', token_type: body.token_type ?? 'bearer' };
@@ -448,6 +455,7 @@ git commit -m "feat(scripts): add github oauth device-flow mint script"
 ## Task 4: Documentation and pnpm alias
 
 **Files:**
+
 - Modify: `.dev.vars.example` (comment above `GITHUB_TOKEN`)
 - Modify: `package.json` (scripts)
 - Modify: `AGENTS.md` (Conventions or Setup)
@@ -546,6 +554,7 @@ In GitHub → Settings → Developer settings → Personal access tokens (classi
 ## Self-Review
 
 **Spec coverage:**
+
 - §3.1 secret rename → Task 1 (all listed files covered: app.d.ts, auth/github.ts, deploy-preflight.ts, smoke-connectors.ts, capture-fixture.ts, .dev.vars.example, and the three test files).
 - §3.1 redaction widening → Task 2.
 - §3.2 mint script (device flow, Accept header, full error set, client-id-not-a-secret, test) → Task 3.

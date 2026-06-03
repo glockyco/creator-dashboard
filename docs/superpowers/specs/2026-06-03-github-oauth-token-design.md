@@ -19,12 +19,12 @@ Use a **GitHub OAuth App user token** carrying the classic `read:user` scope.
 
 Private contributions in the GraphQL `contributionsCollection` are included **only** with the classic `read:user` scope. Of the credential types that carry classic scopes vs. those that self-renew, no single credential offers both:
 
-| Credential | Self-renewing | Private contributions | Posture |
-| --- | --- | --- | --- |
-| Classic PAT (today) | No — expires, manual regen | Yes (`read:user`) | the problem |
-| GitHub App installation token | Yes (1h, minted from private key) | No — App tokens carry no classic scopes (public-only) | least privilege |
-| GitHub App user token + refresh | Yes (8h / 6mo refresh) | No — empty scope (public-only) | complex *and* loses private |
-| **OAuth App user token (`read:user`)** | **No expiry, no refresh** | **Yes (`read:user`)** | long-lived static, never breaks |
+| Credential                             | Self-renewing                     | Private contributions                                 | Posture                         |
+| -------------------------------------- | --------------------------------- | ----------------------------------------------------- | ------------------------------- |
+| Classic PAT (today)                    | No — expires, manual regen        | Yes (`read:user`)                                     | the problem                     |
+| GitHub App installation token          | Yes (1h, minted from private key) | No — App tokens carry no classic scopes (public-only) | least privilege                 |
+| GitHub App user token + refresh        | Yes (8h / 6mo refresh)            | No — empty scope (public-only)                        | complex _and_ loses private     |
+| **OAuth App user token (`read:user`)** | **No expiry, no refresh**         | **Yes (`read:user`)**                                 | long-lived static, never breaks |
 
 Preserving private contributions is a hard requirement, which forces a `read:user`-scoped credential. Among those, the OAuth App token is the only one that does **not** expire: OAuth App tokens remain valid until revoked, and GitHub auto-revokes only after **one year of non-use**. At an hourly cadence the token is never idle, so it is effectively permanent — the expiry emails stop for good.
 
@@ -102,7 +102,7 @@ Design notes:
 
 ### 3.3 Scope: request `read:user` only, verify public-repo metrics
 
-The classic PAT carried `public_repo` (which grants *write* to public repos) — unnecessary for reads. The mint script requests `read:user` only. During implementation, verify via `pnpm smoke:authenticated` that `total_stars`, `public_repos`, and `repo_stars` (from `viewer.repositories(privacy: PUBLIC, ownerAffiliations: OWNER)`) still resolve with `read:user` alone. If repo enumeration requires it, add `public_repo` back. Net outcome: identical data with equal-or-tighter scope.
+The classic PAT carried `public_repo` (which grants _write_ to public repos) — unnecessary for reads. The mint script requests `read:user` only. During implementation, verify via `pnpm smoke:authenticated` that `total_stars`, `public_repos`, and `repo_stars` (from `viewer.repositories(privacy: PUBLIC, ownerAffiliations: OWNER)`) still resolve with `read:user` alone. If repo enumeration requires it, add `public_repo` back. Net outcome: identical data with equal-or-tighter scope.
 
 ### 3.4 Docs
 
