@@ -2,6 +2,10 @@ ACCESS_TEAM_DOMAIN=example.cloudflareaccess.com
 ACCESS_AUD=replace-with-access-application-aud
 DISCORD_ALERTS_WEBHOOK=https://discord.com/api/webhooks/example/alerts
 DISCORD_DIGEST_WEBHOOK=https://discord.com/api/webhooks/example/digest
+# OAuth App user token (read:user) for the github-glockyco connector. It does
+# not expire. Mint a fresh one with: pnpm github:authorize --client-id <id>
+# (the OAuth App must have Device Flow enabled). read:user preserves private
+# contributions; add public_repo only if repo-star metrics need it.
 GITHUB_TOKEN=gho_replace
 STEAM_WEB_API_KEY=replace
 GOOGLE_OAUTH_CLIENT_ID=replace.apps.googleusercontent.com

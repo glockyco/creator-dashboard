@@ -7,6 +7,7 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 - `pnpm install`
 - Populate `.dev.vars` from `.dev.vars.example`. Cloudflare's secret store is write-only (`wrangler secret list` returns names only); if `.dev.vars` is lost, recover from source-of-truth consoles.
 - `pnpm dev:setup` — migrate and seed the local D1. Required before `pnpm dev` returns anything but 500s.
+- `GITHUB_TOKEN` is an OAuth App user token (`read:user`), not a PAT, so it does not expire. Recreate it with `pnpm github:authorize --client-id <oauth-app-client-id>` (the OAuth App must have Device Flow enabled), then `wrangler secret put GITHUB_TOKEN`.
 
 ## Dev loop
 
