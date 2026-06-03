@@ -30,6 +30,13 @@ describe('parseAuthorizeArgs', () => {
   it('throws when no client id is provided', () => {
     expect(() => parseAuthorizeArgs([], {})).toThrow('missing --client-id');
   });
+
+  it('skips a -- separator forwarded by pnpm', () => {
+    expect(parseAuthorizeArgs(['--', '--client-id', 'cli_123'], {})).toEqual({
+      clientId: 'cli_123',
+      scopes: 'read:user'
+    });
+  });
 });
 
 describe('requestDeviceCode', () => {

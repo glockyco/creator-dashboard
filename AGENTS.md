@@ -7,7 +7,7 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 - `pnpm install`
 - Populate `.dev.vars` from `.dev.vars.example`. Cloudflare's secret store is write-only (`wrangler secret list` returns names only); if `.dev.vars` is lost, recover from source-of-truth consoles.
 - `pnpm dev:setup` — migrate and seed the local D1. Required before `pnpm dev` returns anything but 500s.
-- `GITHUB_TOKEN` is an OAuth App user token (`read:user`), not a PAT, so it does not expire. Recreate it with `pnpm github:authorize --client-id <oauth-app-client-id>` (the OAuth App must have Device Flow enabled), then `wrangler secret put GITHUB_TOKEN`.
+- `GITHUB_TOKEN` is an OAuth App user token (`read:user`), not a PAT, so it does not expire. Recreate it with `pnpm github:authorize --client-id <oauth-app-client-id>` (the OAuth App must have Device Flow enabled), then `pnpm exec wrangler secret put GITHUB_TOKEN`.
 
 ## Dev loop
 
@@ -24,7 +24,7 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 
 ## Deploy
 
-- `pnpm deploy` runs preflight → `migrate:remote` → build → `wrangler deploy` → `sync-posts:remote`. Preflight requires every key in `.dev.vars.example` set locally.
+- `pnpm run deploy` runs preflight → `migrate:remote` → build → `wrangler deploy` → `sync-posts:remote`. Preflight requires every key in `.dev.vars.example` set locally. (`pnpm deploy` is shadowed by pnpm's built-in deploy command — use `pnpm run deploy`.)
 - `pnpm deploy:worker` skips preflight.
 - Migrations are append-only. Never edit `migrations/0001_initial_schema.sql`; add `migrations/000N_*.sql`.
 

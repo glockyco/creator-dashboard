@@ -16,6 +16,7 @@ export function parseSmokeIngestArgs(argv: string[]): SmokeIngestArgs {
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const value = argv[index + 1];
+    if (arg === '--') continue;
     if (arg === '--source' && value) {
       parsed.sourceId = value;
       index += 1;

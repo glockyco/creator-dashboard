@@ -422,7 +422,9 @@ async function main(): Promise<void> {
   const token = await pollForToken(device, args.clientId);
   console.log(`access_token=${token.access_token}`);
   console.log(`scope=${token.scope}`);
-  console.log('\nNext: put it in .dev.vars as GITHUB_TOKEN=<token> and run `wrangler secret put GITHUB_TOKEN`.');
+  console.log(
+    '\nNext: put it in .dev.vars as GITHUB_TOKEN=<token> and run `pnpm exec wrangler secret put GITHUB_TOKEN`.'
+  );
 }
 
 if (process.argv[1]?.endsWith('github-oauth-authorize.ts')) {
@@ -485,7 +487,7 @@ In `package.json`, add to `"scripts"` (after the `smoke:*` entries):
 Under the **Setup** section (near the existing secret-store recovery note), add:
 
 ```text
-- `GITHUB_TOKEN` is an OAuth App user token (`read:user`), not a PAT, so it does not expire. Recreate it with `pnpm github:authorize --client-id <oauth-app-client-id>` (OAuth App must have Device Flow enabled), then `wrangler secret put GITHUB_TOKEN`.
+- `GITHUB_TOKEN` is an OAuth App user token (`read:user`), not a PAT, so it does not expire. Recreate it with `pnpm github:authorize --client-id <oauth-app-client-id>` (OAuth App must have Device Flow enabled), then `pnpm exec wrangler secret put GITHUB_TOKEN`.
 ```
 
 - [ ] **Step 4: Verify formatting and lint**
@@ -525,12 +527,12 @@ If `total_stars` / `public_repos` / `repo_stars` come back empty or error, re-mi
 
 - [ ] **Step 4: Set the production secret**
 
-Run: `wrangler secret put GITHUB_TOKEN`
+Run: `pnpm exec wrangler secret put GITHUB_TOKEN`
 Paste the same token.
 
 - [ ] **Step 5: Deploy**
 
-Run: `pnpm deploy`
+Run: `pnpm run deploy`
 Expected: preflight passes (it now requires `GITHUB_TOKEN`), build + deploy succeed.
 
 - [ ] **Step 6: Confirm the deployed connector**
@@ -539,7 +541,7 @@ After the next hourly cron (or trigger a refresh), confirm in the dashboard that
 
 - [ ] **Step 7: Revoke the old classic PAT**
 
-In GitHub → Settings → Developer settings → Personal access tokens (classic), delete the `creator-dashboard` token (`https://github.com/settings/tokens`). Remove the old `GITHUB_PAT` Worker secret if it still exists: `wrangler secret delete GITHUB_PAT`.
+In GitHub → Settings → Developer settings → Personal access tokens (classic), delete the `creator-dashboard` token (`https://github.com/settings/tokens`). Remove the old `GITHUB_PAT` Worker secret if it still exists: `pnpm exec wrangler secret delete GITHUB_PAT`.
 
 ---
 

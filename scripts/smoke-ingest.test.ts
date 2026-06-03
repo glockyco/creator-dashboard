@@ -23,6 +23,12 @@ describe('smoke-ingest helpers', () => {
     ).toEqual({ sourceId: 'github-glockyco', baseUrl: 'https://dashboard.glockyco.com', timeoutMs: 5_000 });
   });
 
+  it('skips a -- separator forwarded by pnpm', () => {
+    expect(parseSmokeIngestArgs(['--', '--source', 'github-glockyco'])).toMatchObject({
+      sourceId: 'github-glockyco'
+    });
+  });
+
   it('recognizes a successful fetcher status', () => {
     expect(statusReachedSuccess({ last_status: 'success', last_success_at: 123, consecutive_failures: 0 })).toBe(true);
     expect(

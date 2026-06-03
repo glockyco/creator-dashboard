@@ -25,6 +25,7 @@ export function parseAuthorizeArgs(
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const value = argv[index + 1];
+    if (arg === '--') continue;
     if (arg === '--client-id' && value) {
       clientId = value;
       index += 1;
@@ -103,7 +104,9 @@ async function main(): Promise<void> {
   const token = await pollForToken(device, args.clientId);
   console.log(`access_token=${token.access_token}`);
   console.log(`scope=${token.scope}`);
-  console.log('\nNext: put it in .dev.vars as GITHUB_TOKEN=<token> and run `wrangler secret put GITHUB_TOKEN`.');
+  console.log(
+    '\nNext: put it in .dev.vars as GITHUB_TOKEN=<token> and run `pnpm exec wrangler secret put GITHUB_TOKEN`.'
+  );
 }
 
 if (process.argv[1]?.endsWith('github-oauth-authorize.ts')) {
