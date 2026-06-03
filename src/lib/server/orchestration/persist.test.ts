@@ -48,7 +48,10 @@ describe('successStatements', () => {
     const result = successStatements(db, 'source-a', 1714838500000, output);
 
     expect(result).toHaveLength(3);
-    expect(statements[0].sql).toContain('INSERT OR IGNORE INTO metric_points');
+    expect(statements[0].sql).toContain('INSERT INTO metric_points');
+    expect(statements[0].sql).toContain(
+      "ON CONFLICT(source_id, metric, ts, COALESCE(dimensions, '')) DO UPDATE SET value = excluded.value"
+    );
     expect(statements[0].binds).toEqual(['source-a', 'followers', 1714838400000, 3, '{"account":"main"}']);
     expect(statements[1].sql).toContain('INSERT OR IGNORE INTO events');
     expect(statements[1].binds.at(-1)).toBe('{"voted_up":true}');

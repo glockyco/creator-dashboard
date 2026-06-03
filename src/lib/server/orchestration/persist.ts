@@ -10,7 +10,7 @@ export function successStatements(
     ...output.metric_points.map((point) =>
       db
         .prepare(
-          'INSERT OR IGNORE INTO metric_points (source_id, metric, ts, value, dimensions) VALUES (?, ?, ?, ?, ?)'
+          "INSERT INTO metric_points (source_id, metric, ts, value, dimensions) VALUES (?, ?, ?, ?, ?) ON CONFLICT(source_id, metric, ts, COALESCE(dimensions, '')) DO UPDATE SET value = excluded.value"
         )
         .bind(
           point.source_id,
