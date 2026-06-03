@@ -91,7 +91,7 @@ export function parseDevVars(text: string): Record<string, string> {
 }
 
 export function secretRequirements(sourceId: string): string[] {
-  if (sourceId.startsWith('github-')) return ['GITHUB_PAT'];
+  if (sourceId.startsWith('github-')) return ['GITHUB_TOKEN'];
   if (sourceId.startsWith('steam-guide-')) return ['STEAM_WEB_API_KEY'];
   if (sourceId.startsWith('gsc-'))
     return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN'];

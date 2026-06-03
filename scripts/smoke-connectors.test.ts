@@ -56,10 +56,10 @@ describe('smoke connector harness', () => {
   it('parses .dev.vars without leaking comments or quotes into values', () => {
     expect(
       parseDevVars(
-        'GITHUB_PAT=ghp_test\nCF_ANALYTICS_SITE_TAGS={"source":"tag"}\nQUOTED="value with spaces"\n# ignored\n'
+        'GITHUB_TOKEN=gho_test\nCF_ANALYTICS_SITE_TAGS={"source":"tag"}\nQUOTED="value with spaces"\n# ignored\n'
       )
     ).toEqual({
-      GITHUB_PAT: 'ghp_test',
+      GITHUB_TOKEN: 'gho_test',
       CF_ANALYTICS_SITE_TAGS: '{"source":"tag"}',
       QUOTED: 'value with spaces'
     });
@@ -68,7 +68,7 @@ describe('smoke connector harness', () => {
   it('knows which sources need credentials', () => {
     expect(secretRequirements('steam-reviews-erenshor')).toEqual([]);
     expect(secretRequirements('steam-guide-erenshor')).toEqual(['STEAM_WEB_API_KEY']);
-    expect(secretRequirements('github-glockyco')).toEqual(['GITHUB_PAT']);
+    expect(secretRequirements('github-glockyco')).toEqual(['GITHUB_TOKEN']);
     expect(secretRequirements('gsc-glockyco-com')).toEqual([
       'GOOGLE_OAUTH_CLIENT_ID',
       'GOOGLE_OAUTH_CLIENT_SECRET',

@@ -12,7 +12,7 @@ declare global {
   interface Env {
     DB: D1Database;
     FETCHER_QUEUE: Queue<JobMsg>;
-    GITHUB_PAT: string;
+    GITHUB_TOKEN: string;
     STEAM_WEB_API_KEY: string;
     GOOGLE_SERVICE_ACCOUNT: string;
     GOOGLE_OAUTH_CLIENT_ID: string;

@@ -8,7 +8,7 @@ export function requiredProductionSecrets(): string[] {
     'ACCESS_AUD',
     'DISCORD_ALERTS_WEBHOOK',
     'DISCORD_DIGEST_WEBHOOK',
-    'GITHUB_PAT',
+    'GITHUB_TOKEN',
     'STEAM_WEB_API_KEY',
     'GOOGLE_OAUTH_CLIENT_ID',
     'GOOGLE_OAUTH_CLIENT_SECRET',

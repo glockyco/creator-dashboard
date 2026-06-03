@@ -154,7 +154,7 @@ const defaultSources: CaptureSource[] = [
     await fetch('https://api.github.com/graphql', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${required(env, 'GITHUB_PAT')}`,
+        Authorization: `Bearer ${required(env, 'GITHUB_TOKEN')}`,
         'Content-Type': 'application/json',
         'User-Agent': 'creator-dashboard-fixture-capture'
       },

@@ -13,7 +13,7 @@ const source = {
   fetcher: fetchGithub,
   config: {}
 } as const;
-const env = { GITHUB_PAT: 'ghp_test' } as Env;
+const env = { GITHUB_TOKEN: 'gho_test' } as Env;
 const now = 1777852800000;
 
 beforeEach(() => vi.unstubAllGlobals());
