@@ -1,5 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { GITHUB_QUERY } from '../src/lib/connectors/fetchers/github-query.ts';
 
 export const connectorKinds = [
   'github',
@@ -158,11 +159,7 @@ const defaultSources: CaptureSource[] = [
         'Content-Type': 'application/json',
         'User-Agent': 'creator-dashboard-fixture-capture'
       },
-      body: JSON.stringify({
-        query:
-          'query($login:String!){ user(login:$login){ followers{totalCount} repositories(first:100,ownerAffiliations:OWNER){ totalCount nodes{name stargazerCount isArchived} } contributionsCollection{ contributionCalendar{ weeks{ contributionDays{ date contributionCount } } } } } }',
-        variables: { login: 'glockyco' }
-      })
+      body: JSON.stringify({ query: GITHUB_QUERY })
     });
   }),
   source('steam-guide-erenshor', 'steam-guide', { publishedfileid: '3500398991' }, captureSteamGuide),

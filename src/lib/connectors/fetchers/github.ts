@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { githubHeaders } from '../auth/github';
 import { fetchJson } from '../http';
 import type { FetcherInput, FetcherOutput } from '../types';
+import { GITHUB_QUERY } from './github-query';
 
 const Response = z.object({
   data: z.object({
@@ -31,13 +32,11 @@ const Response = z.object({
   })
 });
 
-const QUERY = `query { viewer { followers { totalCount } contributionsCollection { contributionCalendar { weeks { contributionDays { date contributionCount } } } } repositories(ownerAffiliations: OWNER, privacy: PUBLIC, first: 100, orderBy: {field: STARGAZERS, direction: DESC}) { totalCount nodes { name stargazerCount isArchived url } } } }`;
-
 export async function fetchGithub({ source, env, now }: FetcherInput): Promise<FetcherOutput> {
   const data = await fetchJson('https://api.github.com/graphql', {
     method: 'POST',
     headers: githubHeaders(env),
-    body: JSON.stringify({ query: QUERY }),
+    body: JSON.stringify({ query: GITHUB_QUERY }),
     schema: Response
   });
 
