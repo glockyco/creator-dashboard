@@ -43,6 +43,15 @@ It is also strictly better governed than the classic PAT: bound to a dedicated O
 - OAuth App tokens have no refresh and do not expire until revoked; 1-year-non-use auto-revoke: "Differences between GitHub Apps and OAuth Apps" and token-expiration docs.
 - Device Flow needs only the Client ID (no client secret) for token exchange: GitHub OAuth device-flow docs.
 
+### 1.4 Validation pass (2026-06-03)
+
+A second research pass confirmed the approach before planning:
+
+- **OAuth Apps are not deprecated.** No GitHub sunset exists; GitHub recommends GitHub Apps in general but still fully supports OAuth Apps (PKCE support added 2025-07; the 2026 credential-revocation API still covers `gho_` tokens). The "2026 OAuth EOL" circulating online refers to Azure DevOps, a different platform.
+- **Private-contribution fidelity holds by construction.** GitHub gates private contributions in `viewer.contributionsCollection` on three things: a same-account token using `viewer`, the `read:user` scope, and the account setting "Include private contributions on my profile." All three are unchanged by this migration, so the calendar is identical.
+- **PKCE is not required.** It applies to the web authorization-code flow, not the device flow, and GitHub does not mandate it.
+- **Tokens are opaque.** Do not assume `gho_` length/format anywhere (GitHub is lengthening some token formats in 2026); redaction and storage must treat tokens as variable-length opaque strings.
+
 ## 2. Architecture
 
 Unchanged at runtime. The Worker reads a single secret and sends it as a bearer token to the existing GraphQL `viewer` query.
@@ -56,6 +65,8 @@ cron (hourly) -> dispatcher -> FETCHER_QUEUE -> consumer
 ```
 
 The GraphQL query in `src/lib/connectors/fetchers/github.ts` is **not modified**. Because the new token keeps `read:user`, `viewer.contributionsCollection.contributionCalendar` returns the same private-inclusive data as today.
+
+> **Caveat (account setting):** private contributions appear only while the account setting "Include private contributions on my profile" stays enabled. It is account-level, not token-level, so it is unaffected by the credential swap — but it must not be toggled, or the calendar drops private activity regardless of which token is used. The live-parity check in §5 catches any regression here.
 
 ## 3. Changes
 
@@ -77,9 +88,9 @@ The redaction patterns in `capture-fixture.ts` already cover `gho_`-style secret
 
 A device-flow CLI that produces the `gho_` token reproducibly (parallels how the Google OAuth refresh token is provisioned out-of-band):
 
-1. `POST https://github.com/login/device/code` with `client_id` + `scope` -> `user_code`, `verification_uri`, `device_code`, `interval`.
-2. Print the `user_code` and `verification_uri`; the operator authorizes in a browser.
-3. Poll `POST https://github.com/login/oauth/access_token` with `client_id`, `device_code`, `grant_type=urn:ietf:params:oauth:grant-type:device_code` until an `access_token` is returned (handle `authorization_pending` / `slow_down`).
+1. `POST https://github.com/login/device/code` with `client_id` + `scope`, `Accept: application/json` -> `device_code`, `user_code`, `verification_uri`, `expires_in` (~900s), `interval` (~5s).
+2. Print the `user_code` and `verification_uri` (`https://github.com/login/device`); the operator authorizes in a browser.
+3. Poll `POST https://github.com/login/oauth/access_token` with `client_id`, `device_code`, `grant_type=urn:ietf:params:oauth:grant-type:device_code`, `Accept: application/json`. **Errors arrive in a `200` body**, so branch on the `error` field, not the HTTP status: keep polling on `authorization_pending`; on `slow_down` add 5s to and adopt the returned `interval`; abort with a clear message on `access_denied`, `expired_token` (device code lapsed — re-request), and `device_flow_disabled` (enable Device Flow in the OAuth App settings). Respect `interval` between polls and stop at `expires_in`.
 4. Print the resulting `gho_` token and its granted scopes for the operator to place into `.dev.vars` and `wrangler secret put GITHUB_TOKEN`.
 
 Design notes:
@@ -87,7 +98,7 @@ Design notes:
 - **Client ID is not a Worker secret.** It is passed as a CLI argument (`--client-id`) or read from an optional `GITHUB_OAUTH_CLIENT_ID` env; it is **not** added to `.dev.vars.example`/`requiredProductionSecrets`, because the Worker never needs it. The OAuth App must have Device Flow enabled.
 - Pure Node (`node --experimental-strip-types`), consistent with the other `scripts/*.ts`. No new dependencies.
 - The script only prints the token; it never writes secrets to disk automatically.
-- Add a `scripts/github-oauth-authorize.test.ts` covering the pollable response parsing (`authorization_pending`, `slow_down`, success, error) with mocked `fetch`, matching the existing script test style.
+- Add a `scripts/github-oauth-authorize.test.ts` covering device-flow response parsing with mocked `fetch`: `authorization_pending` (continues polling), `slow_down` (interval bumped), `access_denied` / `expired_token` / `device_flow_disabled` (abort), and success (token + scopes returned), matching the existing script test style.
 
 ### 3.3 Scope: request `read:user` only, verify public-repo metrics
 
