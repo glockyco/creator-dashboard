@@ -32,6 +32,12 @@ describe('capture-fixture utility', () => {
     expect(redacted).toBe('[redacted] [redacted] [redacted] [redacted]');
   });
 
+  it('redacts oauth and app token prefixes, not just classic PATs', () => {
+    expect(redactFixtureText('gho_oauth123 ghu_user456 ghs_app789 ghr_refreshABC')).toBe(
+      '[redacted] [redacted] [redacted] [redacted]'
+    );
+  });
+
   it('captures through an injected writer without touching the filesystem', async () => {
     const fetcher = vi.fn(async () => {
       await fetch('https://example.test/upstream');

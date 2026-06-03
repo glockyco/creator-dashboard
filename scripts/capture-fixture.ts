@@ -43,7 +43,7 @@ type CaptureFixtureOptions = {
 const connectorSet = new Set<string>(connectorKinds);
 
 export const redactionPatterns = [
-  /ghp_[A-Za-z0-9_]+/g,
+  /gh[a-z]_[A-Za-z0-9_]+/g,
   /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
   /\b7656119\d{10}\b/g,
   /Bearer\s+[A-Za-z0-9._-]+/g
