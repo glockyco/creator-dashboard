@@ -27,22 +27,29 @@ export async function fetchSteamGuideComments({
   maxPages?: number;
 }): Promise<SteamGuideCommentsResult> {
   const comments: EventRow[] = [];
-  let totalCount = 0;
+  let totalCount: number | null = null;
   let start = 0;
 
   for (let page = 0; page < maxPages; page += 1) {
-    const body = new URLSearchParams({ start: String(start), totalcount: String(totalCount), count: String(pageSize) });
-    const data = await fetchJson(
+    const body: URLSearchParams = new URLSearchParams({
+      start: String(start),
+      totalcount: String(totalCount ?? 0),
+      count: String(pageSize)
+    });
+    const data = await fetchJson<z.infer<typeof CommentPage>>(
       `https://steamcommunity.com/comment/PublishedFile_Public/render/${creator}/${publishedfileid}/`,
       { method: 'POST', body, schema: CommentPage }
     );
     if (!data.success) throw new Error(`Steam comments for guide ${publishedfileid} were not returned successfully`);
     if (data.start !== start) throw commentParseError(publishedfileid);
 
-    totalCount = data.total_count;
+    const stableTotalCount: number = totalCount === null ? data.total_count : totalCount;
+    if (totalCount !== null && data.total_count !== stableTotalCount) throw commentParseError(publishedfileid);
+    totalCount = stableTotalCount;
+
     const parsedPageSize = Number(data.pagesize);
     const step = Number.isFinite(parsedPageSize) && parsedPageSize > 0 ? parsedPageSize : pageSize;
-    const expectedPageCount = Math.max(0, Math.min(step, totalCount - start));
+    const expectedPageCount = Math.max(0, Math.min(step, stableTotalCount - start));
     const pageCommentBlocks = commentStarts(data.comments_html).length;
     const pageComments = parseSteamGuideComments(data.comments_html, publishedfileid);
     if (expectedPageCount > 0 && pageCommentBlocks === 0) throw commentParseError(publishedfileid);
@@ -51,10 +58,10 @@ export async function fetchSteamGuideComments({
     comments.push(...pageComments);
 
     start += step;
-    if (totalCount === 0 || start >= totalCount) return { totalCount, comments };
+    if (stableTotalCount === 0 || start >= stableTotalCount) return { totalCount: stableTotalCount, comments };
   }
 
-  throw new Error(`Steam comments for guide ${publishedfileid} exceeded ${maxPages} pages`);
+  throw commentParseError(publishedfileid);
 }
 
 export function parseSteamGuideComments(html: string, publishedfileid: string): EventRow[] {

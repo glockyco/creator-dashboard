@@ -113,6 +113,47 @@ describe('fetchSteamGuideComments', () => {
     ).rejects.toBeInstanceOf(z.ZodError);
   });
 
+  it('rejects comment pages whose total count changes between pages', async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, start: 0, pagesize: '1', total_count: 2, comments_html: firstCommentHtml }),
+          { status: 200 }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true, start: 1, pagesize: '1', total_count: 1, comments_html: '' }), {
+          status: 200
+        })
+      );
+    vi.stubGlobal('fetch', fetch);
+
+    await expect(
+      fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991', pageSize: 1 })
+    ).rejects.toBeInstanceOf(z.ZodError);
+  });
+
+  it('classifies page cap exhaustion as schema drift', async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ success: true, start: 0, pagesize: '1', total_count: 2, comments_html: firstCommentHtml }),
+          { status: 200 }
+        )
+      );
+    vi.stubGlobal('fetch', fetch);
+
+    await expect(
+      fetchSteamGuideComments({
+        creator: '76561198107304856',
+        publishedfileid: '3500398991',
+        pageSize: 1,
+        maxPages: 1
+      })
+    ).rejects.toBeInstanceOf(z.ZodError);
+  });
   it('rejects a positive-count page with blank comment html', async () => {
     const fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ success: true, start: 0, pagesize: '50', total_count: 1, comments_html: '   ' }), {
