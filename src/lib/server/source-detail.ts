@@ -1,6 +1,7 @@
 import { getSource, type SourceDef } from '$lib/sources/registry';
 import { sourceMetrics } from '$lib/sources/metrics';
 import type { LatestMetric, SparkPoint } from '$lib/dashboard/types';
+import type { SteamGuideAward } from '$lib/types/domain';
 import { latestMetricFromPoints } from '$lib/dashboard/delta';
 
 export type LinkedPost = {
@@ -37,6 +38,7 @@ export type SourceDetail = {
   secondaryMetrics: LatestMetric[];
   linkedPosts: LinkedPost[];
   events: EventsPage;
+  steamGuideAwards: SteamGuideAward[];
 };
 
 export type SourceDetailRange = {
@@ -76,7 +78,8 @@ export async function getSourceDetail(
       ? config.primary.map((metric) => latestMetricFromPoints(metric, metricHistory[metric] ?? []))
       : [],
     linkedPosts: await linkedPosts(db, source.id),
-    events: await getSourceEvents(db, source.id, { pageSize: 20 })
+    events: await getSourceEvents(db, source.id, { pageSize: 20 }),
+    steamGuideAwards: await steamGuideAwards(db, source.id)
   };
 }
 
@@ -148,6 +151,20 @@ async function linkedPosts(db: D1Database, sourceId: string): Promise<LinkedPost
     .bind(sourceId)
     .all<PostRow>();
   return (result.results ?? []).map((post) => ({ ...post, tags: parseTags(post.tags) }));
+}
+
+async function steamGuideAwards(db: D1Database, sourceId: string): Promise<SteamGuideAward[]> {
+  if (!sourceId.startsWith('steam-guide-')) return [];
+  const result = await db
+    .prepare(
+      `SELECT source_id, reaction_id, count, icon_url, captured_at
+       FROM steam_guide_awards
+       WHERE source_id = ? AND count > 0
+       ORDER BY count DESC, reaction_id ASC`
+    )
+    .bind(sourceId)
+    .all<SteamGuideAward>();
+  return (result.results ?? []).sort((left, right) => right.count - left.count || left.reaction_id - right.reaction_id);
 }
 
 function toEvent(row: EventRow): SourceEvent {

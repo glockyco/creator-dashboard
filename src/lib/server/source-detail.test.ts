@@ -4,18 +4,28 @@ import { getSourceDetail, getSourceEvents } from './source-detail';
 const fetcher = vi.fn();
 
 vi.mock('$lib/sources/registry', () => ({
-  getSource: (sourceId: string) =>
-    sourceId === 'github-glockyco'
-      ? {
-          id: 'github-glockyco',
-          identity: 'glockyco',
-          name: 'GitHub @glockyco',
-          category: 'platform',
-          cadenceHours: 1,
-          fetcher,
-          config: {}
-        }
-      : undefined
+  getSource: (sourceId: string) => {
+    if (sourceId === 'github-glockyco')
+      return {
+        id: 'github-glockyco',
+        identity: 'glockyco',
+        name: 'GitHub @glockyco',
+        category: 'platform',
+        cadenceHours: 1,
+        fetcher,
+        config: {}
+      };
+    if (sourceId === 'steam-guide-erenshor')
+      return {
+        id: 'steam-guide-erenshor',
+        identity: 'WoW_Much',
+        name: 'Steam Guide: Erenshor Maps',
+        category: 'platform',
+        cadenceHours: 1,
+        fetcher,
+        config: { publishedfileid: '3500398991' }
+      };
+  }
 }));
 
 type Call = { sql: string; params: unknown[] };
@@ -85,6 +95,24 @@ function rowsFor(sql: string, params: unknown[]) {
         body: 'Body 1',
         url: 'https://example.test/1',
         metadata: null
+      }
+    ];
+  }
+  if (sql.includes('FROM steam_guide_awards')) {
+    return [
+      {
+        source_id: 'steam-guide-erenshor',
+        reaction_id: 27,
+        count: 2,
+        icon_url: 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/27.png?v=5',
+        captured_at: 1777852800000
+      },
+      {
+        source_id: 'steam-guide-erenshor',
+        reaction_id: 17,
+        count: 5,
+        icon_url: 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/17.png?v=5',
+        captured_at: 1777852800000
       }
     ];
   }
@@ -166,9 +194,33 @@ describe('getSourceDetail', () => {
           }
         ],
         nextCursor: null
-      }
+      },
+      steamGuideAwards: []
     });
     expect(calls.find((call) => call.sql.includes('FROM posts_sources'))?.params).toEqual(['github-glockyco']);
+  });
+
+  it('returns Steam guide awards sorted by count', async () => {
+    const { db } = sourceDetailDb();
+
+    const detail = await getSourceDetail(db, 'steam-guide-erenshor', { since: 500 });
+
+    expect(detail?.steamGuideAwards).toEqual([
+      {
+        source_id: 'steam-guide-erenshor',
+        reaction_id: 17,
+        count: 5,
+        icon_url: 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/17.png?v=5',
+        captured_at: 1777852800000
+      },
+      {
+        source_id: 'steam-guide-erenshor',
+        reaction_id: 27,
+        count: 2,
+        icon_url: 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/27.png?v=5',
+        captured_at: 1777852800000
+      }
+    ]);
   });
 });
 

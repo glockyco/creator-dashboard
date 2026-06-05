@@ -9,6 +9,14 @@ describe('sourceMetrics', () => {
       primary: ['followers', 'total_stars', 'public_repos'],
       sparkline: 'contributions'
     });
+    expect(sourceMetrics['steam-guide-erenshor']).toEqual({
+      primary: ['views', 'rating', 'ratings', 'comment_count', 'award_count'],
+      sparkline: 'views'
+    });
+    expect(sourceMetrics['steam-guide-ak']).toEqual({
+      primary: ['views', 'rating', 'ratings', 'comment_count', 'award_count'],
+      sparkline: 'views'
+    });
     expect(sourceMetrics['steam-reviews-erenshor']).toMatchObject({
       primary: ['review_total', 'review_positive', 'review_negative'],
       sparkline: 'review_total',
