@@ -44,10 +44,9 @@ export async function fetchSteamGuideComments({
     const expectedPageCount = Math.max(0, Math.min(step, totalCount - start));
     const pageCommentBlocks = commentStarts(data.comments_html).length;
     const pageComments = parseSteamGuideComments(data.comments_html, publishedfileid);
-    if (expectedPageCount > 0 && pageCommentBlocks === 0)
-      throw new Error(`Steam comments for guide ${publishedfileid} could not be parsed`);
+    if (expectedPageCount > 0 && pageCommentBlocks === 0) throw commentParseError(publishedfileid);
     if (pageComments.length !== pageCommentBlocks || pageComments.length !== expectedPageCount)
-      throw new Error(`Steam comments for guide ${publishedfileid} could not be parsed`);
+      throw commentParseError(publishedfileid);
     comments.push(...pageComments);
 
     start += step;
@@ -116,11 +115,20 @@ function decodeHtml(value: string): string {
     const numeric = lower.startsWith('#x') ? code.slice(2) : code.slice(1);
     const point = Number.parseInt(numeric, radix);
     if (!Number.isFinite(point)) return entity;
-
     try {
       return String.fromCodePoint(point);
     } catch {
       return entity;
     }
   });
+}
+
+function commentParseError(publishedfileid: string): z.ZodError {
+  return new z.ZodError([
+    {
+      code: 'custom',
+      path: ['comments_html'],
+      message: `Steam comments for guide ${publishedfileid} could not be parsed`
+    }
+  ]);
 }

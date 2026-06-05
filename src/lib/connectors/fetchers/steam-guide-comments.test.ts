@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchSteamGuideComments, parseSteamGuideComments } from './steam-guide-comments';
 
@@ -100,7 +101,7 @@ describe('fetchSteamGuideComments', () => {
 
     await expect(
       fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991' })
-    ).rejects.toThrow('could not be parsed');
+    ).rejects.toBeInstanceOf(z.ZodError);
   });
 
   it('rejects partially malformed comment pages instead of dropping comments', async () => {
@@ -128,7 +129,7 @@ describe('fetchSteamGuideComments', () => {
 
     await expect(
       fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991' })
-    ).rejects.toThrow('could not be parsed');
+    ).rejects.toBeInstanceOf(z.ZodError);
   });
 
   it('rejects pages that parse fewer comments than Steam says the page contains', async () => {
@@ -148,6 +149,6 @@ describe('fetchSteamGuideComments', () => {
 
     await expect(
       fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991' })
-    ).rejects.toThrow('could not be parsed');
+    ).rejects.toBeInstanceOf(z.ZodError);
   });
 });
