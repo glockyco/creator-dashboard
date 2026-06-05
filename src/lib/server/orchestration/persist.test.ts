@@ -87,6 +87,7 @@ describe('successStatements', () => {
     expect(result).toHaveLength(4);
     expect(statements[0].sql).toContain('INSERT INTO steam_guide_awards');
     expect(statements[0].sql).toContain('ON CONFLICT(source_id, reaction_id) DO UPDATE');
+    expect(statements[0].sql).toContain('WHERE excluded.captured_at >= steam_guide_awards.captured_at');
     expect(statements[0].binds).toEqual([
       'steam-guide-erenshor',
       17,
@@ -95,6 +96,7 @@ describe('successStatements', () => {
       1777852800000
     ]);
     expect(statements[2].sql).toContain('DELETE FROM steam_guide_awards');
+    expect(statements[2].sql).toContain('captured_at < ?');
     expect(statements[2].binds).toEqual(['steam-guide-erenshor', 1777852800000]);
     expect(statements[3].sql).toContain('INSERT INTO fetcher_runs');
   });

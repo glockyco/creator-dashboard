@@ -16,11 +16,12 @@ export function successStatements(
                ON CONFLICT(source_id, reaction_id) DO UPDATE SET
                  count = excluded.count,
                  icon_url = excluded.icon_url,
-                 captured_at = excluded.captured_at`
+                 captured_at = excluded.captured_at
+               WHERE excluded.captured_at >= steam_guide_awards.captured_at`
             )
             .bind(award.source_id, award.reaction_id, award.count, award.icon_url, award.captured_at)
         ),
-        db.prepare('DELETE FROM steam_guide_awards WHERE source_id = ? AND captured_at <> ?').bind(sourceId, now)
+        db.prepare('DELETE FROM steam_guide_awards WHERE source_id = ? AND captured_at < ?').bind(sourceId, now)
       ]
     : [];
 
