@@ -3,6 +3,7 @@
   import EventsFeed from '$lib/components/sources/EventsFeed.svelte';
   import LinkedPosts from '$lib/components/sources/LinkedPosts.svelte';
   import MetricPanel from '$lib/components/sources/MetricPanel.svelte';
+  import SteamGuideAwards from '$lib/components/sources/SteamGuideAwards.svelte';
   import SourceHeader from '$lib/components/sources/SourceHeader.svelte';
   import type { PageData } from './$types';
 
@@ -31,6 +32,11 @@
 
   <div class="grid gap-4 xl:grid-cols-[2fr_1fr]">
     <EventsFeed sourceId={data.detail.source.id} events={data.detail.events} />
-    <LinkedPosts posts={data.detail.linkedPosts} />
+    <div class="space-y-4">
+      {#if data.detail.source.id.startsWith('steam-guide-')}
+        <SteamGuideAwards awards={data.detail.steamGuideAwards} />
+      {/if}
+      <LinkedPosts posts={data.detail.linkedPosts} />
+    </div>
   </div>
 </div>
