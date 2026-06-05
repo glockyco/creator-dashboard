@@ -27,6 +27,7 @@ export async function fetchSteamGuideComments({
   maxPages?: number;
 }): Promise<SteamGuideCommentsResult> {
   const comments: EventRow[] = [];
+  const seenCommentIds = new Set<string>();
   let totalCount: number | null = null;
   let start = 0;
 
@@ -55,6 +56,10 @@ export async function fetchSteamGuideComments({
     if (expectedPageCount > 0 && pageCommentBlocks === 0) throw commentParseError(publishedfileid);
     if (pageComments.length !== pageCommentBlocks || pageComments.length !== expectedPageCount)
       throw commentParseError(publishedfileid);
+    for (const comment of pageComments) {
+      if (seenCommentIds.has(comment.external_id)) throw commentParseError(publishedfileid);
+      seenCommentIds.add(comment.external_id);
+    }
     comments.push(...pageComments);
 
     start += step;
