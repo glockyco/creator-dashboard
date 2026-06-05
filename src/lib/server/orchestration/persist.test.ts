@@ -58,4 +58,44 @@ describe('successStatements', () => {
     expect(statements[2].sql).toContain('ON CONFLICT(source_id) DO UPDATE');
     expect(statements[2].binds).toEqual(['source-a', 1714838500000, 1714838500000]);
   });
+
+  it('upserts steam guide awards and removes awards missing from the latest snapshot', () => {
+    const { db, statements } = fakeDb();
+    const output: FetcherOutput = {
+      metric_points: [],
+      events: [],
+      steam_guide_awards: [
+        {
+          source_id: 'steam-guide-erenshor',
+          reaction_id: 17,
+          count: 5,
+          icon_url: 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/17.png?v=5',
+          captured_at: 1777852800000
+        },
+        {
+          source_id: 'steam-guide-erenshor',
+          reaction_id: 27,
+          count: 2,
+          icon_url: 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/27.png?v=5',
+          captured_at: 1777852800000
+        }
+      ]
+    };
+
+    const result = successStatements(db, 'steam-guide-erenshor', 1777852800000, output);
+
+    expect(result).toHaveLength(4);
+    expect(statements[0].sql).toContain('INSERT INTO steam_guide_awards');
+    expect(statements[0].sql).toContain('ON CONFLICT(source_id, reaction_id) DO UPDATE');
+    expect(statements[0].binds).toEqual([
+      'steam-guide-erenshor',
+      17,
+      5,
+      'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/17.png?v=5',
+      1777852800000
+    ]);
+    expect(statements[2].sql).toContain('DELETE FROM steam_guide_awards');
+    expect(statements[2].binds).toEqual(['steam-guide-erenshor', 1777852800000]);
+    expect(statements[3].sql).toContain('INSERT INTO fetcher_runs');
+  });
 });
