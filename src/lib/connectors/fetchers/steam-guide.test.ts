@@ -93,7 +93,7 @@ describe('fetchSteamGuide', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('throws ZodError when detail and thread comment counts diverge', async () => {
+  it('uses the comment thread total when detail and thread comment counts diverge', async () => {
     const mismatchedFixture = {
       response: {
         publishedfiledetails: [{ ...fixture.response.publishedfiledetails[0], num_comments_public: 2 }]
@@ -105,7 +105,10 @@ describe('fetchSteamGuide', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(commentsResponse), { status: 200 }));
     vi.stubGlobal('fetch', fetch);
 
-    await expect(fetchSteamGuide({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);
+    const out = await fetchSteamGuide({ source, env, now });
+
+    expect(out.metric_points.find((point) => point.metric === 'comment_count')?.value).toBe(1);
+    expect(out.events).toHaveLength(1);
   });
   it('throws ZodError on schema drift', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ response: {} }), { status: 200 })));

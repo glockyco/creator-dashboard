@@ -59,7 +59,7 @@ describe('successStatements', () => {
     expect(statements[2].binds).toEqual(['source-a', 1714838500000, 1714838500000]);
   });
 
-  it('upserts steam guide awards and removes awards missing from the latest snapshot', () => {
+  it('upserts steam guide awards and removes awards missing from the current snapshot', () => {
     const { db, statements } = fakeDb();
     const output: FetcherOutput = {
       metric_points: [],
@@ -84,27 +84,20 @@ describe('successStatements', () => {
 
     const result = successStatements(db, 'steam-guide-erenshor', 1777852800000, output);
 
-    expect(result).toHaveLength(5);
-    expect(statements[0].sql).toContain('INSERT INTO steam_guide_award_snapshots');
-    expect(statements[0].sql).toContain('WHERE excluded.captured_at >= steam_guide_award_snapshots.captured_at');
-    expect(statements[0].binds).toEqual(['steam-guide-erenshor', 1777852800000]);
-    expect(statements[1].sql).toContain('INSERT INTO steam_guide_awards');
-    expect(statements[1].sql).toContain('SELECT ?, ?, ?, ?, ?');
-    expect(statements[1].sql).toContain('FROM steam_guide_award_snapshots');
-    expect(statements[1].sql).toContain('WHERE excluded.captured_at >= steam_guide_awards.captured_at');
-    expect(statements[1].binds).toEqual([
+    expect(result).toHaveLength(4);
+    expect(statements[0].sql).toContain('INSERT INTO steam_guide_awards');
+    expect(statements[0].sql).toContain('ON CONFLICT(source_id, reaction_id) DO UPDATE');
+    expect(statements[0].sql).not.toContain('steam_guide_award_snapshots');
+    expect(statements[0].binds).toEqual([
       'steam-guide-erenshor',
       17,
       5,
       'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/17.png?v=5',
-      1777852800000,
-      'steam-guide-erenshor',
       1777852800000
     ]);
-    expect(statements[3].sql).toContain('DELETE FROM steam_guide_awards');
-    expect(statements[3].sql).toContain('captured_at < ?');
-    expect(statements[3].sql).toContain('FROM steam_guide_award_snapshots');
-    expect(statements[3].binds).toEqual(['steam-guide-erenshor', 1777852800000, 'steam-guide-erenshor', 1777852800000]);
-    expect(statements[4].sql).toContain('INSERT INTO fetcher_runs');
+    expect(statements[2].sql).toContain('DELETE FROM steam_guide_awards');
+    expect(statements[2].sql).toContain('captured_at <> ?');
+    expect(statements[2].binds).toEqual(['steam-guide-erenshor', 1777852800000]);
+    expect(statements[3].sql).toContain('INSERT INTO fetcher_runs');
   });
 });

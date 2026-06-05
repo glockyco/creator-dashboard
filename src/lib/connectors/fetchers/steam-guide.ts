@@ -37,8 +37,6 @@ export async function fetchSteamGuide({ source, env, now }: FetcherInput): Promi
     throw new Error(`Steam guide ${config.publishedfileid} was not returned successfully`);
 
   const comments = await fetchSteamGuideComments({ creator: detail.creator, publishedfileid: config.publishedfileid });
-  if (detail.num_comments_public !== undefined && detail.num_comments_public !== comments.totalCount)
-    throw steamGuideCommentCountError(config.publishedfileid);
   const reactions = detail.reactions ?? [];
   const awardCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
 
@@ -57,7 +55,7 @@ export async function fetchSteamGuide({ source, env, now }: FetcherInput): Promi
         source_id: source.id,
         metric: 'comment_count',
         ts: now,
-        value: detail.num_comments_public ?? comments.totalCount,
+        value: comments.totalCount,
         dimensions: null
       },
       { source_id: source.id, metric: 'award_count', ts: now, value: awardCount, dimensions: null }
@@ -73,14 +71,4 @@ export async function fetchSteamGuide({ source, env, now }: FetcherInput): Promi
         captured_at: now
       }))
   };
-}
-
-function steamGuideCommentCountError(publishedfileid: string): z.ZodError {
-  return new z.ZodError([
-    {
-      code: 'custom',
-      path: ['response', 'publishedfiledetails', 0, 'num_comments_public'],
-      message: `Steam guide ${publishedfileid} comment count did not match the comment thread`
-    }
-  ]);
 }

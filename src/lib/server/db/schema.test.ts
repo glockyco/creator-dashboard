@@ -30,7 +30,6 @@ describe('initial D1 schema migration', () => {
       'metric_points',
       'posts_index',
       'posts_sources',
-      'steam_guide_award_snapshots',
       'steam_guide_awards'
     ]);
   });

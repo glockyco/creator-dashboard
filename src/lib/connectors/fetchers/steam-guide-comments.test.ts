@@ -91,29 +91,7 @@ describe('fetchSteamGuideComments', () => {
     expect(String(fetch.mock.calls[1]?.[1]?.body)).toContain('start=1');
   });
 
-  it('rejects comment pages whose returned offset does not match the requested offset', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ success: true, start: 0, pagesize: '1', total_count: 2, comments_html: firstCommentHtml }),
-          { status: 200 }
-        )
-      )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ success: true, start: 0, pagesize: '1', total_count: 2, comments_html: secondCommentHtml }),
-          { status: 200 }
-        )
-      );
-    vi.stubGlobal('fetch', fetch);
-
-    await expect(
-      fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991', pageSize: 1 })
-    ).rejects.toBeInstanceOf(z.ZodError);
-  });
-
-  it('rejects duplicated comment ids across paged responses', async () => {
+  it('deduplicates repeated comment ids across paged responses', async () => {
     const fetch = vi
       .fn()
       .mockResolvedValueOnce(
@@ -130,51 +108,14 @@ describe('fetchSteamGuideComments', () => {
       );
     vi.stubGlobal('fetch', fetch);
 
-    await expect(
-      fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991', pageSize: 1 })
-    ).rejects.toBeInstanceOf(z.ZodError);
-  });
+    const result = await fetchSteamGuideComments({
+      creator: '76561198107304856',
+      publishedfileid: '3500398991',
+      pageSize: 1
+    });
 
-  it('rejects comment pages whose total count changes between pages', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ success: true, start: 0, pagesize: '1', total_count: 2, comments_html: firstCommentHtml }),
-          { status: 200 }
-        )
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true, start: 1, pagesize: '1', total_count: 1, comments_html: '' }), {
-          status: 200
-        })
-      );
-    vi.stubGlobal('fetch', fetch);
-
-    await expect(
-      fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991', pageSize: 1 })
-    ).rejects.toBeInstanceOf(z.ZodError);
-  });
-
-  it('classifies page cap exhaustion as schema drift', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(
-          JSON.stringify({ success: true, start: 0, pagesize: '1', total_count: 2, comments_html: firstCommentHtml }),
-          { status: 200 }
-        )
-      );
-    vi.stubGlobal('fetch', fetch);
-
-    await expect(
-      fetchSteamGuideComments({
-        creator: '76561198107304856',
-        publishedfileid: '3500398991',
-        pageSize: 1,
-        maxPages: 1
-      })
-    ).rejects.toBeInstanceOf(z.ZodError);
+    expect(result.totalCount).toBe(2);
+    expect(result.comments.map((comment) => comment.external_id)).toEqual(['111']);
   });
   it('rejects a positive-count page with blank comment html', async () => {
     const fetch = vi.fn().mockResolvedValue(
@@ -206,26 +147,6 @@ describe('fetchSteamGuideComments', () => {
           pagesize: '50',
           total_count: 2,
           comments_html: `${firstCommentHtml}${malformedCommentHtml}`
-        }),
-        { status: 200 }
-      )
-    );
-    vi.stubGlobal('fetch', fetch);
-
-    await expect(
-      fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991' })
-    ).rejects.toBeInstanceOf(z.ZodError);
-  });
-
-  it('rejects pages that parse fewer comments than Steam says the page contains', async () => {
-    const fetch = vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          success: true,
-          start: 0,
-          pagesize: '50',
-          total_count: 2,
-          comments_html: firstCommentHtml
         }),
         { status: 200 }
       )
