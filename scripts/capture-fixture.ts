@@ -180,7 +180,8 @@ async function captureSteamGuide({ source, env }: { source: CaptureSource; env: 
   const body = new URLSearchParams({
     key: required(env, 'STEAM_WEB_API_KEY'),
     itemcount: '1',
-    'publishedfileids[0]': String(source.config?.publishedfileid)
+    'publishedfileids[0]': String(source.config?.publishedfileid),
+    includereactions: 'true'
   });
   await fetch('https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/', { method: 'POST', body });
 }

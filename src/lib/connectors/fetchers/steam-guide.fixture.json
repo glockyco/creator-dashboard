@@ -10,7 +10,19 @@
           "score": 0.82,
           "votes_up": 41,
           "votes_down": 9
-        }
+        },
+        "creator": "76561198107304856",
+        "num_comments_public": 21,
+        "reactions": [
+          {
+            "reactionid": 17,
+            "count": 5
+          },
+          {
+            "reactionid": 27,
+            "count": 2
+          }
+        ]
       }
     ]
   }
