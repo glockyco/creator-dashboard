@@ -8,20 +8,36 @@ export function successStatements(
 ): D1PreparedStatement[] {
   const awardStatements = output.steam_guide_awards
     ? [
+        db
+          .prepare(
+            `INSERT INTO steam_guide_award_snapshots (source_id, captured_at)
+             VALUES (?, ?)
+             ON CONFLICT(source_id) DO UPDATE SET captured_at = excluded.captured_at
+             WHERE excluded.captured_at >= steam_guide_award_snapshots.captured_at`
+          )
+          .bind(sourceId, now),
         ...output.steam_guide_awards.map((award) =>
           db
             .prepare(
               `INSERT INTO steam_guide_awards (source_id, reaction_id, count, icon_url, captured_at)
-               VALUES (?, ?, ?, ?, ?)
+               SELECT ?, ?, ?, ?, ?
+               WHERE (SELECT captured_at FROM steam_guide_award_snapshots WHERE source_id = ?) = ?
                ON CONFLICT(source_id, reaction_id) DO UPDATE SET
                  count = excluded.count,
                  icon_url = excluded.icon_url,
                  captured_at = excluded.captured_at
                WHERE excluded.captured_at >= steam_guide_awards.captured_at`
             )
-            .bind(award.source_id, award.reaction_id, award.count, award.icon_url, award.captured_at)
+            .bind(award.source_id, award.reaction_id, award.count, award.icon_url, award.captured_at, sourceId, now)
         ),
-        db.prepare('DELETE FROM steam_guide_awards WHERE source_id = ? AND captured_at < ?').bind(sourceId, now)
+        db
+          .prepare(
+            `DELETE FROM steam_guide_awards
+             WHERE source_id = ?
+               AND captured_at < ?
+               AND (SELECT captured_at FROM steam_guide_award_snapshots WHERE source_id = ?) = ?`
+          )
+          .bind(sourceId, now, sourceId, now)
       ]
     : [];
 
