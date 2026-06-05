@@ -89,4 +89,45 @@ describe('fetchSteamGuideComments', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(String(fetch.mock.calls[1]?.[1]?.body)).toContain('start=1');
   });
+
+  it('rejects a positive-count page with blank comment html', async () => {
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ success: true, start: 0, pagesize: '50', total_count: 1, comments_html: '   ' }), {
+        status: 200
+      })
+    );
+    vi.stubGlobal('fetch', fetch);
+
+    await expect(
+      fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991' })
+    ).rejects.toThrow('could not be parsed');
+  });
+
+  it('rejects partially malformed comment pages instead of dropping comments', async () => {
+    const malformedCommentHtml = `
+<div data-panel="{}" class="commentthread_comment responsive_body_text" id="comment_333">
+  <div class="commentthread_comment_content">
+    <div class="commentthread_comment_author">
+      <a class="hoverunderline commentthread_author_link" href="https://steamcommunity.com/profiles/3"><bdi>Broken</bdi></a>
+    </div>
+  </div>
+</div>`;
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          start: 0,
+          pagesize: '50',
+          total_count: 2,
+          comments_html: `${firstCommentHtml}${malformedCommentHtml}`
+        }),
+        { status: 200 }
+      )
+    );
+    vi.stubGlobal('fetch', fetch);
+
+    await expect(
+      fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991' })
+    ).rejects.toThrow('could not be parsed');
+  });
 });

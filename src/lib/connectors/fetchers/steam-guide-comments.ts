@@ -39,8 +39,11 @@ export async function fetchSteamGuideComments({
     if (!data.success) throw new Error(`Steam comments for guide ${publishedfileid} were not returned successfully`);
 
     totalCount = data.total_count;
+    const pageCommentBlocks = commentStarts(data.comments_html).length;
     const pageComments = parseSteamGuideComments(data.comments_html, publishedfileid);
-    if (totalCount > 0 && data.comments_html.trim().length > 0 && pageComments.length === 0)
+    if (totalCount > 0 && pageCommentBlocks === 0)
+      throw new Error(`Steam comments for guide ${publishedfileid} could not be parsed`);
+    if (pageComments.length !== pageCommentBlocks)
       throw new Error(`Steam comments for guide ${publishedfileid} could not be parsed`);
     comments.push(...pageComments);
 
@@ -54,9 +57,7 @@ export async function fetchSteamGuideComments({
 }
 
 export function parseSteamGuideComments(html: string, publishedfileid: string): EventRow[] {
-  const starts = [
-    ...html.matchAll(/<div\b(?=[^>]*\bclass="[^"]*\bcommentthread_comment\b[^"]*")(?=[^>]*\bid="comment_(\d+)")[^>]*>/g)
-  ].map((match) => ({ index: match.index ?? 0, id: match[1] }));
+  const starts = commentStarts(html);
 
   return starts.flatMap((start, index) => {
     const block = html.slice(start.index, starts[index + 1]?.index ?? html.length);
@@ -86,6 +87,12 @@ export function parseSteamGuideComments(html: string, publishedfileid: string): 
       }
     ];
   });
+}
+
+function commentStarts(html: string): { index: number; id: string }[] {
+  return [
+    ...html.matchAll(/<div\b(?=[^>]*\bclass="[^"]*\bcommentthread_comment\b[^"]*")(?=[^>]*\bid="comment_(\d+)")[^>]*>/g)
+  ].map((match) => ({ index: match.index ?? 0, id: match[1] }));
 }
 
 function normalizePlainText(html: string): string {
