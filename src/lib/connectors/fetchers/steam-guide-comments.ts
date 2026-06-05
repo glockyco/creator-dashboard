@@ -4,7 +4,7 @@ import { fetchJson } from '../http';
 
 const CommentPage = z.object({
   success: z.boolean(),
-  start: z.number().int().optional(),
+  start: z.number().int(),
   pagesize: z.union([z.string(), z.number()]),
   total_count: z.number().int(),
   comments_html: z.string()
@@ -37,6 +37,7 @@ export async function fetchSteamGuideComments({
       { method: 'POST', body, schema: CommentPage }
     );
     if (!data.success) throw new Error(`Steam comments for guide ${publishedfileid} were not returned successfully`);
+    if (data.start !== start) throw commentParseError(publishedfileid);
 
     totalCount = data.total_count;
     const parsedPageSize = Number(data.pagesize);
