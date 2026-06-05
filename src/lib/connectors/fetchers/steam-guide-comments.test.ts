@@ -130,4 +130,24 @@ describe('fetchSteamGuideComments', () => {
       fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991' })
     ).rejects.toThrow('could not be parsed');
   });
+
+  it('rejects pages that parse fewer comments than Steam says the page contains', async () => {
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          start: 0,
+          pagesize: '50',
+          total_count: 2,
+          comments_html: firstCommentHtml
+        }),
+        { status: 200 }
+      )
+    );
+    vi.stubGlobal('fetch', fetch);
+
+    await expect(
+      fetchSteamGuideComments({ creator: '76561198107304856', publishedfileid: '3500398991' })
+    ).rejects.toThrow('could not be parsed');
+  });
 });

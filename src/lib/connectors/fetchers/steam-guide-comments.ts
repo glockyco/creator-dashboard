@@ -39,16 +39,17 @@ export async function fetchSteamGuideComments({
     if (!data.success) throw new Error(`Steam comments for guide ${publishedfileid} were not returned successfully`);
 
     totalCount = data.total_count;
+    const parsedPageSize = Number(data.pagesize);
+    const step = Number.isFinite(parsedPageSize) && parsedPageSize > 0 ? parsedPageSize : pageSize;
+    const expectedPageCount = Math.max(0, Math.min(step, totalCount - start));
     const pageCommentBlocks = commentStarts(data.comments_html).length;
     const pageComments = parseSteamGuideComments(data.comments_html, publishedfileid);
-    if (totalCount > 0 && pageCommentBlocks === 0)
+    if (expectedPageCount > 0 && pageCommentBlocks === 0)
       throw new Error(`Steam comments for guide ${publishedfileid} could not be parsed`);
-    if (pageComments.length !== pageCommentBlocks)
+    if (pageComments.length !== pageCommentBlocks || pageComments.length !== expectedPageCount)
       throw new Error(`Steam comments for guide ${publishedfileid} could not be parsed`);
     comments.push(...pageComments);
 
-    const parsedPageSize = Number(data.pagesize);
-    const step = Number.isFinite(parsedPageSize) && parsedPageSize > 0 ? parsedPageSize : pageSize;
     start += step;
     if (totalCount === 0 || start >= totalCount) return { totalCount, comments };
   }
