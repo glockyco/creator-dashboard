@@ -3,6 +3,7 @@ import { sourceMetrics } from '$lib/sources/metrics';
 import type { IdentityFilter } from '$lib/types/domain';
 import type { FetcherStatus, LatestEvent, LatestMetric, SparkPoint, TileSnapshot } from '$lib/dashboard/types';
 import { latestMetricFromPoints } from '$lib/dashboard/delta';
+import { buildMetricBreakdown } from '$lib/dashboard/breakdown';
 
 export type DashboardFilters = {
   identity?: IdentityFilter;
@@ -55,8 +56,9 @@ export async function getDashboardSnapshots(db: D1Database, filters: DashboardFi
   if (visibleConfigs.length === 0) return [];
   const snapshots: TileSnapshot[] = [];
 
-  const [metricRowsResult, eventRows, statusRows] = await Promise.all([
+  const [metricRowsResult, breakdownRowsResult, eventRows, statusRows] = await Promise.all([
     metricRows(db, visibleConfigs, since),
+    breakdownRows(db, visibleConfigs, since),
     latestEvents(db, visibleConfigs),
     fetcherStatuses(
       db,
@@ -64,6 +66,7 @@ export async function getDashboardSnapshots(db: D1Database, filters: DashboardFi
     )
   ]);
   const metricRowsByKey = groupMetricRows(metricRowsResult);
+  const breakdownBySource = groupBySource(breakdownRowsResult);
   const eventsBySource = groupBySource(eventRows);
   const statusBySource = groupStatusRows(statusRows);
 
@@ -77,7 +80,10 @@ export async function getDashboardSnapshots(db: D1Database, filters: DashboardFi
       metrics: primary,
       sparkline: toSparkline(metricRowsByKey.get(metricKey(source.id, metrics.sparkline)) ?? []),
       latestEvents: (eventsBySource.get(source.id) ?? []).map(toLatestEvent),
-      status: statusBySource.get(source.id) ?? emptyStatus
+      status: statusBySource.get(source.id) ?? emptyStatus,
+      breakdown: metrics.breakdown
+        ? buildMetricBreakdown(metrics.breakdown, breakdownBySource.get(source.id) ?? [])
+        : null
     });
   }
 
@@ -106,6 +112,35 @@ async function metricRows(
     )
     .bind(...sourceIds, ...metricNames, since)
     .all<MetricPointRow>();
+  return result.results ?? [];
+}
+
+type BreakdownPointRow = { source_id: string; ts: number; value: number; dimensions: string | null };
+
+async function breakdownRows(
+  db: D1Database,
+  entries: {
+    source: SourceDef;
+    metrics: NonNullable<(typeof sourceMetrics)[string]>;
+  }[],
+  since: number
+): Promise<BreakdownPointRow[]> {
+  const breakdownEntries = entries.filter(({ metrics }) => metrics.breakdown);
+  if (breakdownEntries.length === 0) return [];
+  const sourceIds = breakdownEntries.map(({ source }) => source.id);
+  const metricNames = [...new Set(breakdownEntries.map(({ metrics }) => metrics.breakdown!.metric))];
+  const result = await db
+    .prepare(
+      `SELECT source_id, ts, value, dimensions
+       FROM metric_points
+       WHERE source_id IN (${placeholders(sourceIds.length)})
+         AND metric IN (${placeholders(metricNames.length)})
+         AND ts >= ?
+         AND dimensions IS NOT NULL
+       ORDER BY source_id ASC, ts ASC`
+    )
+    .bind(...sourceIds, ...metricNames, since)
+    .all<BreakdownPointRow>();
   return result.results ?? [];
 }
 

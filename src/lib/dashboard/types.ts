@@ -10,10 +10,25 @@ export type FetcherStatus = {
   last_error: string | null;
   consecutive_failures: number;
 };
+export type MetricBreakdownItem = {
+  /** Dimension value identifying the series, e.g. a package name. */
+  key: string;
+  /** Latest value plus 24h delta for this series. */
+  latest: LatestMetric;
+  /** Full series within the queried window, ascending by ts. */
+  points: SparkPoint[];
+};
+export type MetricBreakdown = {
+  metric: string;
+  dimension: string;
+  label: string;
+  items: MetricBreakdownItem[];
+};
 export type TileSnapshot = {
   source: Omit<SourceDef, 'fetcher'>;
   metrics: LatestMetric[];
   sparkline: SparkPoint[];
   latestEvents: LatestEvent[];
   status: FetcherStatus;
+  breakdown: MetricBreakdown | null;
 };

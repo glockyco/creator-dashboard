@@ -3,6 +3,7 @@
   import EventsFeed from '$lib/components/sources/EventsFeed.svelte';
   import LinkedPosts from '$lib/components/sources/LinkedPosts.svelte';
   import MetricPanel from '$lib/components/sources/MetricPanel.svelte';
+  import MetricBreakdown from '$lib/components/sources/MetricBreakdown.svelte';
   import SteamGuideAwards from '$lib/components/sources/SteamGuideAwards.svelte';
   import SourceHeader from '$lib/components/sources/SourceHeader.svelte';
   import type { PageData } from './$types';
@@ -29,6 +30,10 @@
       {/if}
     {/each}
   </div>
+
+  {#if data.detail.breakdown && data.detail.breakdown.items.length > 0}
+    <MetricBreakdown breakdown={data.detail.breakdown} />
+  {/if}
 
   <div class="grid gap-4 xl:grid-cols-[2fr_1fr]">
     <EventsFeed sourceId={data.detail.source.id} events={data.detail.events} />

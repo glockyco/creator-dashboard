@@ -25,6 +25,16 @@ vi.mock('$lib/sources/registry', () => ({
         fetcher,
         config: { publishedfileid: '3500398991' }
       };
+    if (sourceId === 'thunderstore-wowmuch')
+      return {
+        id: 'thunderstore-wowmuch',
+        identity: 'WoW_Much',
+        name: 'Thunderstore: WoW_Much',
+        category: 'platform',
+        cadenceHours: 1,
+        fetcher,
+        config: { namespace: 'WoW_Much' }
+      };
   }
 }));
 
@@ -55,6 +65,13 @@ function rowsFor(sql: string, params: unknown[]) {
       return [
         { ts: 86_400_000, value: 3 },
         { ts: 172_800_000, value: 4 }
+      ];
+    if (metric === 'package_downloads')
+      return [
+        { ts: 86_400_000, value: 500, dimensions: '{"package":"MapPins"}' },
+        { ts: 172_800_000, value: 510, dimensions: '{"package":"MapPins"}' },
+        { ts: 86_400_000, value: 1280, dimensions: '{"package":"BigMod"}' },
+        { ts: 172_800_000, value: 1292, dimensions: '{"package":"BigMod"}' }
       ];
     return [];
   }
@@ -195,7 +212,8 @@ describe('getSourceDetail', () => {
         ],
         nextCursor: null
       },
-      steamGuideAwards: []
+      steamGuideAwards: [],
+      breakdown: null
     });
     expect(calls.find((call) => call.sql.includes('FROM posts_sources'))?.params).toEqual(['github-glockyco']);
   });
@@ -221,6 +239,39 @@ describe('getSourceDetail', () => {
         captured_at: 1777852800000
       }
     ]);
+  });
+
+  it('builds a per-package breakdown for sources configured with one', async () => {
+    const { db, calls } = sourceDetailDb();
+
+    const detail = await getSourceDetail(db, 'thunderstore-wowmuch', { since: 500 });
+
+    expect(detail?.breakdown).toEqual({
+      metric: 'package_downloads',
+      dimension: 'package',
+      label: 'Downloads per mod',
+      items: [
+        {
+          key: 'BigMod',
+          latest: { metric: 'package_downloads', value: 1292, previousValue: 1280, delta: 12 },
+          points: [
+            { ts: 86_400_000, value: 1280 },
+            { ts: 172_800_000, value: 1292 }
+          ]
+        },
+        {
+          key: 'MapPins',
+          latest: { metric: 'package_downloads', value: 510, previousValue: 500, delta: 10 },
+          points: [
+            { ts: 86_400_000, value: 500 },
+            { ts: 172_800_000, value: 510 }
+          ]
+        }
+      ]
+    });
+    const breakdownCall = calls.find((call) => call.sql.includes('dimensions IS NOT NULL'));
+    expect(breakdownCall?.sql).toContain('FROM metric_points');
+    expect(breakdownCall?.params).toEqual(['thunderstore-wowmuch', 'package_downloads', 500]);
   });
 });
 

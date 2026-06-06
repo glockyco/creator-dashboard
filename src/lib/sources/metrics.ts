@@ -1,7 +1,18 @@
+export type MetricBreakdownConfig = {
+  /** Metric name carrying the per-dimension series, e.g. `package_downloads`. */
+  metric: string;
+  /** Dimension key whose value identifies each series, e.g. `package`. */
+  dimension: string;
+  /** Heading shown above the breakdown, e.g. `Downloads per mod`. */
+  label: string;
+};
+
 export type SourceMetricConfig = {
   primary: string[];
   sparkline: string;
   eventKind?: string;
+  /** Optional per-dimension breakdown surfaced on the tile and detail page. */
+  breakdown?: MetricBreakdownConfig;
 };
 
 export const sourceMetrics: Record<string, SourceMetricConfig> = {
@@ -21,7 +32,11 @@ export const sourceMetrics: Record<string, SourceMetricConfig> = {
     sparkline: 'review_total',
     eventKind: 'review'
   },
-  'thunderstore-wowmuch': { primary: ['total_downloads', 'package_count'], sparkline: 'total_downloads' },
+  'thunderstore-wowmuch': {
+    primary: ['total_downloads', 'package_count'],
+    sparkline: 'total_downloads',
+    breakdown: { metric: 'package_downloads', dimension: 'package', label: 'Downloads per mod' }
+  },
   'erenshor-wiki-recent': { primary: ['wiki_change_count'], sparkline: 'wiki_change_count', eventKind: 'wiki_edit' },
   'gsc-glockyco-com': { primary: ['clicks', 'impressions', 'ctr', 'position'], sparkline: 'clicks' },
   'gsc-ak-compendium': { primary: ['clicks', 'impressions', 'ctr', 'position'], sparkline: 'clicks' },

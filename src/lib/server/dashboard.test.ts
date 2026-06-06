@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getDashboardSnapshots } from './dashboard';
 
-const fetchers = vi.hoisted(() => ({ github: vi.fn(), steam: vi.fn() }));
+const fetchers = vi.hoisted(() => ({ github: vi.fn(), steam: vi.fn(), thunderstore: vi.fn() }));
 
 const DAY_MS = 86_400_000;
 const PRIOR_TS = DAY_MS; // 24h ago in test space
@@ -29,6 +29,15 @@ vi.mock('$lib/sources/registry', () => ({
       cadenceHours: 1,
       fetcher: fetchers.steam,
       config: { appid: '123' }
+    },
+    {
+      id: 'thunderstore-wowmuch',
+      identity: 'WoW_Much',
+      name: 'Thunderstore: WoW_Much',
+      category: 'platform',
+      cadenceHours: 1,
+      fetcher: fetchers.thunderstore,
+      config: { namespace: 'WoW_Much' }
     }
   ]
 }));
@@ -93,16 +102,48 @@ function rowsForAll(sql: string, params: unknown[]) {
         ts: LATEST_TS,
         value: 2,
         dimensions: null
+      },
+      { source_id: 'thunderstore-wowmuch', metric: 'total_downloads', ts: PRIOR_TS, value: 1787, dimensions: null },
+      { source_id: 'thunderstore-wowmuch', metric: 'total_downloads', ts: LATEST_TS, value: 1802, dimensions: null },
+      { source_id: 'thunderstore-wowmuch', metric: 'package_count', ts: LATEST_TS, value: 4, dimensions: null },
+      {
+        source_id: 'thunderstore-wowmuch',
+        metric: 'package_downloads',
+        ts: PRIOR_TS,
+        value: 500,
+        dimensions: '{"package":"MapPins"}'
+      },
+      {
+        source_id: 'thunderstore-wowmuch',
+        metric: 'package_downloads',
+        ts: LATEST_TS,
+        value: 510,
+        dimensions: '{"package":"MapPins"}'
+      },
+      {
+        source_id: 'thunderstore-wowmuch',
+        metric: 'package_downloads',
+        ts: PRIOR_TS,
+        value: 1280,
+        dimensions: '{"package":"BigMod"}'
+      },
+      {
+        source_id: 'thunderstore-wowmuch',
+        metric: 'package_downloads',
+        ts: LATEST_TS,
+        value: 1292,
+        dimensions: '{"package":"BigMod"}'
       }
     ];
     const since = Number(params.at(-1));
-    return rows.filter(
-      (row) =>
-        params.includes(row.source_id) &&
-        params.includes(row.metric) &&
-        row.ts >= since &&
-        (!sql.includes('dimensions IS NULL') || row.dimensions === null)
-    );
+    return rows.filter((row) => {
+      const matchesDimensions = sql.includes('dimensions IS NOT NULL')
+        ? row.dimensions !== null
+        : sql.includes('dimensions IS NULL')
+          ? row.dimensions === null
+          : true;
+      return params.includes(row.source_id) && params.includes(row.metric) && row.ts >= since && matchesDimensions;
+    });
   }
   if (sql.includes('FROM events')) {
     const rows = [
@@ -220,7 +261,8 @@ describe('getDashboardSnapshots', () => {
           last_status: 'success',
           last_error: null,
           consecutive_failures: 0
-        }
+        },
+        breakdown: null
       }
     ]);
     expect(calls.filter((call) => call.sql.includes('FROM metric_points'))).toHaveLength(1);
@@ -235,7 +277,7 @@ describe('getDashboardSnapshots', () => {
       since: SINCE_TS
     });
 
-    expect(snapshots).toHaveLength(1);
+    expect(snapshots).toHaveLength(2);
     expect(snapshots[0].metrics[0]).toEqual({
       metric: 'review_total',
       value: null,
@@ -259,5 +301,41 @@ describe('getDashboardSnapshots', () => {
       last_error: null,
       consecutive_failures: 0
     });
+  });
+
+  it('builds a per-package breakdown for sources configured with one', async () => {
+    const { db, calls } = dashboardDb();
+
+    const snapshots = await getDashboardSnapshots(db, { identity: 'WoW_Much', since: SINCE_TS });
+    const thunderstore = snapshots.find((snapshot) => snapshot.source.id === 'thunderstore-wowmuch');
+    const steam = snapshots.find((snapshot) => snapshot.source.id === 'steam-reviews-ak');
+
+    expect(steam?.breakdown).toBeNull();
+    expect(thunderstore?.breakdown).toEqual({
+      metric: 'package_downloads',
+      dimension: 'package',
+      label: 'Downloads per mod',
+      items: [
+        {
+          key: 'BigMod',
+          latest: { metric: 'package_downloads', value: 1292, previousValue: 1280, delta: 12 },
+          points: [
+            { ts: PRIOR_TS, value: 1280 },
+            { ts: LATEST_TS, value: 1292 }
+          ]
+        },
+        {
+          key: 'MapPins',
+          latest: { metric: 'package_downloads', value: 510, previousValue: 500, delta: 10 },
+          points: [
+            { ts: PRIOR_TS, value: 500 },
+            { ts: LATEST_TS, value: 510 }
+          ]
+        }
+      ]
+    });
+    const breakdownCall = calls.find((call) => call.sql.includes('dimensions IS NOT NULL'));
+    expect(breakdownCall?.sql).toContain('FROM metric_points');
+    expect(breakdownCall?.params).toEqual(['thunderstore-wowmuch', 'package_downloads', SINCE_TS]);
   });
 });

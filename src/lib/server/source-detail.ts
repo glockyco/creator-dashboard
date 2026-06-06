@@ -1,8 +1,9 @@
 import { getSource, type SourceDef } from '$lib/sources/registry';
 import { sourceMetrics } from '$lib/sources/metrics';
-import type { LatestMetric, SparkPoint } from '$lib/dashboard/types';
+import type { LatestMetric, MetricBreakdown, SparkPoint } from '$lib/dashboard/types';
 import type { SteamGuideAward } from '$lib/types/domain';
 import { latestMetricFromPoints } from '$lib/dashboard/delta';
+import { buildMetricBreakdown, type BreakdownRow } from '$lib/dashboard/breakdown';
 
 export type LinkedPost = {
   slug: string;
@@ -39,6 +40,7 @@ export type SourceDetail = {
   linkedPosts: LinkedPost[];
   events: EventsPage;
   steamGuideAwards: SteamGuideAward[];
+  breakdown: MetricBreakdown | null;
 };
 
 export type SourceDetailRange = {
@@ -71,6 +73,11 @@ export async function getSourceDetail(
     metricHistory[metric] = await metricHistoryRows(db, source.id, metric, range.since);
   }
 
+  const breakdownConfig = config?.breakdown ?? null;
+  const breakdown = breakdownConfig
+    ? buildMetricBreakdown(breakdownConfig, await breakdownRows(db, source.id, breakdownConfig.metric, range.since))
+    : null;
+
   return {
     source: withoutFetcher(source),
     metricHistory,
@@ -79,7 +86,8 @@ export async function getSourceDetail(
       : [],
     linkedPosts: await linkedPosts(db, source.id),
     events: await getSourceEvents(db, source.id, { pageSize: 20 }),
-    steamGuideAwards: await steamGuideAwards(db, source.id)
+    steamGuideAwards: await steamGuideAwards(db, source.id),
+    breakdown
   };
 }
 
@@ -136,6 +144,19 @@ async function metricHistoryRows(
     .bind(sourceId, metric, since)
     .all<MetricRow>();
   return (result.results ?? []).map((row) => ({ ts: row.ts, value: row.value }));
+}
+
+async function breakdownRows(db: D1Database, sourceId: string, metric: string, since: number): Promise<BreakdownRow[]> {
+  const result = await db
+    .prepare(
+      `SELECT ts, value, dimensions
+       FROM metric_points
+       WHERE source_id = ? AND metric = ? AND ts >= ? AND dimensions IS NOT NULL
+       ORDER BY ts ASC`
+    )
+    .bind(sourceId, metric, since)
+    .all<BreakdownRow>();
+  return result.results ?? [];
 }
 
 async function linkedPosts(db: D1Database, sourceId: string): Promise<LinkedPost[]> {

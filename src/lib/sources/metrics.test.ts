@@ -39,5 +39,10 @@ describe('sourceMetrics', () => {
       primary: ['active_users', 'sessions', 'views', 'event_count'],
       sparkline: 'active_users'
     });
+    expect(sourceMetrics['thunderstore-wowmuch']).toEqual({
+      primary: ['total_downloads', 'package_count'],
+      sparkline: 'total_downloads',
+      breakdown: { metric: 'package_downloads', dimension: 'package', label: 'Downloads per mod' }
+    });
   });
 });
