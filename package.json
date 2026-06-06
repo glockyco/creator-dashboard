@@ -44,6 +44,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "latest",
     "@playwright/test": "latest",
     "@sveltejs/adapter-cloudflare": "latest",
