@@ -38,12 +38,14 @@ describe('fetchSteamGuide', () => {
 
     expect(out.metric_points.map((point) => point.metric)).toEqual([
       'views',
+      'favorite_count',
       'rating',
       'ratings',
       'comment_count',
       'award_count'
     ]);
     expect(out.metric_points.find((point) => point.metric === 'views')?.value).toBe(2087);
+    expect(out.metric_points.find((point) => point.metric === 'favorite_count')?.value).toBe(62);
     expect(out.metric_points.find((point) => point.metric === 'rating')?.value).toBe(0.82);
     expect(out.metric_points.find((point) => point.metric === 'ratings')?.value).toBe(50);
     expect(out.metric_points.find((point) => point.metric === 'comment_count')?.value).toBe(1);
@@ -109,6 +111,21 @@ describe('fetchSteamGuide', () => {
 
     expect(out.metric_points.find((point) => point.metric === 'comment_count')?.value).toBe(1);
     expect(out.events).toHaveLength(1);
+  });
+
+  it('omits favorite metric when Steam omits the count', async () => {
+    const detail = { ...fixture.response.publishedfiledetails[0] } as Record<string, unknown>;
+    delete detail.favorited;
+    const fixtureWithoutFavorites = { response: { publishedfiledetails: [detail] } };
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify(fixtureWithoutFavorites), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(commentsResponse), { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+
+    const out = await fetchSteamGuide({ source, env, now });
+
+    expect(out.metric_points.some((point) => point.metric === 'favorite_count')).toBe(false);
   });
   it('throws ZodError on schema drift', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ response: {} }), { status: 200 })));

@@ -10,11 +10,11 @@ describe('sourceMetrics', () => {
       sparkline: 'contributions'
     });
     expect(sourceMetrics['steam-guide-erenshor']).toEqual({
-      primary: ['views', 'rating', 'ratings', 'comment_count', 'award_count'],
+      primary: ['views', 'favorite_count', 'rating', 'ratings', 'comment_count', 'award_count'],
       sparkline: 'views'
     });
     expect(sourceMetrics['steam-guide-ak']).toEqual({
-      primary: ['views', 'rating', 'ratings', 'comment_count', 'award_count'],
+      primary: ['views', 'favorite_count', 'rating', 'ratings', 'comment_count', 'award_count'],
       sparkline: 'views'
     });
     expect(sourceMetrics['steam-reviews-erenshor']).toMatchObject({

@@ -18,10 +18,13 @@ export type SourceMetricConfig = {
 export const sourceMetrics: Record<string, SourceMetricConfig> = {
   'github-glockyco': { primary: ['followers', 'total_stars', 'public_repos'], sparkline: 'contributions' },
   'steam-guide-erenshor': {
-    primary: ['views', 'rating', 'ratings', 'comment_count', 'award_count'],
+    primary: ['views', 'favorite_count', 'rating', 'ratings', 'comment_count', 'award_count'],
     sparkline: 'views'
   },
-  'steam-guide-ak': { primary: ['views', 'rating', 'ratings', 'comment_count', 'award_count'], sparkline: 'views' },
+  'steam-guide-ak': {
+    primary: ['views', 'favorite_count', 'rating', 'ratings', 'comment_count', 'award_count'],
+    sparkline: 'views'
+  },
   'steam-reviews-erenshor': {
     primary: ['review_total', 'review_positive', 'review_negative'],
     sparkline: 'review_total',

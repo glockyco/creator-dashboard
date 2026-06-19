@@ -16,6 +16,7 @@ const Response = z.object({
         result: z.number().int(),
         creator: z.union([z.string(), z.number()]).transform(String),
         views: z.number(),
+        favorited: z.number().int().optional(),
         num_comments_public: z.number().int().optional(),
         reactions: z.array(Reaction).optional(),
         vote_data: z.object({ score: z.number(), votes_up: z.number(), votes_down: z.number() })
@@ -40,26 +41,38 @@ export async function fetchSteamGuide({ source, env, now }: FetcherInput): Promi
   const reactions = detail.reactions ?? [];
   const awardCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
 
+  const metricPoints: FetcherOutput['metric_points'] = [
+    { source_id: source.id, metric: 'views', ts: now, value: detail.views, dimensions: null }
+  ];
+  if (detail.favorited !== undefined)
+    metricPoints.push({
+      source_id: source.id,
+      metric: 'favorite_count',
+      ts: now,
+      value: detail.favorited,
+      dimensions: null
+    });
+  metricPoints.push(
+    { source_id: source.id, metric: 'rating', ts: now, value: detail.vote_data.score, dimensions: null },
+    {
+      source_id: source.id,
+      metric: 'ratings',
+      ts: now,
+      value: detail.vote_data.votes_up + detail.vote_data.votes_down,
+      dimensions: null
+    },
+    {
+      source_id: source.id,
+      metric: 'comment_count',
+      ts: now,
+      value: comments.totalCount,
+      dimensions: null
+    },
+    { source_id: source.id, metric: 'award_count', ts: now, value: awardCount, dimensions: null }
+  );
+
   return {
-    metric_points: [
-      { source_id: source.id, metric: 'views', ts: now, value: detail.views, dimensions: null },
-      { source_id: source.id, metric: 'rating', ts: now, value: detail.vote_data.score, dimensions: null },
-      {
-        source_id: source.id,
-        metric: 'ratings',
-        ts: now,
-        value: detail.vote_data.votes_up + detail.vote_data.votes_down,
-        dimensions: null
-      },
-      {
-        source_id: source.id,
-        metric: 'comment_count',
-        ts: now,
-        value: comments.totalCount,
-        dimensions: null
-      },
-      { source_id: source.id, metric: 'award_count', ts: now, value: awardCount, dimensions: null }
-    ],
+    metric_points: metricPoints,
     events: comments.comments.map((event) => ({ ...event, source_id: source.id })),
     steam_guide_awards: reactions
       .filter((reaction) => reaction.count > 0)
