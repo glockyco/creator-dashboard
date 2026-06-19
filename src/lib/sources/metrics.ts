@@ -40,6 +40,11 @@ export const sourceMetrics: Record<string, SourceMetricConfig> = {
     sparkline: 'total_downloads',
     breakdown: { metric: 'package_downloads', dimension: 'package', label: 'Downloads per mod' }
   },
+  'erenshor-vault-wowmuch': {
+    primary: ['total_downloads', 'total_views', 'mod_count'],
+    sparkline: 'total_downloads',
+    breakdown: { metric: 'mod_downloads', dimension: 'mod', label: 'Downloads per Vault mod' }
+  },
   'erenshor-wiki-recent': { primary: ['wiki_change_count'], sparkline: 'wiki_change_count', eventKind: 'wiki_edit' },
   'gsc-glockyco-com': { primary: ['clicks', 'impressions', 'ctr', 'position'], sparkline: 'clicks' },
   'gsc-ak-compendium': { primary: ['clicks', 'impressions', 'ctr', 'position'], sparkline: 'clicks' },

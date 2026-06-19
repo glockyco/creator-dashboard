@@ -6,6 +6,7 @@ export type SourceConnector =
   | 'steamGuide'
   | 'steamReviews'
   | 'thunderstoreTeam'
+  | 'erenshorVaultMods'
   | 'mediaWikiRecentChanges'
   | 'gsc'
   | 'bingWebmaster'
@@ -76,6 +77,15 @@ export const sourceRecords: SourceRecord[] = [
     cadenceHours: 1,
     connector: 'thunderstoreTeam',
     config: { namespace: 'WoW_Much', community: 'erenshor' }
+  },
+  {
+    id: 'erenshor-vault-wowmuch',
+    identity: 'WoW_Much',
+    name: 'Erenshor Vault: WoW_Much Mods',
+    category: 'platform',
+    cadenceHours: 1,
+    connector: 'erenshorVaultMods',
+    config: { mods: ['adventure-guide'] }
   },
   {
     id: 'erenshor-wiki-recent',

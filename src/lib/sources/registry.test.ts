@@ -12,6 +12,7 @@ describe('source registry', () => {
       'steam-reviews-erenshor',
       'steam-reviews-ak',
       'thunderstore-wowmuch',
+      'erenshor-vault-wowmuch',
       'erenshor-wiki-recent',
       'gsc-glockyco-com',
       'gsc-ak-compendium',

@@ -11,6 +11,7 @@ describe('capture-fixture utility', () => {
       'steam-guide',
       'steam-reviews',
       'thunderstore-team',
+      'erenshor-vault-mods',
       'mediawiki-recent-changes',
       'gsc',
       'bing-webmaster',

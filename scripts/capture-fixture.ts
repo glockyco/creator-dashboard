@@ -7,6 +7,7 @@ export const connectorKinds = [
   'steam-guide',
   'steam-reviews',
   'thunderstore-team',
+  'erenshor-vault-mods',
   'mediawiki-recent-changes',
   'gsc',
   'bing-webmaster',
@@ -120,6 +121,7 @@ function sourceConnector(source: CaptureSource): ConnectorKind | undefined {
   if (source.id.startsWith('steam-guide-')) return 'steam-guide';
   if (source.id.startsWith('steam-reviews-')) return 'steam-reviews';
   if (source.id.startsWith('thunderstore-')) return 'thunderstore-team';
+  if (source.id.startsWith('erenshor-vault-')) return 'erenshor-vault-mods';
   if (source.id.includes('wiki-recent')) return 'mediawiki-recent-changes';
   if (source.id.startsWith('gsc-')) return 'gsc';
   if (source.id.startsWith('bing-')) return 'bing-webmaster';
@@ -168,6 +170,9 @@ const defaultSources: CaptureSource[] = [
   source('steam-reviews-ak', 'steam-reviews', { appid: '2241380' }, captureSteamReviews),
   source('thunderstore-wowmuch', 'thunderstore-team', { namespace: 'WoW_Much', community: 'erenshor' }, async () => {
     await fetch('https://thunderstore.io/c/erenshor/api/v1/package/');
+  }),
+  source('erenshor-vault-wowmuch', 'erenshor-vault-mods', { mods: ['adventure-guide'] }, async () => {
+    await fetch('https://erenshorvault.app/api/mods');
   }),
   source('erenshor-wiki-recent', 'mediawiki-recent-changes', { wiki: 'erenshor.wiki.gg' }, async ({ source }) => {
     await fetch(

@@ -21,6 +21,7 @@ const fetcherByConnector = {
   steamGuide: fetchers.steamGuide,
   steamReviews: fetchers.steamReviews,
   thunderstoreTeam: fetchers.thunderstoreTeam,
+  erenshorVaultMods: fetchers.erenshorVaultMods,
   mediaWikiRecentChanges: fetchers.mediaWikiRecentChanges,
   gsc: fetchers.gsc,
   bingWebmaster: fetchers.bingWebmaster,
