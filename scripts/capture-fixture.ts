@@ -171,7 +171,7 @@ const defaultSources: CaptureSource[] = [
   source('thunderstore-wowmuch', 'thunderstore-team', { namespace: 'WoW_Much', community: 'erenshor' }, async () => {
     await fetch('https://thunderstore.io/c/erenshor/api/v1/package/');
   }),
-  source('erenshor-vault-wowmuch', 'erenshor-vault-mods', { mods: ['adventure-guide'] }, async () => {
+  source('erenshor-vault-wowmuch', 'erenshor-vault-mods', { mods: ['adventure-guide', 'sprint', 'justice-for-f7'] }, async () => {
     await fetch('https://erenshorvault.app/api/mods');
   }),
   source('erenshor-wiki-recent', 'mediawiki-recent-changes', { wiki: 'erenshor.wiki.gg' }, async ({ source }) => {
