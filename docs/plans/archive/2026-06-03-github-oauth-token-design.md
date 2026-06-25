@@ -1,3 +1,13 @@
+---
+title: "GitHub Token — OAuth App Migration Design Spec"
+type: spec
+status: implemented
+created: 2026-06-03
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # GitHub Token — OAuth App Migration Design Spec
 
 > **Status:** Approved design, pre-implementation (2026-06-03).

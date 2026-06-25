@@ -15,3 +15,6 @@ pnpm-lock.yaml
 # Fixtures (treated as opaque test data)
 **/*.fixture.json
 **/__fixtures__/
+
+# Planning docs are owned by omp-plans (its own format + generated INDEX)
+docs/plans/

@@ -1,3 +1,13 @@
+---
+title: "Steam Guide Engagement — Comments and Awards Design Spec"
+type: spec
+status: implemented
+created: 2026-06-05
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # Steam Guide Engagement — Comments and Awards Design Spec
 
 > **Status:** Approved design, pre-implementation (2026-06-05).

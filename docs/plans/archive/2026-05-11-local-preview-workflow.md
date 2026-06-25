@@ -1,3 +1,13 @@
+---
+title: "Local preview workflow plan"
+type: plan
+status: implemented
+created: 2026-05-11
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # Local preview workflow plan
 
 ## Goal

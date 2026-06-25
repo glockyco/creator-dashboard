@@ -1,3 +1,13 @@
+---
+title: "Creator Dashboard — Design Spec"
+type: spec
+status: implemented
+created: 2026-05-04
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # Creator Dashboard — Design Spec
 
 > **Status:** Implementation snapshot after Phase 8 Task 21 (2026-05-10). Keep this spec synchronized with the worktree plan before deploy-readiness work.
