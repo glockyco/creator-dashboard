@@ -34,6 +34,9 @@ describe('source registry', () => {
       sources.filter((source) => source.category === 'analytics').every((source) => source.cadenceHours === 24)
     ).toBe(true);
     expect(sources.some((source) => source.id === 'ga4')).toBe(true);
+    expect(sources.find((source) => source.id === 'erenshor-vault-wowmuch')?.config).toMatchObject({
+      mods: expect.arrayContaining(['interactive-map-companion'])
+    });
   });
 
   it('accepts a valid source shape', () => {

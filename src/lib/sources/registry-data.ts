@@ -85,7 +85,7 @@ export const sourceRecords: SourceRecord[] = [
     category: 'platform',
     cadenceHours: 1,
     connector: 'erenshorVaultMods',
-    config: { mods: ['adventure-guide', 'sprint', 'justice-for-f7'] }
+    config: { mods: ['adventure-guide', 'sprint', 'justice-for-f7', 'interactive-map-companion'] }
   },
   {
     id: 'erenshor-wiki-recent',
