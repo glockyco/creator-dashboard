@@ -9,6 +9,7 @@ describe('source registry', () => {
       'github-glockyco',
       'steam-guide-erenshor',
       'steam-guide-ak',
+      'steam-guide-fractured-realms',
       'steam-reviews-erenshor',
       'steam-reviews-ak',
       'thunderstore-wowmuch',

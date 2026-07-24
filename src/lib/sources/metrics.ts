@@ -25,6 +25,10 @@ export const sourceMetrics: Record<string, SourceMetricConfig> = {
     primary: ['views', 'favorite_count', 'rating', 'ratings', 'comment_count', 'award_count'],
     sparkline: 'views'
   },
+  'steam-guide-fractured-realms': {
+    primary: ['views', 'favorite_count', 'rating', 'ratings', 'comment_count', 'award_count'],
+    sparkline: 'views'
+  },
   'steam-reviews-erenshor': {
     primary: ['review_total', 'review_positive', 'review_negative'],
     sparkline: 'review_total',

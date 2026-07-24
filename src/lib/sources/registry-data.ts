@@ -52,6 +52,15 @@ export const sourceRecords: SourceRecord[] = [
     config: { publishedfileid: '3616580411' }
   },
   {
+    id: 'steam-guide-fractured-realms',
+    identity: 'WoW_Much',
+    name: 'Steam Guide: Fractured Realms Data Sheet',
+    category: 'platform',
+    cadenceHours: 1,
+    connector: 'steamGuide',
+    config: { publishedfileid: '3770721423' }
+  },
+  {
     id: 'steam-reviews-erenshor',
     identity: 'WoW_Much',
     name: 'Steam Reviews: Erenshor',
