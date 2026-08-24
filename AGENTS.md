@@ -13,7 +13,7 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 
 - `pnpm dev` — Vite HMR. `src/hooks.server.ts` skips the Access JWT under `$app/environment#dev`; the production bundle always validates.
 - `pnpm preview:local` — Full `workerd` + JWKS + auth-injecting proxy, no HMR. Use when changing auth, queues, or platform-specific behavior.
-- `pnpm kill:dev` — Reap stale `vite` / `wrangler` / `workerd` / `miniflare` children on ports 5173–5180 and 8787–8791. Run after backgrounding a dev server from a non-interactive shell; the npm wrappers do not propagate SIGTERM.
+- When an agent starts a long-running development process, it must use the process supervisor and stop that same process by its handle. `pnpm kill:dev` is for manual recovery only. Do not use it for routine cleanup because it searches global workstation processes.
 - `pnpm dev` and `pnpm migrate:local` share `.wrangler/state/v3`. `pnpm preview:local` uses `.tmp/preview-wrangler` instead — they do not share data.
 
 ## Tests
