@@ -60,6 +60,15 @@ export const sourceRecords: SourceRecord[] = [
     config: { publishedfileid: '3770721423' }
   },
   {
+    id: 'steam-guide-afallon',
+    identity: 'WoW_Much',
+    name: 'Steam Guide: Afallon Compendium',
+    category: 'platform',
+    cadenceHours: 1,
+    connector: 'steamGuide',
+    config: { publishedfileid: '3800843227' }
+  },
+  {
     id: 'steam-reviews-erenshor',
     identity: 'WoW_Much',
     name: 'Steam Reviews: Erenshor',

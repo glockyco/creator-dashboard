@@ -10,6 +10,7 @@ describe('source registry', () => {
       'steam-guide-erenshor',
       'steam-guide-ak',
       'steam-guide-fractured-realms',
+      'steam-guide-afallon',
       'steam-reviews-erenshor',
       'steam-reviews-ak',
       'thunderstore-wowmuch',
@@ -31,6 +32,9 @@ describe('source registry', () => {
       sources.filter((source) => source.category === 'analytics').every((source) => source.cadenceHours === 24)
     ).toBe(true);
     expect(sources.some((source) => source.id === 'ga4')).toBe(true);
+    expect(sources.find((source) => source.id === 'steam-guide-afallon')?.config).toEqual({
+      publishedfileid: '3800843227'
+    });
     expect(sources.find((source) => source.id === 'erenshor-vault-wowmuch')?.config).toMatchObject({
       mods: expect.arrayContaining(['interactive-map-companion'])
     });
