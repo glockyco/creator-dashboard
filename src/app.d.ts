@@ -20,8 +20,6 @@ declare global {
     GOOGLE_OAUTH_REFRESH_TOKEN: string;
     GSC_PROPERTIES: string;
     GA4_PROPERTY_ID: string;
-    BING_WEBMASTER_API_KEY: string;
-    BING_PROPERTIES: string;
     CF_API_TOKEN: string;
     CF_ACCOUNT_ID: string;
     CF_ANALYTICS_SITE_TAGS: string;

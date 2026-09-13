@@ -97,6 +97,34 @@ describe('initial D1 schema migration', () => {
     expect(postSourcePk).toEqual(['slug', 'source_id']);
   });
 
+  it('removes persisted data for retired Bing sources', () => {
+    const db = new DatabaseSync(':memory:');
+    for (const sql of migrations.slice(0, -1)) db.exec(sql);
+    db.exec(`
+      INSERT INTO metric_points VALUES ('bing-site', 'clicks', 1, 1, NULL);
+      INSERT INTO metric_points VALUES ('gsc-site', 'clicks', 1, 1, NULL);
+      INSERT INTO events VALUES ('bing-site', 'event', 1, 'test', NULL, NULL, NULL, NULL, NULL);
+      INSERT INTO fetcher_runs VALUES ('bing-site', 1, NULL, 'failed', 'error', 1);
+      INSERT INTO fetcher_failures (source_id, ts, tier, error_message) VALUES ('bing-site', 1, 'permanent', 'error');
+      INSERT INTO posts_sources VALUES ('post', 'bing-site');
+      INSERT INTO alerts_sent VALUES ('permanent:bing-site:auth_dead', 1);
+    `);
+
+    db.exec(migrations.at(-1)!);
+
+    expect(db.prepare("SELECT COUNT(*) AS count FROM metric_points WHERE source_id = 'gsc-site'").get()).toEqual({
+      count: 1
+    });
+    for (const table of ['metric_points', 'events', 'fetcher_runs', 'fetcher_failures', 'posts_sources']) {
+      expect(db.prepare(`SELECT COUNT(*) AS count FROM ${table} WHERE source_id LIKE 'bing-%'`).get()).toEqual({
+        count: 0
+      });
+    }
+    expect(db.prepare("SELECT COUNT(*) AS count FROM alerts_sent WHERE alert_key LIKE '%:bing-%:%'").get()).toEqual({
+      count: 0
+    });
+  });
+
   it('dedupes NULL-dimension metric writes to the latest value via the logical unique index', () => {
     const db = migratedDb();
     const upsert = db.prepare(

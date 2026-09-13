@@ -15,8 +15,6 @@ const digest: DigestData = {
     { source_id: 'github-glockyco', metric: 'public_repos', ts: LATEST_TS, value: 32 },
     { source_id: 'gsc-glockyco-com', metric: 'clicks', ts: LATEST_TS, value: 3 },
     { source_id: 'gsc-glockyco-com', metric: 'impressions', ts: LATEST_TS, value: 30 },
-    { source_id: 'bing-glockyco-com', metric: 'clicks', ts: LATEST_TS, value: 1 },
-    { source_id: 'bing-glockyco-com', metric: 'impressions', ts: LATEST_TS, value: 10 },
     { source_id: 'cf-analytics-glockyco-com', metric: 'visits', ts: LATEST_TS, value: 6 },
     { source_id: 'cf-analytics-glockyco-com', metric: 'pageviews', ts: LATEST_TS, value: 9 },
     { source_id: 'steam-guide-erenshor', metric: 'views', ts: PRIOR_TS, value: 100 },
@@ -27,8 +25,7 @@ const digest: DigestData = {
     { source_id: 'thunderstore-wowmuch', metric: 'total_downloads', ts: LATEST_TS, value: 1015 },
     { source_id: 'cf-analytics-ak-compendium', metric: 'visits', ts: LATEST_TS, value: 588 },
     { source_id: 'cf-analytics-erenshor-maps', metric: 'visits', ts: LATEST_TS, value: 274 },
-    { source_id: 'gsc-ak-compendium-org', metric: 'clicks', ts: LATEST_TS, value: 0 },
-    { source_id: 'bing-ak-compendium-org', metric: 'clicks', ts: LATEST_TS, value: 0 }
+    { source_id: 'gsc-ak-compendium-org', metric: 'clicks', ts: LATEST_TS, value: 0 }
   ],
   events: [
     {
@@ -95,7 +92,7 @@ describe('formatDigest', () => {
     expect(message.embeds[1]).toMatchObject({ color: 0xf59e0b });
     expect(message.embeds[0].fields.map((field) => field.name)).toEqual(['GitHub', 'Search', 'Site']);
     expect(message.embeds[0].fields[0].value).toContain('Followers: 13 (+1)');
-    expect(message.embeds[0].fields[1].value).toContain('glockyco.com: 4 clicks / 40 impressions');
+    expect(message.embeds[0].fields[1].value).toContain('glockyco.com: 3 clicks / 30 impressions');
     expect(message.embeds[1].fields[0].value).toContain('Steam guide views: +16');
     expect(message.embeds[1].fields[1].value).toContain('Steam review events: 1');
     expect(message.embeds[2].fields[0].value).toContain('[Post title](https://example.test/post)');

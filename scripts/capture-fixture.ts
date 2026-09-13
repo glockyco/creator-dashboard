@@ -10,7 +10,6 @@ export const connectorKinds = [
   'erenshor-vault-mods',
   'mediawiki-recent-changes',
   'gsc',
-  'bing-webmaster',
   'ga4',
   'cf-analytics'
 ] as const;
@@ -124,7 +123,6 @@ function sourceConnector(source: CaptureSource): ConnectorKind | undefined {
   if (source.id.startsWith('erenshor-vault-')) return 'erenshor-vault-mods';
   if (source.id.includes('wiki-recent')) return 'mediawiki-recent-changes';
   if (source.id.startsWith('gsc-')) return 'gsc';
-  if (source.id.startsWith('bing-')) return 'bing-webmaster';
   if (source.id.startsWith('ga4')) return 'ga4';
   if (source.id.startsWith('cf-analytics-')) return 'cf-analytics';
 }

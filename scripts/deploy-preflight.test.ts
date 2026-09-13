@@ -45,8 +45,6 @@ crons = ["0 * * * *", "0 4,5 * * *"]
       'GOOGLE_OAUTH_CLIENT_SECRET',
       'GOOGLE_OAUTH_REFRESH_TOKEN',
       'GSC_PROPERTIES',
-      'BING_WEBMASTER_API_KEY',
-      'BING_PROPERTIES',
       'CF_API_TOKEN',
       'GA4_PROPERTY_ID',
       'CF_ACCOUNT_ID',

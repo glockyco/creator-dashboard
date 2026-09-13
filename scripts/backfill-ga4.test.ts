@@ -21,8 +21,6 @@ const env = {
   GOOGLE_OAUTH_REFRESH_TOKEN: 'rt',
   GSC_PROPERTIES: '[]',
   GA4_PROPERTY_ID: '123456789',
-  BING_WEBMASTER_API_KEY: 'bing-key',
-  BING_PROPERTIES: '[]',
   CF_API_TOKEN: 'cf-token',
   CF_ACCOUNT_ID: 'acct-test',
   CF_ANALYTICS_SITE_TAGS: '{}'

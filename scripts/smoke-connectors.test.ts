@@ -74,7 +74,6 @@ describe('smoke connector harness', () => {
       'GOOGLE_OAUTH_CLIENT_SECRET',
       'GOOGLE_OAUTH_REFRESH_TOKEN'
     ]);
-    expect(secretRequirements('bing-glockyco-com')).toEqual(['BING_WEBMASTER_API_KEY']);
     expect(secretRequirements('cf-analytics-glockyco-com')).toEqual([
       'CF_API_TOKEN',
       'CF_ACCOUNT_ID',

@@ -2,7 +2,7 @@
 --
 -- The original PRIMARY KEY includes `dimensions`, but SQLite treats NULL as distinct in a
 -- unique index (see https://www.sqlite.org/nulls.html), so the previous `INSERT OR IGNORE`
--- could never dedupe NULL-dimension rows (contributions, bing daily metrics) — each fetch
+-- could never dedupe NULL-dimension rows — each fetch
 -- inserted a fresh duplicate. This unique index coalesces NULL and '' to one logical key and
 -- backs the upsert in successStatements() (ON CONFLICT(... COALESCE(dimensions,'')) DO UPDATE).
 --

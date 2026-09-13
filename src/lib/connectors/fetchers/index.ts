@@ -5,6 +5,5 @@ export { fetchThunderstoreTeam as thunderstoreTeam } from './thunderstore-team';
 export { fetchErenshorVaultMods as erenshorVaultMods } from './erenshor-vault-mods';
 export { fetchMediaWikiRecentChanges as mediaWikiRecentChanges } from './mediawiki-recent-changes';
 export { fetchGsc as gsc } from './gsc';
-export { fetchBingWebmaster as bingWebmaster } from './bing-webmaster';
 export { fetchCfAnalytics as cfAnalytics } from './cf-analytics';
 export { fetchGa4 as ga4 } from './ga4';

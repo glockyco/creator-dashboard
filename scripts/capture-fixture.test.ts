@@ -14,7 +14,6 @@ describe('capture-fixture utility', () => {
       'erenshor-vault-mods',
       'mediawiki-recent-changes',
       'gsc',
-      'bing-webmaster',
       'ga4',
       'cf-analytics'
     ]);

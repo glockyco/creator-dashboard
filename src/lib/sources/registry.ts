@@ -24,7 +24,6 @@ const fetcherByConnector = {
   erenshorVaultMods: fetchers.erenshorVaultMods,
   mediaWikiRecentChanges: fetchers.mediaWikiRecentChanges,
   gsc: fetchers.gsc,
-  bingWebmaster: fetchers.bingWebmaster,
   cfAnalytics: fetchers.cfAnalytics,
   ga4: fetchers.ga4
 } satisfies Record<SourceRecord['connector'], Fetcher>;

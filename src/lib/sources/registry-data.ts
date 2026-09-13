@@ -9,7 +9,6 @@ export type SourceConnector =
   | 'erenshorVaultMods'
   | 'mediaWikiRecentChanges'
   | 'gsc'
-  | 'bingWebmaster'
   | 'cfAnalytics'
   | 'ga4';
 
@@ -139,42 +138,6 @@ export const sourceRecords: SourceRecord[] = [
     category: 'analytics',
     cadenceHours: 24,
     connector: 'gsc',
-    config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' }
-  },
-  {
-    id: 'bing-glockyco-com',
-    identity: 'glockyco',
-    name: 'Bing: glockyco.com',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'bingWebmaster',
-    config: { siteUrl: 'https://glockyco.com/' }
-  },
-  {
-    id: 'bing-ak-compendium',
-    identity: 'WoW_Much',
-    name: 'Bing: AK Compendium (workers.dev)',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'bingWebmaster',
-    config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' }
-  },
-  {
-    id: 'bing-ak-compendium-org',
-    identity: 'WoW_Much',
-    name: 'Bing: AK Compendium (compendiums.org)',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'bingWebmaster',
-    config: { siteUrl: 'https://ancient-kingdoms.compendiums.org/' }
-  },
-  {
-    id: 'bing-erenshor-maps',
-    identity: 'WoW_Much',
-    name: 'Bing: Erenshor Maps',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'bingWebmaster',
     config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' }
   },
   {

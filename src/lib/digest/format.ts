@@ -22,7 +22,7 @@ export function formatDigest(data: DigestData, dateKey: string): DiscordMessage 
         color: GL_COLOR,
         fields: [
           { name: 'GitHub', value: githubField(data) },
-          { name: 'Search', value: `glockyco.com: ${searchLine(data, ['gsc-glockyco-com', 'bing-glockyco-com'])}` },
+          { name: 'Search', value: `glockyco.com: ${searchLine(data, ['gsc-glockyco-com'])}` },
           { name: 'Site', value: `glockyco.com: ${siteLine(data, 'cf-analytics-glockyco-com')}` }
         ]
       },
@@ -102,8 +102,8 @@ function wikiField(data: DigestData): string {
 
 function wowSearchAndSitesField(data: DigestData): string {
   return [
-    `AK search: ${searchLine(data, ['gsc-ak-compendium', 'gsc-ak-compendium-org', 'bing-ak-compendium', 'bing-ak-compendium-org'])}`,
-    `Erenshor search: ${searchLine(data, ['gsc-erenshor-maps', 'bing-erenshor-maps'])}`,
+    `AK search: ${searchLine(data, ['gsc-ak-compendium', 'gsc-ak-compendium-org'])}`,
+    `Erenshor search: ${searchLine(data, ['gsc-erenshor-maps'])}`,
     `AK site: ${siteLine(data, 'cf-analytics-ak-compendium')}`,
     `Erenshor site: ${siteLine(data, 'cf-analytics-erenshor-maps')}`
   ].join('\n');
