@@ -43,6 +43,11 @@ export const sourceMetrics: Record<string, SourceMetricConfig> = {
     sparkline: 'review_total',
     eventKind: 'review'
   },
+  'steam-reviews-afallon': {
+    primary: ['review_total', 'review_positive', 'review_negative'],
+    sparkline: 'review_total',
+    eventKind: 'review'
+  },
   'thunderstore-wowmuch': {
     primary: ['total_downloads', 'package_count'],
     sparkline: 'total_downloads',

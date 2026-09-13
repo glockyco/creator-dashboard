@@ -13,6 +13,7 @@ describe('source registry', () => {
       'steam-guide-afallon',
       'steam-reviews-erenshor',
       'steam-reviews-ak',
+      'steam-reviews-afallon',
       'thunderstore-wowmuch',
       'erenshor-vault-wowmuch',
       'erenshor-wiki-recent',
@@ -35,6 +36,7 @@ describe('source registry', () => {
     expect(sources.find((source) => source.id === 'steam-guide-afallon')?.config).toEqual({
       publishedfileid: '3800843227'
     });
+    expect(sources.find((source) => source.id === 'steam-reviews-afallon')?.config).toEqual({ appid: '2597810' });
     expect(sources.find((source) => source.id === 'erenshor-vault-wowmuch')?.config).toMatchObject({
       mods: expect.arrayContaining(['interactive-map-companion'])
     });

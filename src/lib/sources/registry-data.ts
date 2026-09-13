@@ -87,6 +87,15 @@ export const sourceRecords: SourceRecord[] = [
     config: { appid: '2241380' }
   },
   {
+    id: 'steam-reviews-afallon',
+    identity: 'WoW_Much',
+    name: 'Steam Reviews: Afallon',
+    category: 'event_feed',
+    cadenceHours: 1,
+    connector: 'steamReviews',
+    config: { appid: '2597810' }
+  },
+  {
     id: 'thunderstore-wowmuch',
     identity: 'WoW_Much',
     name: 'Thunderstore: WoW_Much',
