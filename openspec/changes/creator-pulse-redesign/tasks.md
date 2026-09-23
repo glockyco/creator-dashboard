@@ -2,18 +2,21 @@
 
 - [x] 1.1 Define stable guide and mod-platform asset metadata plus verified native destinations. Check that each retained guide and each configured mod maps to one asset and an ordinary link.
 - [x] 1.2 Replace tile snapshot projections with focused guide and dimensional mod queries. Verify captured totals and per-platform separation with representative D1 rows.
-- [x] 1.3 Implement 24-hour and 7/30/90-day gains against eligible boundary samples. Verify sparse captures, resets, zero prior gain, missing baselines, and honest aggregate exclusions.
+- [x] 1.3 Implement 24-hour and 7/30/90-day gains against eligible boundary samples. Verify sparse captures, resets, missing baselines, and honest unavailable states.
 - [x] 1.4 Build activity queries for reviews and wiki edits with type, subject, sentiment, range, and compound cursor filters. Verify same-time events page without omission or duplication.
 
 ## 2. Overview and Performance
 
 - [x] 2.1 Replace the home grid with name-sorted guide, separate Thunderstore/Vault, and positive/negative Steam review tables plus a recent-activity preview. Verify actual rows and empty states in the browser.
-- [x] 2.2 Add functional range selection, URL state, browser persistence, and period labels. Verify 7/30/90-day choices change both chart and comparison values.
+- [x] 2.2 Add functional range selection, URL state, browser persistence, and period labels. Verify 7/30/90-day choices change chart and absolute gain values.
 - [x] 2.3 Build focused guide/mod detail routes with trends and native destinations. Verify Afallon guide and both mod platforms through the running application.
 - [x] 2.4 Replace the sidebar with desktop top navigation and mobile bottom navigation in one dark palette. Verify keyboard focus and narrow-screen navigation in a browser.
 - [x] 2.5 Add curated GitHub, GSC, and Cloudflare native shortcuts. Verify normal clicks stay in the current tab and no forced-tab attributes or handlers exist.
 - [x] 2.6 Restore guide favorites, rating, vote count, and aggregate award collection and display. Preserve award metric history through pending cleanup; verify capture, missing fields, and detail in the browser.
 - [x] 2.7 Show positive and negative Steam review totals and comparable gains per game. Verify missing boundaries and both sentiments with stored captures.
+- [x] 2.8 Calculate absolute 24-hour and selected-range changes for guide favorites, rating, votes, and awards. Verify falling rating scores retain signed percentage-point changes and missing boundaries remain unavailable.
+- [x] 2.9 Remove prior-period percentages from every performance row and detail; display guide changes in the overview and detail with representative local histories. Verify the 7/30/90-day choices in the browser.
+- [x] 2.10 Normalize engagement-row padding and increase the shared type scale without enlarging spacing utilities. Verify desktop and mobile layouts in the live dev site.
 
 ## 3. Community Activity
 

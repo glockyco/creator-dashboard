@@ -9,8 +9,6 @@ export type PerformanceSeriesSummary = {
   total: number | null;
   dayGain: number | null;
   periodGain: number | null;
-  previousGain: number | null;
-  comparisonPct: number | null;
   points: PerformancePoint[];
   lastCapturedAt: number | null;
 };
@@ -39,13 +37,32 @@ export function summarizePerformanceSeries(
   now: number,
   cadenceHours: number
 ): PerformanceSeriesSummary {
+  return summarizeSeries(input, range, now, cadenceHours, false);
+}
+
+/** A rating can rise or fall; report its signed change instead of treating a fall as a counter reset. */
+export function summarizeLevelSeries(
+  input: readonly PerformancePoint[],
+  range: Range,
+  now: number,
+  cadenceHours: number
+): PerformanceSeriesSummary {
+  return summarizeSeries(input, range, now, cadenceHours, true);
+}
+
+function summarizeSeries(
+  input: readonly PerformancePoint[],
+  range: Range,
+  now: number,
+  cadenceHours: number,
+  allowDecrease: boolean
+): PerformanceSeriesSummary {
   const points = input
     .filter((point) => Number.isFinite(point.ts) && Number.isFinite(point.value) && point.ts <= now)
     .sort((left, right) => left.ts - right.ts);
   const latest = points.at(-1);
   const periodMs = rangeDurationMs(range);
   const periodBoundary = now - periodMs;
-  const previousBoundary = periodBoundary - periodMs;
   const toleranceMs = boundaryToleranceMs(cadenceHours);
   const trend = points.filter((point) => point.ts >= periodBoundary);
 
@@ -54,8 +71,6 @@ export function summarizePerformanceSeries(
       total: null,
       dayGain: null,
       periodGain: null,
-      previousGain: null,
-      comparisonPct: null,
       points: trend,
       lastCapturedAt: null
     };
@@ -64,22 +79,13 @@ export function summarizePerformanceSeries(
   const latestIsEligible = now - latest.ts <= toleranceMs;
   const dayBaseline = findPastBaseline(points, now - DAY_MS, toleranceMs);
   const periodBaseline = findPastBaseline(points, periodBoundary, toleranceMs);
-  const previousBaseline = findPastBaseline(points, previousBoundary, toleranceMs);
-
-  const dayGain = latestIsEligible ? cumulativeGain(points, dayBaseline, latest) : null;
-  const periodGain = latestIsEligible ? cumulativeGain(points, periodBaseline, latest) : null;
-  const previousGain = cumulativeGain(points, previousBaseline, periodBaseline);
-  const comparisonPct =
-    periodGain !== null && previousGain !== null && previousGain !== 0
-      ? ((periodGain - previousGain) / previousGain) * 100
-      : null;
+  const dayGain = latestIsEligible ? intervalChange(points, dayBaseline, latest, allowDecrease) : null;
+  const periodGain = latestIsEligible ? intervalChange(points, periodBaseline, latest, allowDecrease) : null;
 
   return {
     total: latest.value,
     dayGain,
     periodGain,
-    previousGain,
-    comparisonPct,
     points: trend,
     lastCapturedAt: latest.ts
   };
@@ -98,19 +104,22 @@ function findPastBaseline(
   return undefined;
 }
 
-function cumulativeGain(
+function intervalChange(
   points: readonly PerformancePoint[],
   start: PerformancePoint | undefined,
-  end: PerformancePoint | undefined
+  end: PerformancePoint | undefined,
+  allowDecrease: boolean
 ): number | null {
   if (!start || !end || start.ts >= end.ts) return null;
 
-  let previousValue = start.value;
-  for (const point of points) {
-    if (point.ts <= start.ts) continue;
-    if (point.ts > end.ts) break;
-    if (point.value < previousValue) return null;
-    previousValue = point.value;
+  if (!allowDecrease) {
+    let previousValue = start.value;
+    for (const point of points) {
+      if (point.ts <= start.ts) continue;
+      if (point.ts > end.ts) break;
+      if (point.value < previousValue) return null;
+      previousValue = point.value;
+    }
   }
 
   return end.value - start.value;

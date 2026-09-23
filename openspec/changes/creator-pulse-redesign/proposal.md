@@ -4,12 +4,12 @@ The home page gives 19 collectors equal-sized cards, although guide views and mo
 
 ## What Changes
 
-- Replace the source grid with a compact Overview: name-sorted guide views, separate Thunderstore and Vault downloads, positive and negative Steam review gains, recent activity, and an issue banner. Keep guide favorites, rating, vote count, and awards visible.
+- Replace the source grid with a compact Overview: name-sorted guide views, separate Thunderstore and Vault downloads, positive and negative Steam review gains, recent activity, and an issue banner. Show current guide favorites, rating, vote count, and awards with their absolute 24-hour and selected-range changes.
 - Add an Activity feed for Steam reviews and wiki changes, plus focused guide and mod performance details.
 - Replace Health with Issues: active failures first, diagnostic history, manual retry, and quiet healthy-collector inspection. Keep deduplicated Discord failure alerts; add direct investigation links and recovery notifications.
 - Provide ordinary, same-tab links to GitHub, Google Search Console, Cloudflare Analytics, Steam, mod hosts, and wiki pages. Never force a new tab.
 - **BREAKING**: retire GitHub, GSC, Cloudflare Analytics, and GA4 collectors; remove their metrics, credentials, backfills, and failures. Remove daily Discord digest, posts synchronization, timeline, generic source pages, and their unused UI and data.
-- Use functional 7/30/90-day windows and matching previous-period comparisons. Retain a visible distinction between fresh, stale, failed, retrying, and never-run collectors.
+- Use functional 7/30/90-day windows and show absolute changes, not previous-period percentages. Retain a visible distinction between fresh, stale, failed, retrying, and never-run collectors.
 
 ## Capabilities
 

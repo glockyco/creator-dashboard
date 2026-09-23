@@ -145,14 +145,16 @@ const guideSignalSeedSql = performanceSeries
   .flatMap((series, index) =>
     (
       [
-        ['favorite_count', 52 + index * 17],
-        ['rating', 0.92 - index * 0.07],
-        ['ratings', 38 + index * 13],
-        ['award_count', 12 + index * 5]
+        ['favorite_count', 52 + index * 17, 4 + index],
+        ['rating', 0.92 - index * 0.07, index === 3 ? -0.004 : 0.004],
+        ['ratings', 38 + index * 13, 4],
+        ['award_count', 12 + index * 5, 1]
       ] as const
-    ).map(
-      ([metric, value]) =>
-        `INSERT INTO metric_points (source_id, metric, ts, value, dimensions) VALUES ('${series.sourceId}', '${metric}', ${seedNow}, ${value}, NULL);`
+    ).flatMap(([metric, latest, step]) =>
+      boundaryDays.map((daysAgo, sampleIndex) => {
+        const value = latest - (boundaryDays.length - 1 - sampleIndex) * step;
+        return `INSERT INTO metric_points (source_id, metric, ts, value, dimensions) VALUES ('${series.sourceId}', '${metric}', ${seedNow - daysAgo * dayMs}, ${value}, NULL);`;
+      })
     )
   )
   .join('\n');

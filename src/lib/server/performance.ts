@@ -8,6 +8,7 @@ import {
   boundaryToleranceMs,
   rangeDurationMs,
   summarizePerformanceSeries,
+  summarizeLevelSeries,
   type PerformancePoint,
   type PerformanceSeriesSummary,
   type Range
@@ -23,16 +24,15 @@ export type PerformanceAsset = {
   total: number | null;
   dayGain: number | null;
   periodGain: number | null;
-  previousGain: number | null;
-  /** Percentage value. For example, 25 renders as 25%. */
-  comparisonPct: number | null;
   points: { ts: number; value: number }[];
   href: string | null;
   lastCapturedAt: number | null;
-  favorites: number | null;
-  rating: number | null;
-  ratings: number | null;
-  awards: number | null;
+  guideMetrics: {
+    favorites: PerformanceSeriesSummary;
+    rating: PerformanceSeriesSummary;
+    ratings: PerformanceSeriesSummary;
+    awards: PerformanceSeriesSummary;
+  } | null;
 };
 
 export type PerformanceReview = {
@@ -62,7 +62,7 @@ type PerformanceSelector = {
   includeHistory: boolean;
 };
 
-const guideSnapshotMetrics = [
+const guideMetricDefinitions = [
   { field: 'favorites', metric: 'favorite_count' },
   { field: 'rating', metric: 'rating' },
   { field: 'ratings', metric: 'ratings' },
@@ -114,10 +114,13 @@ function summarizeAssets(
       now,
       definition.cadenceHours
     );
-    const snapshot = (field: (typeof guideSnapshotMetrics)[number]['field']) =>
-      definition.kind === 'guide'
-        ? (rowsBySelector.get(assetSnapshotId(definition.id, field))?.at(-1)?.value ?? null)
-        : null;
+    const guideMetric = (field: (typeof guideMetricDefinitions)[number]['field']) =>
+      (field === 'rating' ? summarizeLevelSeries : summarizePerformanceSeries)(
+        rowsBySelector.get(assetMetricId(definition.id, field)) ?? [],
+        range,
+        now,
+        definition.cadenceHours
+      );
 
     return {
       id: definition.id,
@@ -126,10 +129,15 @@ function summarizeAssets(
       kind: definition.kind,
       ...summary,
       href: definition.href,
-      favorites: snapshot('favorites'),
-      rating: snapshot('rating'),
-      ratings: snapshot('ratings'),
-      awards: snapshot('awards')
+      guideMetrics:
+        definition.kind === 'guide'
+          ? {
+              favorites: guideMetric('favorites'),
+              rating: guideMetric('rating'),
+              ratings: guideMetric('ratings'),
+              awards: guideMetric('awards')
+            }
+          : null
     };
   });
 }
@@ -182,15 +190,15 @@ function selectorsForAssets(definitions: readonly PerformanceAssetDefinition[]):
       });
     }
     if (definition.kind === 'guide') {
-      for (const snapshot of guideSnapshotMetrics) {
+      for (const metric of guideMetricDefinitions) {
         selectors.push({
-          id: assetSnapshotId(definition.id, snapshot.field),
+          id: assetMetricId(definition.id, metric.field),
           sourceId: definition.sourceId,
-          metric: snapshot.metric,
+          metric: metric.metric,
           dimensionKey: null,
           dimensionValue: null,
           cadenceHours: definition.cadenceHours,
-          includeHistory: false
+          includeHistory: true
         });
       }
     }
@@ -216,7 +224,7 @@ function assetSeriesId(id: string): string {
   return `asset:${id}`;
 }
 
-function assetSnapshotId(id: string, field: (typeof guideSnapshotMetrics)[number]['field']): string {
+function assetMetricId(id: string, field: (typeof guideMetricDefinitions)[number]['field']): string {
   return `asset:${id}:${field}`;
 }
 
@@ -234,7 +242,7 @@ async function queryPerformanceRows(
   for (const selector of selectors) {
     maxToleranceMs = Math.max(maxToleranceMs, boundaryToleranceMs(selector.cadenceHours));
   }
-  const analysisStart = now - 2 * rangeDurationMs(range) - maxToleranceMs;
+  const analysisStart = now - rangeDurationMs(range) - maxToleranceMs;
   const dimensionMatch = `(selectors.dimension_key IS NULL AND points.dimensions IS NULL)
           OR (
             selectors.dimension_key IS NOT NULL

@@ -9,9 +9,17 @@ const rows = [
   { selector_id: 'asset:steam-guide-afallon', ts: 14 * DAY_MS, value: 120 },
   { selector_id: 'asset:steam-guide-afallon', ts: 20 * DAY_MS, value: 145 },
   { selector_id: 'asset:steam-guide-afallon', ts: NOW, value: 150 },
+  { selector_id: 'asset:steam-guide-afallon:favorites', ts: 14 * DAY_MS, value: 30 },
+  { selector_id: 'asset:steam-guide-afallon:favorites', ts: 20 * DAY_MS, value: 40 },
   { selector_id: 'asset:steam-guide-afallon:favorites', ts: NOW, value: 44 },
+  { selector_id: 'asset:steam-guide-afallon:rating', ts: 14 * DAY_MS, value: 0.9 },
+  { selector_id: 'asset:steam-guide-afallon:rating', ts: 20 * DAY_MS, value: 0.84 },
   { selector_id: 'asset:steam-guide-afallon:rating', ts: NOW, value: 0.82 },
+  { selector_id: 'asset:steam-guide-afallon:ratings', ts: 14 * DAY_MS, value: 8 },
+  { selector_id: 'asset:steam-guide-afallon:ratings', ts: 20 * DAY_MS, value: 10 },
   { selector_id: 'asset:steam-guide-afallon:ratings', ts: NOW, value: 12 },
+  { selector_id: 'asset:steam-guide-afallon:awards', ts: 14 * DAY_MS, value: 3 },
+  { selector_id: 'asset:steam-guide-afallon:awards', ts: 20 * DAY_MS, value: 6 },
   { selector_id: 'asset:steam-guide-afallon:awards', ts: NOW, value: 7 },
   { selector_id: 'asset:thunderstore-adventure-guide', ts: 7 * DAY_MS, value: 1_000 },
   { selector_id: 'asset:thunderstore-adventure-guide', ts: 14 * DAY_MS, value: 1_100 },
@@ -59,7 +67,7 @@ function performanceDb(resultRows = rows) {
 }
 
 describe('loadPerformance', () => {
-  it('returns guide snapshots, platform mod series, and review sentiment series', async () => {
+  it('summarizes guide engagement, platform mods, and review sentiment', async () => {
     const { db } = performanceDb();
 
     const result = await loadPerformance(db, '7d', NOW);
@@ -72,21 +80,21 @@ describe('loadPerformance', () => {
       total: 150,
       dayGain: 5,
       periodGain: 30,
-      previousGain: 20,
-      comparisonPct: 50,
-      favorites: 44,
-      rating: 0.82,
-      ratings: 12,
-      awards: 7
+      guideMetrics: {
+        favorites: { total: 44, dayGain: 4, periodGain: 14 },
+        rating: { total: 0.82 },
+        ratings: { total: 12, dayGain: 2, periodGain: 4 },
+        awards: { total: 7, dayGain: 1, periodGain: 4 }
+      }
     });
+    const rating = result.guides.find((asset) => asset.id === 'steam-guide-afallon')?.guideMetrics?.rating;
+    expect(rating?.dayGain).toBeCloseTo(-0.02);
+    expect(rating?.periodGain).toBeCloseTo(-0.08);
     expect(result.mods.find((asset) => asset.id === 'thunderstore-adventure-guide')).toMatchObject({
       platform: 'Thunderstore',
       total: 1_200,
       periodGain: 100,
-      favorites: null,
-      rating: null,
-      ratings: null,
-      awards: null
+      guideMetrics: null
     });
     expect(result.mods.find((asset) => asset.id === 'vault-adventure-guide')).toMatchObject({
       platform: 'Erenshor Vault',
@@ -102,53 +110,41 @@ describe('loadPerformance', () => {
       positive: {
         total: 150,
         dayGain: 5,
-        periodGain: 30,
-        previousGain: 20,
-        comparisonPct: 50
+        periodGain: 30
       },
       negative: {
         total: 40,
         dayGain: 1,
-        periodGain: 5,
-        previousGain: 5,
-        comparisonPct: 0
+        periodGain: 5
       }
     });
     expect(result.reviews[1]).toMatchObject({
       positive: {
         total: 20,
         dayGain: null,
-        periodGain: null,
-        previousGain: null,
-        comparisonPct: null
+        periodGain: null
       },
       negative: {
         total: null,
         dayGain: null,
-        periodGain: null,
-        previousGain: null,
-        comparisonPct: null
+        periodGain: null
       }
     });
     expect(result.reviews[2]).toMatchObject({
       positive: {
         total: 70,
         dayGain: null,
-        periodGain: null,
-        previousGain: 10,
-        comparisonPct: null
+        periodGain: null
       },
       negative: {
         total: 5,
         dayGain: 1,
-        periodGain: null,
-        previousGain: 10,
-        comparisonPct: null
+        periodGain: null
       }
     });
   });
 
-  it('returns null snapshots, totals, and gains when captures are missing', async () => {
+  it('keeps totals and changes unavailable when captures are missing', async () => {
     const { db } = performanceDb([]);
 
     const result = await loadPerformance(db, '30d', NOW);
@@ -159,27 +155,22 @@ describe('loadPerformance', () => {
       total: null,
       dayGain: null,
       periodGain: null,
-      previousGain: null,
-      comparisonPct: null,
       points: [],
       lastCapturedAt: null,
-      favorites: null,
-      rating: null,
-      ratings: null,
-      awards: null
+      guideMetrics: {
+        favorites: { total: null, dayGain: null, periodGain: null },
+        rating: { total: null, dayGain: null, periodGain: null },
+        ratings: { total: null, dayGain: null, periodGain: null },
+        awards: { total: null, dayGain: null, periodGain: null }
+      }
     });
     expect(mod).toMatchObject({
       total: null,
       dayGain: null,
       periodGain: null,
-      previousGain: null,
-      comparisonPct: null,
       points: [],
       lastCapturedAt: null,
-      favorites: null,
-      rating: null,
-      ratings: null,
-      awards: null
+      guideMetrics: null
     });
     expect(result.reviews).toHaveLength(3);
     expect(result.reviews[0]).toMatchObject({
@@ -187,8 +178,6 @@ describe('loadPerformance', () => {
         total: null,
         dayGain: null,
         periodGain: null,
-        previousGain: null,
-        comparisonPct: null,
         points: [],
         lastCapturedAt: null
       },
@@ -196,8 +185,6 @@ describe('loadPerformance', () => {
         total: null,
         dayGain: null,
         periodGain: null,
-        previousGain: null,
-        comparisonPct: null,
         points: [],
         lastCapturedAt: null
       }

@@ -83,8 +83,31 @@
     });
   }
 
+  const guideSignals = [
+    { key: 'favorites', label: 'Favorites' },
+    { key: 'rating', label: 'Rating' },
+    { key: 'ratings', label: 'Votes' },
+    { key: 'awards', label: 'Awards' }
+  ] as const;
+
+  const numberFormatter = new Intl.NumberFormat();
+
   function number(value: number) {
-    return Intl.NumberFormat().format(value);
+    return numberFormatter.format(value);
+  }
+
+  function engagementValue(value: number | null, rating: boolean) {
+    if (value === null) return 'Unavailable';
+    return rating ? `${(value * 100).toFixed(1)}%` : number(value);
+  }
+
+  function engagementChange(value: number | null, rating: boolean) {
+    if (value === null) return 'Unavailable';
+    return `${value > 0 ? '+' : ''}${rating ? `${(value * 100).toFixed(1)} pp` : number(value)}`;
+  }
+
+  function changeTone(value: number | null) {
+    return value === null || value === 0 ? 'text-fg-muted' : value < 0 ? 'text-danger' : 'text-success';
   }
 
   function trend(points: PerformanceAsset['points']) {
@@ -156,7 +179,7 @@
     </a>
   {/if}
 
-  <p class="text-xs text-fg-muted sm:hidden">Swipe tables for range comparisons →</p>
+  <p class="text-xs text-fg-muted sm:hidden">Swipe tables for gains and trends →</p>
 
   {#each groups as group (group.title)}
     <section class="overflow-hidden rounded-xl border border-border bg-bg-secondary" aria-label={group.title}>
@@ -166,7 +189,7 @@
       </div>
       <div class="overflow-x-auto">
         <table class="asset-table w-full table-fixed text-left text-sm">
-          <thead class="bg-glockyco/5 text-[0.65rem] font-bold uppercase tracking-[0.08em] text-fg-muted">
+          <thead class="bg-glockyco/5 text-xs font-bold uppercase tracking-[0.08em] text-fg-muted">
             <tr>
               <th scope="col" class="px-4 py-3"
                 >{group.title === 'Steam guides'
@@ -178,7 +201,6 @@
               <th scope="col" class="px-3 py-3 text-right">{group.totalLabel}</th>
               <th scope="col" class="px-3 py-3 text-right">24h gain</th>
               <th scope="col" class="px-3 py-3 text-right">{data.range} gain</th>
-              <th scope="col" class="px-3 py-3 text-right">vs prior</th>
               <th scope="col" class="px-4 py-3 text-right">{data.range} trend</th>
             </tr>
           </thead>
@@ -196,16 +218,7 @@
                   >
                   <!-- eslint-enable svelte/no-navigation-without-resolve -->
                   {#if asset.kind === 'guide'}
-                    <span class="mt-1 block text-xs font-normal leading-5 text-fg-muted">
-                      Steam <span aria-hidden="true"> · </span> Favorites {asset.favorites === null
-                        ? 'Unavailable'
-                        : number(asset.favorites)}
-                      <span aria-hidden="true"> · </span>
-                      Rating {asset.rating === null ? 'Unavailable' : `${Math.round(asset.rating * 100)}%`}
-                      {#if asset.ratings !== null}({number(asset.ratings)} votes){/if}
-                      <span aria-hidden="true"> · </span>
-                      Awards {asset.awards === null ? 'Unavailable' : number(asset.awards)}
-                    </span>
+                    <span class="mt-1 block text-xs font-normal text-fg-muted">Steam</span>
                   {:else}
                     <span
                       class={`mt-1 block text-xs font-normal ${asset.kind === 'review' ? (asset.sentiment === 'positive' ? 'text-success' : 'text-danger') : 'text-fg-muted'}`}
@@ -223,12 +236,6 @@
                 <td
                   class={`px-3 py-3 text-right font-semibold ${asset.periodGain === null ? 'text-fg-muted' : asset.kind === 'review' && asset.sentiment === 'negative' ? 'text-danger' : 'text-success'}`}
                   >{asset.periodGain === null ? 'Unavailable' : `+${number(asset.periodGain)}`}</td
-                >
-                <td
-                  class={`px-3 py-3 text-right ${asset.comparisonPct === null ? 'text-fg-muted' : asset.comparisonPct < 0 !== (asset.kind === 'review' && asset.sentiment === 'negative') ? 'text-danger' : 'text-success'}`}
-                  >{asset.comparisonPct === null
-                    ? 'Unavailable'
-                    : `${asset.comparisonPct > 0 ? '+' : ''}${asset.comparisonPct.toFixed(1)}%`}</td
                 >
                 <td class="px-4 py-3 text-right">
                   {#if asset.points.length > 1}
@@ -254,8 +261,36 @@
                   {/if}
                 </td>
               </tr>
+              {#if asset.kind === 'guide' && asset.guideMetrics}
+                <tr aria-label={`${asset.name} engagement changes`}>
+                  <td colspan="5" class="px-4 pb-3 pt-0">
+                    <div class="grid grid-cols-4 divide-x divide-border">
+                      {#each guideSignals as signal (signal.key)}
+                        {@const metric = asset.guideMetrics[signal.key]}
+                        <div class="min-w-0 px-3 py-2 first:pl-0 last:pr-0">
+                          <p class="text-xs font-bold uppercase tracking-wide text-fg-muted">{signal.label}</p>
+                          <p class="mt-1 font-semibold tabular-nums text-fg-primary">
+                            {engagementValue(metric.total, signal.key === 'rating')}
+                          </p>
+                          <p class="mt-1 text-xs text-fg-muted">
+                            24h <span class={changeTone(metric.dayGain)}
+                              >{engagementChange(metric.dayGain, signal.key === 'rating')}</span
+                            >
+                          </p>
+                          <p class="text-xs text-fg-muted">
+                            {data.range}
+                            <span class={changeTone(metric.periodGain)}
+                              >{engagementChange(metric.periodGain, signal.key === 'rating')}</span
+                            >
+                          </p>
+                        </div>
+                      {/each}
+                    </div>
+                  </td>
+                </tr>
+              {/if}
             {:else}
-              <tr><td colspan="6" class="px-5 py-8 text-center text-fg-muted">No assets are configured.</td></tr>
+              <tr><td colspan="5" class="px-5 py-8 text-center text-fg-muted">No assets are configured.</td></tr>
             {/each}
           </tbody>
         </table>
@@ -275,7 +310,7 @@
     <div class="grid gap-4 sm:grid-cols-2">
       {#each data.activity as item (item.id)}
         <article class="min-w-0 rounded-xl border border-border bg-bg-secondary p-4">
-          <span class="text-[0.65rem] font-bold uppercase tracking-[0.08em] text-glockyco"
+          <span class="text-xs font-bold uppercase tracking-[0.08em] text-glockyco"
             >{item.kind === 'review' ? 'Steam review' : 'Wiki edit'}</span
           >
           <p class="mt-2 text-sm font-semibold text-fg-primary">{item.title || item.sourceName}</p>
@@ -307,27 +342,20 @@
     min-width: 820px;
   }
   .asset-table thead th:nth-child(1) {
-    width: 37%;
+    width: 40%;
   }
-  .asset-table thead th:nth-child(2) {
-    width: 14%;
-  }
-  .asset-table thead th:nth-child(3) {
-    width: 14%;
-  }
+  .asset-table thead th:nth-child(2),
+  .asset-table thead th:nth-child(3),
   .asset-table thead th:nth-child(4) {
-    width: 13%;
+    width: 16%;
   }
   .asset-table thead th:nth-child(5) {
     width: 12%;
   }
-  .asset-table thead th:nth-child(6) {
-    width: 10%;
-  }
   @media (max-width: 480px) {
     .asset-table {
-      width: 860px;
-      min-width: 860px;
+      width: 760px;
+      min-width: 760px;
     }
     .asset-table thead th:nth-child(1) {
       width: 175px;
@@ -342,10 +370,7 @@
       width: 125px;
     }
     .asset-table thead th:nth-child(5) {
-      width: 125px;
-    }
-    .asset-table thead th:nth-child(6) {
-      width: 185px;
+      width: 210px;
     }
     .asset-table tbody th {
       position: sticky;

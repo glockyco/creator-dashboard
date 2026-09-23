@@ -20,8 +20,29 @@
       .map((point) => `${((point.ts - first) / span) * 100},${94 - ((point.value - floor) / height) * 82}`)
       .join(' ');
   });
+  const guideSignals = [
+    { key: 'favorites', label: 'Favorites' },
+    { key: 'rating', label: 'Rating' },
+    { key: 'ratings', label: 'Votes' },
+    { key: 'awards', label: 'Awards' }
+  ] as const;
+
   function signed(value: number): string {
     return `${value > 0 ? '+' : ''}${value.toLocaleString()}`;
+  }
+
+  function engagementValue(value: number | null, rating: boolean) {
+    if (value === null) return 'Unavailable';
+    return rating ? `${(value * 100).toFixed(1)}%` : value.toLocaleString();
+  }
+
+  function engagementChange(value: number | null, rating: boolean) {
+    if (value === null) return 'Unavailable';
+    return rating ? `${value > 0 ? '+' : ''}${(value * 100).toFixed(1)} pp` : signed(value);
+  }
+
+  function changeTone(value: number | null) {
+    return value === null || value === 0 ? 'text-fg-muted' : value < 0 ? 'text-danger' : 'text-success';
   }
 
   const metrics = $derived([
@@ -43,23 +64,6 @@
       note: 'Selected range',
       tone:
         data.asset.periodGain === null ? 'text-fg-muted' : data.asset.periodGain < 0 ? 'text-danger' : 'text-success'
-    },
-    {
-      label: 'Vs prior',
-      value:
-        data.asset.comparisonPct === null
-          ? 'Unavailable'
-          : `${data.asset.comparisonPct > 0 ? '+' : ''}${data.asset.comparisonPct.toFixed(1)}%`,
-      note:
-        data.asset.previousGain === null
-          ? 'Prior gain unavailable'
-          : `Prior gain ${data.asset.previousGain.toLocaleString()}`,
-      tone:
-        data.asset.comparisonPct === null
-          ? 'text-fg-muted'
-          : data.asset.comparisonPct < 0
-            ? 'text-danger'
-            : 'text-success'
     }
   ]);
 </script>
@@ -101,11 +105,9 @@
   </header>
 
   <section class="overflow-hidden rounded-xl border border-border bg-bg-secondary" aria-label="Performance metrics">
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid sm:grid-cols-3">
       {#each metrics as metric, index (metric.label)}
-        <div
-          class={`border-border p-5 ${index === 0 ? '' : 'border-t'} ${index % 2 === 1 ? 'sm:border-l' : ''} ${index === 1 ? 'sm:border-t-0' : ''} ${index > 0 ? 'lg:border-l lg:border-t-0' : ''}`}
-        >
+        <div class={`border-border p-5 ${index > 0 ? 'border-t sm:border-l sm:border-t-0' : ''}`}>
           <p class="text-xs font-semibold uppercase tracking-[0.08em] text-fg-muted">{metric.label}</p>
           <p class={`mt-3 text-2xl font-semibold tabular-nums ${metric.tone}`}>{metric.value}</p>
           <p class="mt-1 text-xs text-fg-muted">{metric.note}</p>
@@ -122,29 +124,32 @@
       <h2 id="guide-engagement-heading" class="border-b border-border px-5 py-4 text-lg font-semibold">
         Guide engagement
       </h2>
-      <div class="grid sm:grid-cols-3">
-        <div class="p-5">
-          <p class="text-xs font-semibold uppercase tracking-[0.08em] text-fg-muted">Favorites</p>
-          <p class="mt-2 text-xl font-semibold text-fg-primary">
-            {data.asset.favorites === null ? 'Unavailable' : data.asset.favorites.toLocaleString()}
-          </p>
+      {#if data.asset.guideMetrics}
+        <div class="grid grid-cols-2 lg:grid-cols-4">
+          {#each guideSignals as signal, index (signal.key)}
+            {@const metric = data.asset.guideMetrics[signal.key]}
+            <div
+              class={`border-border p-5 ${index >= 2 ? 'border-t' : ''} ${index % 2 === 1 ? 'border-l' : ''} ${index > 0 ? 'lg:border-l lg:border-t-0' : ''}`}
+            >
+              <p class="text-xs font-semibold uppercase tracking-[0.08em] text-fg-muted">{signal.label}</p>
+              <p class="mt-2 text-xl font-semibold tabular-nums text-fg-primary">
+                {engagementValue(metric.total, signal.key === 'rating')}
+              </p>
+              <p class="mt-2 text-xs text-fg-muted">
+                24h <span class={changeTone(metric.dayGain)}
+                  >{engagementChange(metric.dayGain, signal.key === 'rating')}</span
+                >
+              </p>
+              <p class="text-xs text-fg-muted">
+                {data.range}
+                <span class={changeTone(metric.periodGain)}
+                  >{engagementChange(metric.periodGain, signal.key === 'rating')}</span
+                >
+              </p>
+            </div>
+          {/each}
         </div>
-        <div class="border-t border-border p-5 sm:border-l sm:border-t-0">
-          <p class="text-xs font-semibold uppercase tracking-[0.08em] text-fg-muted">Rating</p>
-          <p class="mt-2 text-xl font-semibold text-fg-primary">
-            {data.asset.rating === null ? 'Unavailable' : `${Math.round(data.asset.rating * 100)}%`}
-          </p>
-          <p class="mt-1 text-xs text-fg-muted">
-            {data.asset.ratings === null ? 'Vote count unavailable' : `${data.asset.ratings.toLocaleString()} votes`}
-          </p>
-        </div>
-        <div class="border-t border-border p-5 sm:border-l sm:border-t-0">
-          <p class="text-xs font-semibold uppercase tracking-[0.08em] text-fg-muted">Awards</p>
-          <p class="mt-2 text-xl font-semibold text-fg-primary">
-            {data.asset.awards === null ? 'Unavailable' : data.asset.awards.toLocaleString()}
-          </p>
-        </div>
-      </div>
+      {/if}
     </section>
   {/if}
 

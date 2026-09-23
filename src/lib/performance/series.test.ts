@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { summarizePerformanceSeries } from './series';
+import { summarizeLevelSeries, summarizePerformanceSeries } from './series';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = 21 * DAY_MS;
@@ -9,7 +9,7 @@ function point(day: number, value: number) {
 }
 
 describe('summarizePerformanceSeries', () => {
-  it('compares the selected period with the preceding equal period', () => {
+  it('calculates selected-range and 24-hour absolute gains', () => {
     const summary = summarizePerformanceSeries(
       [point(21, 150), point(7, 100), point(20, 145), point(14, 120)],
       '7d',
@@ -21,8 +21,6 @@ describe('summarizePerformanceSeries', () => {
       total: 150,
       dayGain: 5,
       periodGain: 30,
-      previousGain: 20,
-      comparisonPct: 50,
       points: [point(14, 120), point(20, 145), point(21, 150)],
       lastCapturedAt: NOW
     });
@@ -54,8 +52,6 @@ describe('summarizePerformanceSeries', () => {
     );
 
     expect(summary.periodGain).toBeNull();
-    expect(summary.previousGain).toBeNull();
-    expect(summary.comparisonPct).toBeNull();
   });
 
   it('invalidates only gains whose interval contains a counter reset', () => {
@@ -69,16 +65,22 @@ describe('summarizePerformanceSeries', () => {
     expect(summary.total).toBe(20);
     expect(summary.dayGain).toBe(5);
     expect(summary.periodGain).toBeNull();
-    expect(summary.previousGain).toBe(20);
-    expect(summary.comparisonPct).toBeNull();
   });
 
-  it('does not calculate a percentage from a zero prior gain', () => {
-    const summary = summarizePerformanceSeries([point(7, 100), point(14, 100), point(21, 110)], '7d', NOW, 1);
+  it('reports a falling rating as a signed change instead of a counter reset', () => {
+    const summary = summarizeLevelSeries([point(14, 0.8), point(20, 0.75), point(21, 0.7)], '7d', NOW, 1);
 
-    expect(summary.periodGain).toBe(10);
-    expect(summary.previousGain).toBe(0);
-    expect(summary.comparisonPct).toBeNull();
+    expect(summary.total).toBe(0.7);
+    expect(summary.dayGain).toBeCloseTo(-0.05);
+    expect(summary.periodGain).toBeCloseTo(-0.1);
+  });
+
+  it('leaves a rating change unavailable without a boundary capture', () => {
+    const summary = summarizeLevelSeries([point(18, 0.8), point(21, 0.7)], '7d', NOW, 1);
+
+    expect(summary.total).toBe(0.7);
+    expect(summary.dayGain).toBeNull();
+    expect(summary.periodGain).toBeNull();
   });
 
   it('keeps every value unavailable when no capture exists', () => {
@@ -86,8 +88,6 @@ describe('summarizePerformanceSeries', () => {
       total: null,
       dayGain: null,
       periodGain: null,
-      previousGain: null,
-      comparisonPct: null,
       points: [],
       lastCapturedAt: null
     });
