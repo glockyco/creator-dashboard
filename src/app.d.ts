@@ -12,18 +12,7 @@ declare global {
   interface Env {
     DB: D1Database;
     FETCHER_QUEUE: Queue<JobMsg>;
-    GITHUB_TOKEN: string;
     STEAM_WEB_API_KEY: string;
-    GOOGLE_SERVICE_ACCOUNT: string;
-    GOOGLE_OAUTH_CLIENT_ID: string;
-    GOOGLE_OAUTH_CLIENT_SECRET: string;
-    GOOGLE_OAUTH_REFRESH_TOKEN: string;
-    GSC_PROPERTIES: string;
-    GA4_PROPERTY_ID: string;
-    CF_API_TOKEN: string;
-    CF_ACCOUNT_ID: string;
-    CF_ANALYTICS_SITE_TAGS: string;
-    DISCORD_DIGEST_WEBHOOK: string;
     DISCORD_ALERTS_WEBHOOK: string;
     ACCESS_TEAM_DOMAIN: string;
     ACCESS_AUD: string;

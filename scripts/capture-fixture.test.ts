@@ -7,15 +7,11 @@ const output = { metric_points: [], events: [] };
 describe('capture-fixture utility', () => {
   it('parses the supported connector enum and optional source id', () => {
     expect(connectorKinds).toEqual([
-      'github',
       'steam-guide',
       'steam-reviews',
       'thunderstore-team',
       'erenshor-vault-mods',
-      'mediawiki-recent-changes',
-      'gsc',
-      'ga4',
-      'cf-analytics'
+      'mediawiki-recent-changes'
     ]);
     expect(parseCaptureArgs(['steam-guide', '--source-id', 'steam-guide-erenshor'])).toEqual({
       connector: 'steam-guide',
@@ -25,17 +21,11 @@ describe('capture-fixture utility', () => {
     expect(() => parseCaptureArgs(['unknown'])).toThrow('unsupported connector');
   });
 
-  it('redacts tokens, emails, steam ids, and bearer credentials', () => {
-    const input = 'ghp_abcDEF_123 johann@example.com 76561191234567890 Bearer abc.def-ghi';
+  it('redacts emails, Steam IDs, and bearer credentials', () => {
+    const input = 'johann@example.com 76561191234567890 Bearer abc.def-ghi';
     const redacted = redactFixtureText(input);
 
-    expect(redacted).toBe('[redacted] [redacted] [redacted] [redacted]');
-  });
-
-  it('redacts oauth and app token prefixes, not just classic PATs', () => {
-    expect(redactFixtureText('gho_oauth123 ghu_user456 ghs_app789 ghr_refreshABC')).toBe(
-      '[redacted] [redacted] [redacted] [redacted]'
-    );
+    expect(redacted).toBe('[redacted] [redacted] [redacted]');
   });
 
   it('captures through an injected writer without touching the filesystem', async () => {
@@ -55,7 +45,7 @@ describe('capture-fixture utility', () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
       .mockResolvedValue(
-        new Response(JSON.stringify({ token: 'ghp_secret_123', email: 'johann@example.com' }), { status: 200 })
+        new Response(JSON.stringify({ token: 'Bearer secret-token', email: 'johann@example.com' }), { status: 200 })
       );
     const writer = vi.fn<(path: string, content: string) => Promise<void>>().mockResolvedValue(undefined);
 
@@ -72,7 +62,7 @@ describe('capture-fixture utility', () => {
     expect(writer).toHaveBeenCalledOnce();
     const [path, content] = writer.mock.calls[0];
     expect(path).toBe('src/lib/connectors/fetchers/steam-guide.fixture.json');
-    expect(content).not.toContain('ghp_secret_123');
+    expect(content).not.toContain('secret-token');
     expect(content).not.toContain('johann@example.com');
     expect(JSON.parse(content)).toEqual({ token: '[redacted]', email: '[redacted]' });
   });

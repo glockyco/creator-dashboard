@@ -4,9 +4,8 @@ import { SourceDef, sources } from './registry';
 const fetcher = async () => ({ metric_points: [], events: [] });
 
 describe('source registry', () => {
-  it('contains Tier 1 and enabled analytics source IDs with approved cadences', () => {
+  it('contains only retained hourly collectors', () => {
     expect(sources.map((source) => source.id)).toEqual([
-      'github-glockyco',
       'steam-guide-erenshor',
       'steam-guide-ak',
       'steam-guide-fractured-realms',
@@ -16,23 +15,9 @@ describe('source registry', () => {
       'steam-reviews-afallon',
       'thunderstore-wowmuch',
       'erenshor-vault-wowmuch',
-      'erenshor-wiki-recent',
-      'gsc-glockyco-com',
-      'gsc-ak-compendium',
-      'gsc-ak-compendium-org',
-      'gsc-erenshor-maps',
-      'cf-analytics-glockyco-com',
-      'cf-analytics-ak-compendium',
-      'cf-analytics-erenshor-maps',
-      'ga4'
+      'erenshor-wiki-recent'
     ]);
-    expect(
-      sources.filter((source) => source.category !== 'analytics').every((source) => source.cadenceHours === 1)
-    ).toBe(true);
-    expect(
-      sources.filter((source) => source.category === 'analytics').every((source) => source.cadenceHours === 24)
-    ).toBe(true);
-    expect(sources.some((source) => source.id === 'ga4')).toBe(true);
+    expect(sources.every((source) => source.cadenceHours === 1)).toBe(true);
     expect(sources.find((source) => source.id === 'steam-guide-afallon')?.config).toEqual({
       publishedfileid: '3800843227'
     });

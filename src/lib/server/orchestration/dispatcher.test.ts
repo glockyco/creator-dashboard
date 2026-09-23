@@ -16,8 +16,8 @@ vi.mock('$lib/sources/registry', () => ({
       id: 'source-b',
       name: 'B',
       identity: 'WoW_Much',
-      category: 'analytics',
-      cadenceHours: 24,
+      category: 'platform',
+      cadenceHours: 1,
       fetcher: async () => ({ metric_points: [], events: [] }),
       config: {}
     }

@@ -35,19 +35,23 @@ describe('local preview harness helpers', () => {
     ]);
   });
 
-  it('keeps the e2e seed deterministic and limited to local rows', () => {
-    expect(e2eSeedSql).toContain('DELETE FROM posts_sources;');
-    expect(e2eSeedSql).toContain(
-      "INSERT INTO posts_index (slug, posted_at, author, platform, url, title, tags, body_excerpt, body_hash) VALUES ('release-notes'"
-    );
-    expect(e2eSeedSql).not.toContain('DISCORD');
+  it('seeds retained performance and activity rows relative to the current time', () => {
+    expect(e2eSeedSql).toContain("'steam-guide-afallon', 'views'");
+    expect(e2eSeedSql).toContain("'thunderstore-wowmuch', 'package_downloads'");
+    expect(e2eSeedSql).toContain('InteractiveMapCompanion');
+    expect(e2eSeedSql).toContain("'erenshor-vault-wowmuch', 'mod_downloads'");
+    expect(e2eSeedSql).toContain('interactive-map-companion');
+    expect(e2eSeedSql).toContain("'review'");
+    expect(e2eSeedSql).toContain("'wiki_edit'");
+    expect(e2eSeedSql).not.toContain('posts_index');
+    expect(e2eSeedSql).not.toContain('github-glockyco');
   });
 
-  it('adds manual-preview health state without real secrets', () => {
-    expect(previewSeedSql).toContain('INSERT OR REPLACE INTO fetcher_runs');
+  it('adds active and recovered incident examples without real secrets', () => {
+    expect(previewSeedSql).toContain('INSERT INTO collection_incidents');
     expect(previewSeedSql).toContain('permanent_failure');
     expect(previewSeedSql).toContain('INSERT INTO fetcher_failures');
-    expect(previewSeedSql).toContain('INSERT INTO alerts_sent');
+    expect(previewSeedSql).toContain("'sent'");
     expect(previewSeedSql).not.toContain('discord.com/api/webhooks');
   });
 });

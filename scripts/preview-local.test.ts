@@ -39,7 +39,7 @@ describe('preview-local helpers', () => {
   });
 
   it('builds a loopback upstream url from the browser request path', () => {
-    expect(upstreamUrlFor('/timeline?overlay=posts', 8788).href).toBe('http://127.0.0.1:8788/timeline?overlay=posts');
+    expect(upstreamUrlFor('/activity?kind=review', 8788).href).toBe('http://127.0.0.1:8788/activity?kind=review');
     expect(upstreamUrlFor(undefined, 8788).href).toBe('http://127.0.0.1:8788/');
   });
 

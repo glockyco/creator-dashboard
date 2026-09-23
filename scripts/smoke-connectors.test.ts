@@ -29,12 +29,12 @@ const publicSource = {
 };
 
 const secretSource = {
-  id: 'github-glockyco',
-  name: 'GitHub @glockyco',
-  identity: 'glockyco',
+  id: 'steam-guide-erenshor',
+  name: 'Steam Guide: Erenshor Maps',
+  identity: 'WoW_Much',
   category: 'platform',
   cadenceHours: 1,
-  config: {},
+  config: { publishedfileid: '3500398991' },
   fetcher: vi.fn(async () => ({ metric_points: [], events: [] }))
 };
 
@@ -54,13 +54,8 @@ describe('smoke connector harness', () => {
   });
 
   it('parses .dev.vars without leaking comments or quotes into values', () => {
-    expect(
-      parseDevVars(
-        'GITHUB_TOKEN=gho_test\nCF_ANALYTICS_SITE_TAGS={"source":"tag"}\nQUOTED="value with spaces"\n# ignored\n'
-      )
-    ).toEqual({
-      GITHUB_TOKEN: 'gho_test',
-      CF_ANALYTICS_SITE_TAGS: '{"source":"tag"}',
+    expect(parseDevVars('STEAM_WEB_API_KEY=steam-key\nQUOTED="value with spaces"\n# ignored\n')).toEqual({
+      STEAM_WEB_API_KEY: 'steam-key',
       QUOTED: 'value with spaces'
     });
   });
@@ -68,23 +63,6 @@ describe('smoke connector harness', () => {
   it('knows which sources need credentials', () => {
     expect(secretRequirements('steam-reviews-erenshor')).toEqual([]);
     expect(secretRequirements('steam-guide-erenshor')).toEqual(['STEAM_WEB_API_KEY']);
-    expect(secretRequirements('github-glockyco')).toEqual(['GITHUB_TOKEN']);
-    expect(secretRequirements('gsc-glockyco-com')).toEqual([
-      'GOOGLE_OAUTH_CLIENT_ID',
-      'GOOGLE_OAUTH_CLIENT_SECRET',
-      'GOOGLE_OAUTH_REFRESH_TOKEN'
-    ]);
-    expect(secretRequirements('cf-analytics-glockyco-com')).toEqual([
-      'CF_API_TOKEN',
-      'CF_ACCOUNT_ID',
-      'CF_ANALYTICS_SITE_TAGS'
-    ]);
-    expect(secretRequirements('ga4')).toEqual([
-      'GOOGLE_OAUTH_CLIENT_ID',
-      'GOOGLE_OAUTH_CLIENT_SECRET',
-      'GOOGLE_OAUTH_REFRESH_TOKEN',
-      'GA4_PROPERTY_ID'
-    ]);
   });
 
   it('runs configured sources sequentially and skips missing secrets', async () => {
@@ -96,7 +74,7 @@ describe('smoke connector harness', () => {
     });
 
     expect(results.map((result) => [result.source_id, result.status])).toEqual([
-      ['github-glockyco', 'skipped'],
+      ['steam-guide-erenshor', 'skipped'],
       ['steam-reviews-erenshor', 'ok']
     ]);
     expect(publicSource.fetcher).toHaveBeenCalledOnce();

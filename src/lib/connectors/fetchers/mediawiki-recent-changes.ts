@@ -44,8 +44,12 @@ export async function fetchMediaWikiRecentChanges({ source }: FetcherInput): Pro
       author: change.user ?? null,
       title: change.title,
       body: change.comment ?? null,
-      url: `https://${config.wiki}/wiki/${encodeURIComponent(change.title.replaceAll(' ', '_'))}`,
+      url:
+        change.old_revid != null && change.revid != null
+          ? `https://${config.wiki}/wiki/Special:Diff/${change.old_revid}/${change.revid}`
+          : `https://${config.wiki}/wiki/${encodeURIComponent(change.title.replaceAll(' ', '_'))}`,
       metadata: {
+        native_link_kind: change.old_revid != null && change.revid != null ? 'diff' : 'page',
         type: change.type,
         revid: change.revid ?? null,
         old_revid: change.old_revid ?? null,

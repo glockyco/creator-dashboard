@@ -1,13 +1,12 @@
 # Creator Dashboard
 
-Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access. D1 storage, queue + cron fetcher orchestration. Production: `https://dashboard.glockyco.com`. Crons: hourly platform/event fetchers, `0 4,5 * * *` daily analytics.
+Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access. D1 storage, queue + hourly fetcher cron. Production: `https://dashboard.glockyco.com`. The product surfaces are Overview, Activity, and Issues; GitHub, Search Console, and Cloudflare Analytics are native links, not collectors.
 
 ## Setup
 
 - `pnpm install`
 - Populate `.dev.vars` from `.dev.vars.example`. Cloudflare's secret store is write-only (`wrangler secret list` returns names only); if `.dev.vars` is lost, recover from source-of-truth consoles.
 - `pnpm dev:setup` — migrate and seed the local D1. Required before `pnpm dev` returns anything but 500s.
-- `GITHUB_TOKEN` is an OAuth App user token (`read:user`), not a PAT, so it does not expire. Recreate it with `pnpm github:authorize --client-id <oauth-app-client-id>` (the OAuth App must have Device Flow enabled), then `pnpm exec wrangler secret put GITHUB_TOKEN`.
 
 ## Dev loop
 
@@ -19,12 +18,12 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 ## Tests
 
 - `pnpm test`, `pnpm check`, `pnpm lint`. Run only tests you touched unless asked.
-- D1 is mocked with a `{ prepare, bind, all, first }` stub; canonical shape in `src/lib/server/dashboard.test.ts`. Do not spin up real `wrangler d1` from unit tests.
+- D1 is mocked with a `{ prepare, bind, all, first }` stub; see `src/lib/performance/server.test.ts` and `src/lib/server/incidents/model.test.ts`. Do not spin up real `wrangler d1` from unit tests.
 - E2E (`pnpm test:e2e`) authenticates via `e2e/support/access-auth.ts` against the preview-local JWKS — needs the preview harness running.
 
 ## Deploy
 
-- `pnpm run deploy` runs preflight → `migrate:remote` → build → `wrangler deploy` → `sync-posts:remote`. Preflight requires every key in `.dev.vars.example` set locally. (`pnpm deploy` is shadowed by pnpm's built-in deploy command — use `pnpm run deploy`.)
+- `pnpm run deploy` runs preflight → `migrate:remote` → build → `wrangler deploy`. Preflight requires every key in `.dev.vars.example` set locally. Back up D1 and rehearse destructive migrations on a copy before deploying. (`pnpm deploy` is shadowed by pnpm's built-in deploy command — use `pnpm run deploy`.)
 - `pnpm deploy:worker` skips preflight.
 - Migrations are append-only. Never edit `migrations/0001_initial_schema.sql`; add `migrations/000N_*.sql`.
 
@@ -32,10 +31,10 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 
 - `src/routes/` — SvelteKit routes; `+page.server.ts` loaders, `+server.ts` endpoints.
 - `src/lib/server/` — D1 access lives **only** here. Never touch D1 from `.svelte` files or client modules.
-- `src/lib/sources/{registry-data,metrics}.ts` — source registry and per-source metric/event config.
-- `src/lib/connectors/fetchers/<source>.ts` — one fetcher per source, paired with `*.fixture.json` + `*.test.ts`.
-- `src/lib/server/orchestration/` — cron → dispatcher → `FETCHER_QUEUE` → consumer → persist.
-- `src/lib/dashboard/delta.ts` — 24h-prior comparison with ±12h tolerance. All dashboard tiles and the digest go through it.
+- `src/lib/sources/registry-data.ts` — retained collection source registry; native destinations are not sources.
+- `src/lib/connectors/fetchers/<source>.ts` — one fetcher per retained source, paired with fixtures and tests.
+- `src/lib/server/orchestration/` — cron → dispatcher → `FETCHER_QUEUE` → consumer → persist and incident transitions.
+- `src/lib/server/performance.ts`, `activity.ts`, `incidents/` — focused D1 read models; cumulative gains require eligible baseline captures.
 
 ## Conventions
 

@@ -91,14 +91,7 @@ export function parseDevVars(text: string): Record<string, string> {
 }
 
 export function secretRequirements(sourceId: string): string[] {
-  if (sourceId.startsWith('github-')) return ['GITHUB_TOKEN'];
-  if (sourceId.startsWith('steam-guide-')) return ['STEAM_WEB_API_KEY'];
-  if (sourceId.startsWith('gsc-'))
-    return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN'];
-  if (sourceId.startsWith('cf-analytics-')) return ['CF_API_TOKEN', 'CF_ACCOUNT_ID', 'CF_ANALYTICS_SITE_TAGS'];
-  if (sourceId.startsWith('ga4') || sourceId.includes('-ga4-'))
-    return ['GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET', 'GOOGLE_OAUTH_REFRESH_TOKEN', 'GA4_PROPERTY_ID'];
-  return [];
+  return sourceId.startsWith('steam-guide-') ? ['STEAM_WEB_API_KEY'] : [];
 }
 
 export async function runSmokeSources(options: {

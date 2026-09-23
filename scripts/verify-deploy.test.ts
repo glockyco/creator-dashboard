@@ -2,11 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { parseVerifyDeployArgs } from './verify-deploy';
 
 describe('verify-deploy args', () => {
-  it('defaults to production dashboard and safe source', () => {
+  it('defaults to the production dashboard', () => {
     expect(parseVerifyDeployArgs([])).toEqual({
-      baseUrl: 'https://dashboard.glockyco.com',
-      sourceId: 'steam-reviews-erenshor',
-      timeoutMs: 120_000
+      baseUrl: 'https://dashboard.glockyco.com'
     });
   });
 });

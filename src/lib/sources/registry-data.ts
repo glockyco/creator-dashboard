@@ -2,15 +2,7 @@ import type { Identity } from '../identities';
 import type { SourceCategory } from '../types/domain';
 
 export type SourceConnector =
-  | 'github'
-  | 'steamGuide'
-  | 'steamReviews'
-  | 'thunderstoreTeam'
-  | 'erenshorVaultMods'
-  | 'mediaWikiRecentChanges'
-  | 'gsc'
-  | 'cfAnalytics'
-  | 'ga4';
+  'steamGuide' | 'steamReviews' | 'thunderstoreTeam' | 'erenshorVaultMods' | 'mediaWikiRecentChanges';
 
 export type SourceRecord = {
   id: string;
@@ -23,15 +15,6 @@ export type SourceRecord = {
 };
 
 export const sourceRecords: SourceRecord[] = [
-  {
-    id: 'github-glockyco',
-    identity: 'glockyco',
-    name: 'GitHub @glockyco',
-    category: 'platform',
-    cadenceHours: 1,
-    connector: 'github',
-    config: {}
-  },
   {
     id: 'steam-guide-erenshor',
     identity: 'WoW_Much',
@@ -121,77 +104,5 @@ export const sourceRecords: SourceRecord[] = [
     cadenceHours: 1,
     connector: 'mediaWikiRecentChanges',
     config: { wiki: 'erenshor.wiki.gg' }
-  },
-  {
-    id: 'gsc-glockyco-com',
-    identity: 'glockyco',
-    name: 'GSC: glockyco.com',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'gsc',
-    config: { siteUrl: 'sc-domain:glockyco.com' }
-  },
-  {
-    id: 'gsc-ak-compendium',
-    identity: 'WoW_Much',
-    name: 'GSC: AK Compendium (workers.dev)',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'gsc',
-    config: { siteUrl: 'https://ancient-kingdoms-compendium.wowmuch1.workers.dev/' }
-  },
-  {
-    id: 'gsc-ak-compendium-org',
-    identity: 'WoW_Much',
-    name: 'GSC: AK Compendium (compendiums.org)',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'gsc',
-    config: { siteUrl: 'sc-domain:ancient-kingdoms.compendiums.org' }
-  },
-  {
-    id: 'gsc-erenshor-maps',
-    identity: 'WoW_Much',
-    name: 'GSC: Erenshor Maps',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'gsc',
-    config: { siteUrl: 'https://erenshor-maps.wowmuch1.workers.dev/' }
-  },
-  {
-    id: 'cf-analytics-glockyco-com',
-    identity: 'glockyco',
-    name: 'Cloudflare Analytics: glockyco.com',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'cfAnalytics',
-    config: {}
-  },
-  {
-    id: 'cf-analytics-ak-compendium',
-    identity: 'WoW_Much',
-    name: 'Cloudflare Analytics: AK Compendium',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'cfAnalytics',
-    config: {}
-  },
-  {
-    id: 'cf-analytics-erenshor-maps',
-    identity: 'WoW_Much',
-    name: 'Cloudflare Analytics: Erenshor Maps',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'cfAnalytics',
-    config: {}
-  },
-  {
-    id: 'ga4',
-    identity: 'glockyco',
-    name: 'GA4: glockyco.com',
-    category: 'analytics',
-    cadenceHours: 24,
-    connector: 'ga4',
-    config: {}
   }
 ];

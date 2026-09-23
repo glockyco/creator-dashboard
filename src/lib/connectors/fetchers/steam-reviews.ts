@@ -6,7 +6,11 @@ const Config = z.object({ appid: z.string() });
 const Review = z.object({
   recommendationid: z.string(),
   author: z
-    .object({ playtime_forever: z.number().optional(), playtime_at_review: z.number().optional() })
+    .object({
+      steamid: z.string().optional(),
+      playtime_forever: z.number().optional(),
+      playtime_at_review: z.number().optional()
+    })
     .passthrough(),
   language: z.string().optional(),
   review: z.string(),
@@ -87,8 +91,11 @@ export async function fetchSteamReviews({ source, now }: FetcherInput): Promise<
       author: null,
       title: review.voted_up ? 'Positive review' : 'Negative review',
       body: review.review,
-      url: `https://steamcommunity.com/app/${config.appid}/reviews/?browsefilter=mostrecent#scrollTop=0`,
+      url: review.author.steamid
+        ? `https://steamcommunity.com/profiles/${encodeURIComponent(review.author.steamid)}/recommended/${config.appid}/`
+        : `https://steamcommunity.com/app/${config.appid}/reviews/?browsefilter=mostrecent`,
       metadata: {
+        native_link_kind: review.author.steamid ? 'review' : 'review_list',
         voted_up: review.voted_up,
         votes_up: review.votes_up ?? null,
         weighted_vote_score: review.weighted_vote_score ?? null,

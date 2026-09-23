@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { withSteamKey } from '../auth/steam';
 import { fetchJson } from '../http';
-import { fetchSteamGuideComments } from './steam-guide-comments';
 import type { FetcherInput, FetcherOutput } from '../types';
-
-const STEAM_REACTION_ICON_BASE = 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still';
 
 const Config = z.object({ publishedfileid: z.string() });
 const Reaction = z.object({ reactionid: z.number().int(), count: z.number().int() });
@@ -14,10 +11,8 @@ const Response = z.object({
       z.object({
         publishedfileid: z.string(),
         result: z.number().int(),
-        creator: z.union([z.string(), z.number()]).transform(String),
         views: z.number(),
         favorited: z.number().int().optional(),
-        num_comments_public: z.number().int().optional(),
         reactions: z.array(Reaction).optional(),
         vote_data: z.object({ score: z.number(), votes_up: z.number(), votes_down: z.number() })
       })
@@ -36,10 +31,6 @@ export async function fetchSteamGuide({ source, env, now }: FetcherInput): Promi
   const detail = data.response.publishedfiledetails[0];
   if (!detail || detail.result !== 1)
     throw new Error(`Steam guide ${config.publishedfileid} was not returned successfully`);
-
-  const comments = await fetchSteamGuideComments({ creator: detail.creator, publishedfileid: config.publishedfileid });
-  const reactions = detail.reactions ?? [];
-  const awardCount = reactions.reduce((sum, reaction) => sum + reaction.count, 0);
 
   const metricPoints: FetcherOutput['metric_points'] = [
     { source_id: source.id, metric: 'views', ts: now, value: detail.views, dimensions: null }
@@ -60,28 +51,16 @@ export async function fetchSteamGuide({ source, env, now }: FetcherInput): Promi
       ts: now,
       value: detail.vote_data.votes_up + detail.vote_data.votes_down,
       dimensions: null
-    },
-    {
-      source_id: source.id,
-      metric: 'comment_count',
-      ts: now,
-      value: comments.totalCount,
-      dimensions: null
-    },
-    { source_id: source.id, metric: 'award_count', ts: now, value: awardCount, dimensions: null }
+    }
   );
+  if (detail.reactions !== undefined)
+    metricPoints.push({
+      source_id: source.id,
+      metric: 'award_count',
+      ts: now,
+      value: detail.reactions.reduce((sum, reaction) => sum + reaction.count, 0),
+      dimensions: null
+    });
 
-  return {
-    metric_points: metricPoints,
-    events: comments.comments.map((event) => ({ ...event, source_id: source.id })),
-    steam_guide_awards: reactions
-      .filter((reaction) => reaction.count > 0)
-      .map((reaction) => ({
-        source_id: source.id,
-        reaction_id: reaction.reactionid,
-        count: reaction.count,
-        icon_url: `${STEAM_REACTION_ICON_BASE}/${reaction.reactionid}.png?v=5`,
-        captured_at: now
-      }))
-  };
+  return { metric_points: metricPoints, events: [] };
 }

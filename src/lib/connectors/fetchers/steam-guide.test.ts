@@ -15,24 +15,11 @@ const source = {
 } as const;
 const env = { STEAM_WEB_API_KEY: 'steam-test' } as Env;
 const now = 1777852800000;
-const commentsResponse = {
-  success: true,
-  start: 0,
-  pagesize: '50',
-  total_count: 1,
-  comments_html:
-    '<div class="commentthread_comment responsive_body_text" id="comment_111"><a class="hoverunderline commentthread_author_link" href="https://steamcommunity.com/profiles/1"><bdi>Alice</bdi></a><span data-timestamp="1770000001"></span><div class="commentthread_comment_text" id="comment_content_111">Great guide</div></div>'
-};
-
 beforeEach(() => vi.unstubAllGlobals());
 
 describe('fetchSteamGuide', () => {
-  it('emits guide metrics, comments, and award snapshots', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify(fixture), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(commentsResponse), { status: 200 }));
-    vi.stubGlobal('fetch', fetch);
+  it('emits guide performance metrics and aggregate awards', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 })));
 
     const out = await fetchSteamGuide({ source, env, now });
 
@@ -41,45 +28,18 @@ describe('fetchSteamGuide', () => {
       'favorite_count',
       'rating',
       'ratings',
-      'comment_count',
       'award_count'
     ]);
     expect(out.metric_points.find((point) => point.metric === 'views')?.value).toBe(2087);
     expect(out.metric_points.find((point) => point.metric === 'favorite_count')?.value).toBe(62);
     expect(out.metric_points.find((point) => point.metric === 'rating')?.value).toBe(0.82);
     expect(out.metric_points.find((point) => point.metric === 'ratings')?.value).toBe(50);
-    expect(out.metric_points.find((point) => point.metric === 'comment_count')?.value).toBe(1);
     expect(out.metric_points.find((point) => point.metric === 'award_count')?.value).toBe(7);
-    expect(out.events).toHaveLength(1);
-    expect(out.events[0]).toMatchObject({
-      source_id: 'steam-guide-erenshor',
-      external_id: '111',
-      kind: 'steam_guide_comment',
-      body: 'Great guide'
-    });
-    expect(out.steam_guide_awards).toEqual([
-      {
-        source_id: 'steam-guide-erenshor',
-        reaction_id: 17,
-        count: 5,
-        icon_url: 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/17.png?v=5',
-        captured_at: now
-      },
-      {
-        source_id: 'steam-guide-erenshor',
-        reaction_id: 27,
-        count: 2,
-        icon_url: 'https://store.akamai.steamstatic.com/public/images/loyalty/reactions/still/27.png?v=5',
-        captured_at: now
-      }
-    ]);
+    expect(out.events).toEqual([]);
   });
 
   it('calls IPublishedFileService.GetDetails with the key and includevotes', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify(fixture), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(commentsResponse), { status: 200 }));
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 }));
     vi.stubGlobal('fetch', fetch);
 
     await fetchSteamGuide({ source, env, now });
@@ -92,35 +52,28 @@ describe('fetchSteamGuide', () => {
     expect(calledUrl.searchParams.get('publishedfileids[0]')).toBe('3500398991');
     expect(calledUrl.searchParams.get('includevotes')).toBe('true');
     expect(calledUrl.searchParams.get('includereactions')).toBe('true');
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenCalledOnce();
   });
 
-  it('uses the comment thread total when detail and thread comment counts diverge', async () => {
-    const mismatchedFixture = {
-      response: {
-        publishedfiledetails: [{ ...fixture.response.publishedfiledetails[0], num_comments_public: 2 }]
-      }
-    };
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify(mismatchedFixture), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(commentsResponse), { status: 200 }));
-    vi.stubGlobal('fetch', fetch);
+  it('omits award metric when Steam omits reactions', async () => {
+    const detail = { ...fixture.response.publishedfiledetails[0] } as Record<string, unknown>;
+    delete detail.reactions;
+    const fixtureWithoutReactions = { response: { publishedfiledetails: [detail] } };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify(fixtureWithoutReactions), { status: 200 }))
+    );
 
     const out = await fetchSteamGuide({ source, env, now });
 
-    expect(out.metric_points.find((point) => point.metric === 'comment_count')?.value).toBe(1);
-    expect(out.events).toHaveLength(1);
+    expect(out.metric_points.some((point) => point.metric === 'award_count')).toBe(false);
   });
 
   it('omits favorite metric when Steam omits the count', async () => {
     const detail = { ...fixture.response.publishedfiledetails[0] } as Record<string, unknown>;
     delete detail.favorited;
     const fixtureWithoutFavorites = { response: { publishedfiledetails: [detail] } };
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify(fixtureWithoutFavorites), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(commentsResponse), { status: 200 }));
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixtureWithoutFavorites), { status: 200 }));
     vi.stubGlobal('fetch', fetch);
 
     const out = await fetchSteamGuide({ source, env, now });

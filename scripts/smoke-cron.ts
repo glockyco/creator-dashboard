@@ -1,10 +1,25 @@
 import { chooseAccessHeaders } from './access-headers.ts';
-import { parseSmokeIngestArgs, pollStatus, type SmokeIngestArgs } from './smoke-ingest.ts';
 
-export type SmokeCronArgs = SmokeIngestArgs;
+export type SmokeCronArgs = { sourceId: string; baseUrl: string };
 
 export function parseSmokeCronArgs(argv: string[]): SmokeCronArgs {
-  return parseSmokeIngestArgs(argv);
+  const parsed: SmokeCronArgs = {
+    sourceId: 'steam-reviews-erenshor',
+    baseUrl: 'http://127.0.0.1:8788'
+  };
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    const value = argv[index + 1];
+    if (arg === '--') continue;
+    if (arg === '--source' && value) {
+      parsed.sourceId = value;
+      index += 1;
+    } else if (arg === '--base-url' && value) {
+      parsed.baseUrl = value;
+      index += 1;
+    } else throw new Error(`unknown or incomplete argument: ${arg}`);
+  }
+  return parsed;
 }
 
 async function postHourlySmoke(args: SmokeCronArgs, headers: Record<string, string>): Promise<void> {
@@ -23,8 +38,7 @@ async function main(): Promise<void> {
   const args = parseSmokeCronArgs(process.argv.slice(2));
   const headers = await chooseAccessHeaders(args.baseUrl);
   await postHourlySmoke(args, headers);
-  const status = await pollStatus(args, headers);
-  console.log(`cron smoke ok ${args.sourceId}: last_success_at=${status.last_success_at}`);
+  console.log(`cron smoke queued ${args.sourceId}`);
 }
 
 if (process.argv[1]?.endsWith('smoke-cron.ts')) {

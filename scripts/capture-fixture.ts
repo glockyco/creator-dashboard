@@ -1,17 +1,12 @@
 import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { GITHUB_QUERY } from '../src/lib/connectors/fetchers/github-query.ts';
 
 export const connectorKinds = [
-  'github',
   'steam-guide',
   'steam-reviews',
   'thunderstore-team',
   'erenshor-vault-mods',
-  'mediawiki-recent-changes',
-  'gsc',
-  'ga4',
-  'cf-analytics'
+  'mediawiki-recent-changes'
 ] as const;
 
 export type ConnectorKind = (typeof connectorKinds)[number];
@@ -44,7 +39,6 @@ type CaptureFixtureOptions = {
 const connectorSet = new Set<string>(connectorKinds);
 
 export const redactionPatterns = [
-  /gh[a-z]_[A-Za-z0-9_]+/g,
   /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
   /\b7656119\d{10}\b/g,
   /Bearer\s+[A-Za-z0-9._-]+/g
@@ -116,15 +110,11 @@ function selectSource(sources: CaptureSource[], parsed: CaptureArgs): CaptureSou
 
 function sourceConnector(source: CaptureSource): ConnectorKind | undefined {
   if (source.connector) return source.connector;
-  if (source.id.startsWith('github-')) return 'github';
   if (source.id.startsWith('steam-guide-')) return 'steam-guide';
   if (source.id.startsWith('steam-reviews-')) return 'steam-reviews';
   if (source.id.startsWith('thunderstore-')) return 'thunderstore-team';
   if (source.id.startsWith('erenshor-vault-')) return 'erenshor-vault-mods';
   if (source.id.includes('wiki-recent')) return 'mediawiki-recent-changes';
-  if (source.id.startsWith('gsc-')) return 'gsc';
-  if (source.id.startsWith('ga4')) return 'ga4';
-  if (source.id.startsWith('cf-analytics-')) return 'cf-analytics';
 }
 
 function formatFixture(text: string): string {
@@ -151,28 +141,20 @@ function source(
 }
 
 const defaultSources: CaptureSource[] = [
-  source('github-glockyco', 'github', {}, async ({ env }) => {
-    await fetch('https://api.github.com/graphql', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${required(env, 'GITHUB_TOKEN')}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'creator-dashboard-fixture-capture'
-      },
-      body: JSON.stringify({ query: GITHUB_QUERY })
-    });
-  }),
   source('steam-guide-erenshor', 'steam-guide', { publishedfileid: '3500398991' }, captureSteamGuide),
   source('steam-guide-ak', 'steam-guide', { publishedfileid: '3616580411' }, captureSteamGuide),
+  source('steam-guide-fractured-realms', 'steam-guide', { publishedfileid: '3770721423' }, captureSteamGuide),
+  source('steam-guide-afallon', 'steam-guide', { publishedfileid: '3800843227' }, captureSteamGuide),
   source('steam-reviews-erenshor', 'steam-reviews', { appid: '2382520' }, captureSteamReviews),
   source('steam-reviews-ak', 'steam-reviews', { appid: '2241380' }, captureSteamReviews),
+  source('steam-reviews-afallon', 'steam-reviews', { appid: '2597810' }, captureSteamReviews),
   source('thunderstore-wowmuch', 'thunderstore-team', { namespace: 'WoW_Much', community: 'erenshor' }, async () => {
     await fetch('https://thunderstore.io/c/erenshor/api/v1/package/');
   }),
   source(
     'erenshor-vault-wowmuch',
     'erenshor-vault-mods',
-    { mods: ['adventure-guide', 'sprint', 'justice-for-f7'] },
+    { mods: ['adventure-guide', 'sprint', 'justice-for-f7', 'interactive-map-companion'] },
     async () => {
       await fetch('https://erenshorvault.app/api/mods');
     }
@@ -185,13 +167,11 @@ const defaultSources: CaptureSource[] = [
 ];
 
 async function captureSteamGuide({ source, env }: { source: CaptureSource; env: Env }): Promise<void> {
-  const body = new URLSearchParams({
-    key: required(env, 'STEAM_WEB_API_KEY'),
-    itemcount: '1',
-    'publishedfileids[0]': String(source.config?.publishedfileid),
-    includereactions: 'true'
-  });
-  await fetch('https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/', { method: 'POST', body });
+  const url = new URL('https://api.steampowered.com/IPublishedFileService/GetDetails/v1/');
+  url.searchParams.set('key', required(env, 'STEAM_WEB_API_KEY'));
+  url.searchParams.set('publishedfileids[0]', String(source.config?.publishedfileid));
+  url.searchParams.set('includevotes', 'true');
+  await fetch(url);
 }
 
 async function captureSteamReviews({ source }: { source: CaptureSource }): Promise<void> {

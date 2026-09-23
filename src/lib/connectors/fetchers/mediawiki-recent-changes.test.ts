@@ -31,9 +31,11 @@ describe('fetchMediaWikiRecentChanges', () => {
       kind: 'wiki_edit',
       author: 'WoW Much',
       title: 'Erenshor Maps',
-      body: 'Updated route details'
+      body: 'Updated route details',
+      url: 'https://erenshor.wiki.gg/wiki/Special:Diff/1001/1002'
     });
     expect(out.events[0].metadata).toMatchObject({
+      native_link_kind: 'diff',
       type: 'edit',
       revid: 1002,
       old_revid: 1001,
@@ -41,6 +43,39 @@ describe('fetchMediaWikiRecentChanges', () => {
       minor: false,
       bot: false,
       size_delta: 125
+    });
+  });
+
+  it('links to the page when a change has no revision pair', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            query: {
+              recentchanges: [
+                {
+                  type: 'new',
+                  ns: 0,
+                  title: 'New Page',
+                  revid: 1003,
+                  rcid: 9002,
+                  user: 'Editor',
+                  timestamp: '2026-05-04T13:00:00Z'
+                }
+              ]
+            }
+          }),
+          { status: 200 }
+        )
+      )
+    );
+
+    const out = await fetchMediaWikiRecentChanges({ source, env, now });
+
+    expect(out.events[0]).toMatchObject({
+      url: 'https://erenshor.wiki.gg/wiki/New_Page',
+      metadata: { native_link_kind: 'page', old_revid: null, revid: 1003 }
     });
   });
 

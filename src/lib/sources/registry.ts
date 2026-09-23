@@ -8,7 +8,7 @@ export const SourceDef = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   identity: Identity,
-  category: z.enum(['platform', 'analytics', 'event_feed']),
+  category: z.enum(['platform', 'event_feed']),
   cadenceHours: z.number().int().positive(),
   fetcher: z.custom<Fetcher>((value) => typeof value === 'function'),
   config: z.record(z.string(), z.unknown()).default({})
@@ -17,15 +17,11 @@ export const SourceDef = z.object({
 export type SourceDef = z.infer<typeof SourceDef> & { category: SourceCategory };
 
 const fetcherByConnector = {
-  github: fetchers.github,
   steamGuide: fetchers.steamGuide,
   steamReviews: fetchers.steamReviews,
   thunderstoreTeam: fetchers.thunderstoreTeam,
   erenshorVaultMods: fetchers.erenshorVaultMods,
-  mediaWikiRecentChanges: fetchers.mediaWikiRecentChanges,
-  gsc: fetchers.gsc,
-  cfAnalytics: fetchers.cfAnalytics,
-  ga4: fetchers.ga4
+  mediaWikiRecentChanges: fetchers.mediaWikiRecentChanges
 } satisfies Record<SourceRecord['connector'], Fetcher>;
 
 export const sources: SourceDef[] = z.array(SourceDef).parse(

@@ -35,9 +35,15 @@ describe('fetchSteamReviews', () => {
       external_id: '12345',
       kind: 'review',
       title: 'Positive review',
-      body: 'Great map support.'
+      body: 'Great map support.',
+      url: 'https://steamcommunity.com/profiles/redacted-steam-id/recommended/2382520/'
     });
-    expect(out.events[0].metadata).toMatchObject({ voted_up: true, votes_up: 3, playtime_forever: 500 });
+    expect(out.events[0].metadata).toMatchObject({
+      native_link_kind: 'review',
+      voted_up: true,
+      votes_up: 3,
+      playtime_forever: 500
+    });
   });
 
   it('identifies itself with a contact-URL User-Agent so Akamai-fronted Steam endpoints do not 403', async () => {
@@ -77,7 +83,10 @@ describe('fetchSteamReviews', () => {
 
     const out = await fetchSteamReviews({ source, env, now });
 
-    expect(out.events[0].metadata?.weighted_vote_score).toBe(0.5);
+    expect(out.events[0]).toMatchObject({
+      url: 'https://steamcommunity.com/app/2382520/reviews/?browsefilter=mostrecent',
+      metadata: { native_link_kind: 'review_list', weighted_vote_score: 0.5 }
+    });
   });
 
   it('throws ZodError on schema drift', async () => {

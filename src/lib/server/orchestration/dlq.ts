@@ -1,13 +1,33 @@
+import { getSource } from '$lib/sources/registry';
 import type { JobMsg } from '$lib/types/orchestration';
-import { maybeSendAlert } from '$lib/server/alerts/dedup';
+import { maybeSendFailureAlert } from '$lib/server/alerts/dedup';
+import { recordCollectionFailure } from '$lib/server/incidents';
+import { log } from '$lib/server/log';
 
 export async function consumeDlqMessage(message: Message<JobMsg>, env: Env, now = Date.now()): Promise<void> {
   const sourceId = message.body.source_id;
-  await env.DB.prepare(
-    'INSERT INTO fetcher_failures (source_id, ts, tier, status_code, error_message) VALUES (?, ?, ?, ?, ?)'
-  )
-    .bind(sourceId, now, 'dlq', null, 'Exhausted retries')
-    .run();
-  await maybeSendAlert(env, sourceId, 'dlq', 'exhausted_retries', 'Failed after 5 retries', now);
+  if (!getSource(sourceId)) {
+    log('warn', 'dropping unknown source dead-letter job', { source_id: sourceId });
+    message.ack();
+    return;
+  }
+
+  const incident = await recordCollectionFailure(env.DB, {
+    sourceId,
+    ts: now,
+    tier: 'dlq',
+    statusCode: null,
+    error: 'Exhausted queue retries',
+    nextRetryAt: null
+  });
+  try {
+    await maybeSendFailureAlert(env, incident, now);
+  } catch (notificationError) {
+    log('error', 'Discord dead-letter notification failed', {
+      source_id: sourceId,
+      incident_id: incident.id,
+      error: notificationError instanceof Error ? notificationError.message : String(notificationError)
+    });
+  }
   message.ack();
 }

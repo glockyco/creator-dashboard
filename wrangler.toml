@@ -34,4 +34,4 @@ queue          = "creator-dashboard-fetcher-dlq"
 max_batch_size = 1
 
 [triggers]
-crons = ["0 * * * *", "0 4,5 * * *"]
+crons = ["0 * * * *"]

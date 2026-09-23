@@ -28,27 +28,17 @@ dead_letter_queue = "creator-dashboard-fetcher-dlq"
 [[queues.consumers]]
 queue = "creator-dashboard-fetcher-dlq"
 [triggers]
-crons = ["0 * * * *", "0 4,5 * * *"]
+crons = ["0 * * * *"]
 `;
     expect(parseWranglerPreflight(toml).errors).toEqual([]);
   });
 
-  it('documents all production secrets including GA4', () => {
+  it('requires only credentials used by retained runtime behavior', () => {
     expect(requiredProductionSecrets()).toEqual([
       'ACCESS_TEAM_DOMAIN',
       'ACCESS_AUD',
       'DISCORD_ALERTS_WEBHOOK',
-      'DISCORD_DIGEST_WEBHOOK',
-      'GITHUB_TOKEN',
-      'STEAM_WEB_API_KEY',
-      'GOOGLE_OAUTH_CLIENT_ID',
-      'GOOGLE_OAUTH_CLIENT_SECRET',
-      'GOOGLE_OAUTH_REFRESH_TOKEN',
-      'GSC_PROPERTIES',
-      'CF_API_TOKEN',
-      'GA4_PROPERTY_ID',
-      'CF_ACCOUNT_ID',
-      'CF_ANALYTICS_SITE_TAGS'
+      'STEAM_WEB_API_KEY'
     ]);
   });
 
@@ -63,27 +53,21 @@ crons = ["0 * * * *", "0 4,5 * * *"]
       ...Object.fromEntries(requiredProductionSecrets().map((name) => [name, 'set'])),
       ACCESS_TEAM_DOMAIN: 'example.cloudflareaccess.com',
       ACCESS_AUD: 'replace-with-access-application-aud',
-      DISCORD_ALERTS_WEBHOOK: 'https://discord.com/api/webhooks/example/alerts',
-      DISCORD_DIGEST_WEBHOOK: ''
+      DISCORD_ALERTS_WEBHOOK: 'https://discord.com/api/webhooks/example/alerts'
     };
 
-    expect(missingProductionSecrets(source)).toEqual([
-      'ACCESS_TEAM_DOMAIN',
-      'ACCESS_AUD',
-      'DISCORD_ALERTS_WEBHOOK',
-      'DISCORD_DIGEST_WEBHOOK'
-    ]);
+    expect(missingProductionSecrets(source)).toEqual(['ACCESS_TEAM_DOMAIN', 'ACCESS_AUD', 'DISCORD_ALERTS_WEBHOOK']);
   });
 
   it('parses local dev vars for deploy preflight without comments or quotes', () => {
     expect(
       parseDevVars(
-        'ACCESS_TEAM_DOMAIN="team.cloudflareaccess.com"\n# comment\nACCESS_AUD=aud-value\nDISCORD_DIGEST_WEBHOOK=https://discord.com/api/webhooks/id/token\n'
+        'ACCESS_TEAM_DOMAIN="team.cloudflareaccess.com"\n# comment\nACCESS_AUD=aud-value\nSTEAM_WEB_API_KEY=steam-key\n'
       )
     ).toEqual({
       ACCESS_TEAM_DOMAIN: 'team.cloudflareaccess.com',
       ACCESS_AUD: 'aud-value',
-      DISCORD_DIGEST_WEBHOOK: 'https://discord.com/api/webhooks/id/token'
+      STEAM_WEB_API_KEY: 'steam-key'
     });
   });
 });

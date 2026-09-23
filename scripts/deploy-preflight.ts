@@ -3,22 +3,7 @@ import { readFile } from 'node:fs/promises';
 const D1_PLACEHOLDER = '<replace with wrangler d1 create creator-dashboard database_id>';
 
 export function requiredProductionSecrets(): string[] {
-  return [
-    'ACCESS_TEAM_DOMAIN',
-    'ACCESS_AUD',
-    'DISCORD_ALERTS_WEBHOOK',
-    'DISCORD_DIGEST_WEBHOOK',
-    'GITHUB_TOKEN',
-    'STEAM_WEB_API_KEY',
-    'GOOGLE_OAUTH_CLIENT_ID',
-    'GOOGLE_OAUTH_CLIENT_SECRET',
-    'GOOGLE_OAUTH_REFRESH_TOKEN',
-    'GSC_PROPERTIES',
-    'CF_API_TOKEN',
-    'GA4_PROPERTY_ID',
-    'CF_ACCOUNT_ID',
-    'CF_ANALYTICS_SITE_TAGS'
-  ];
+  return ['ACCESS_TEAM_DOMAIN', 'ACCESS_AUD', 'DISCORD_ALERTS_WEBHOOK', 'STEAM_WEB_API_KEY'];
 }
 
 export function parseDevVars(text: string): Record<string, string> {
@@ -56,7 +41,6 @@ export function parseWranglerPreflight(text: string): { errors: string[] } {
   )
     errors.push('wrangler.toml is missing creator-dashboard-fetcher-dlq dead-letter binding');
   if (!text.includes('"0 * * * *"')) errors.push('wrangler.toml is missing hourly fetch cron');
-  if (!text.includes('"0 4,5 * * *"')) errors.push('wrangler.toml is missing Vienna digest cron');
   return { errors };
 }
 
