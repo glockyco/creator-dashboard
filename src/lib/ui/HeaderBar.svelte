@@ -18,20 +18,8 @@
 </script>
 
 <header class="border-b border-border bg-bg-secondary">
-  <div
-    class="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 sm:px-6 md:grid-cols-[1fr_auto_1fr]"
-  >
-    <a
-      href={resolve('/')}
-      class="inline-flex w-fit items-center gap-2.5 text-sm font-bold tracking-tight text-fg-primary focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-glockyco"
-    >
-      <span
-        class="grid size-9 place-items-center rounded-[10px] bg-glockyco/20 text-xs font-bold text-glockyco"
-        aria-hidden="true">CP</span
-      >
-      <span>Creator Pulse</span>
-    </a>
-    <nav class="hidden items-center gap-1 md:flex" aria-label="Primary">
+  <div class="mx-auto hidden max-w-7xl justify-center px-4 py-3 sm:px-6 md:flex">
+    <nav class="flex items-center gap-1" aria-label="Primary">
       {#each navigation as item (item.href)}
         <a
           href={resolve(item.href)}
@@ -45,9 +33,8 @@
         </a>
       {/each}
     </nav>
-    <div class="hidden md:block" aria-hidden="true"></div>
   </div>
-  <div class="border-t border-border/70">
+  <div class="md:border-t md:border-border/70">
     <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-1 px-4 py-2 text-xs sm:px-6">
       <span class="font-semibold text-fg-muted">Native tools</span>
       {#each nativeDestinations as destination (destination.href)}
