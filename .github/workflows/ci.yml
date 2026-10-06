@@ -29,3 +29,15 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
+
+  # The fleet input defines this check once for every repository on the
+  # workstation: it fails on an invalid artifact and on a change archived with
+  # unfinished tasks.
+  openspec:
+    name: OpenSpec artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - name: Validate OpenSpec artifacts
+        run: nix build --no-link ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).openspec"

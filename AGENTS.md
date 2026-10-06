@@ -4,6 +4,7 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 
 ## Setup
 
+- `flake.nix` pins Node and pnpm. `.envrc` enters that shell through direnv and exports the Workers deploy token with `use cloudflare_workers`; without direnv, run `nix develop` and authenticate Wrangler yourself. Every command below assumes the shell. `.github/workflows/ci.yml` pins Node separately; keep both in step.
 - `pnpm install`
 - Populate `.dev.vars` from `.dev.vars.example`. Cloudflare's secret store is write-only (`wrangler secret list` returns names only); if `.dev.vars` is lost, recover from source-of-truth consoles.
 - `pnpm dev:setup` — migrate and seed the local D1. Required before `pnpm dev` returns anything but 500s.
@@ -18,6 +19,7 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 ## Tests
 
 - `pnpm test`, `pnpm check`, `pnpm lint`. Run only tests you touched unless asked.
+- `nix flake check` builds the dev shell and validates the OpenSpec artifacts; CI runs the OpenSpec check.
 - D1 is mocked with a `{ prepare, bind, all, first }` stub; see `src/lib/performance/server.test.ts` and `src/lib/server/incidents/model.test.ts`. Do not spin up real `wrangler d1` from unit tests.
 - E2E (`pnpm test:e2e`) authenticates via `e2e/support/access-auth.ts` against the preview-local JWKS — needs the preview harness running.
 

@@ -10,3 +10,7 @@ node_modules/
 playwright-report/
 test-results/
 .worktrees/
+# Nix dev shell: direnv cache and `nix build` result symlinks
+.direnv/
+result
+result-*
