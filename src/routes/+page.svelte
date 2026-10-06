@@ -318,7 +318,7 @@
             >
             <p class="mt-2 text-sm font-semibold text-fg-primary">{item.title || item.sourceName}</p>
             <p class="mt-1 line-clamp-2 text-xs text-fg-muted">{item.body || 'No summary available.'}</p>
-            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
+            <div class="mt-3 flex flex-col items-start gap-1 text-xs text-fg-muted">
               <span>{item.sourceName} · {new Date(item.ts).toLocaleString()}</span>
               {#if item.href}
                 <!-- eslint-disable svelte/no-navigation-without-resolve -- Validated native destination, never a local route. -->
