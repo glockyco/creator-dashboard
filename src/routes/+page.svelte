@@ -298,43 +298,47 @@
     </section>
   {/each}
 
-  <section aria-labelledby="recent-activity-heading">
-    <div class="mb-3 flex items-center justify-between gap-4">
-      <h2 id="recent-activity-heading" class="text-lg font-bold tracking-tight">Activity</h2>
-      <a
-        href={resolve('/activity')}
-        class="text-xs font-semibold text-glockyco hover:underline focus-visible:outline-2 focus-visible:outline-glockyco"
-        >View all →</a
-      >
-    </div>
-    <div class="grid gap-4 sm:grid-cols-2">
-      {#each data.activity as item (item.id)}
-        <article class="min-w-0 rounded-xl border border-border bg-bg-secondary p-4">
-          <span class="text-xs font-bold uppercase tracking-[0.08em] text-glockyco"
-            >{item.kind === 'review' ? 'Steam review' : 'Wiki edit'}</span
-          >
-          <p class="mt-2 text-sm font-semibold text-fg-primary">{item.title || item.sourceName}</p>
-          <p class="mt-1 line-clamp-2 text-xs text-fg-muted">{item.body || 'No summary available.'}</p>
-          <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
-            <span>{item.sourceName} · {new Date(item.ts).toLocaleString()}</span>
-            {#if item.href}
-              <!-- eslint-disable svelte/no-navigation-without-resolve -- Validated native destination, never a local route. -->
-              <a
-                href={item.href}
-                class="font-semibold text-glockyco hover:underline focus-visible:outline-2 focus-visible:outline-glockyco"
-                >{item.hrefLabel || 'Native context'} ↗</a
-              >
-              <!-- eslint-enable svelte/no-navigation-without-resolve -->
-            {/if}
-          </div>
-        </article>
-      {:else}
-        <p class="col-span-full rounded-xl border border-border bg-bg-secondary px-5 py-6 text-sm text-fg-muted">
-          No reviews or wiki changes in this range.
-        </p>
-      {/each}
-    </div>
-  </section>
+  {#each data.activitySections as section (section.id)}
+    <section aria-labelledby="{section.id}-activity-heading">
+      <div class="mb-3 flex items-center justify-between gap-4">
+        <h2 id="{section.id}-activity-heading" class="text-lg font-bold tracking-tight">{section.title}</h2>
+        <!-- eslint-disable svelte/no-navigation-without-resolve -- The internal URL appends a type filter to a resolved route. -->
+        <a
+          href={`${resolve('/activity')}?type=${section.type}`}
+          class="text-xs font-semibold text-glockyco hover:underline focus-visible:outline-2 focus-visible:outline-glockyco"
+          >View all →</a
+        >
+        <!-- eslint-enable svelte/no-navigation-without-resolve -->
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {#each section.items as item (item.id)}
+          <article class="min-w-0 rounded-xl border border-border bg-bg-secondary p-4">
+            <span class="text-xs font-bold uppercase tracking-[0.08em] text-glockyco"
+              >{item.kind === 'review' ? 'Steam review' : 'Wiki edit'}</span
+            >
+            <p class="mt-2 text-sm font-semibold text-fg-primary">{item.title || item.sourceName}</p>
+            <p class="mt-1 line-clamp-2 text-xs text-fg-muted">{item.body || 'No summary available.'}</p>
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
+              <span>{item.sourceName} · {new Date(item.ts).toLocaleString()}</span>
+              {#if item.href}
+                <!-- eslint-disable svelte/no-navigation-without-resolve -- Validated native destination, never a local route. -->
+                <a
+                  href={item.href}
+                  class="font-semibold text-glockyco hover:underline focus-visible:outline-2 focus-visible:outline-glockyco"
+                  >{item.hrefLabel || 'Native context'} ↗</a
+                >
+                <!-- eslint-enable svelte/no-navigation-without-resolve -->
+              {/if}
+            </div>
+          </article>
+        {:else}
+          <p class="col-span-full rounded-xl border border-border bg-bg-secondary px-5 py-6 text-sm text-fg-muted">
+            {section.empty}
+          </p>
+        {/each}
+      </div>
+    </section>
+  {/each}
 </div>
 
 <style>

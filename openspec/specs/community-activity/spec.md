@@ -6,14 +6,19 @@ Bring recent Steam reviews and Erenshor Wiki edits into one readable feed while 
 
 ## Requirements
 
-### Requirement: Combined recent activity
+### Requirement: Recent activity previews
 
-The Overview SHALL show a small newest-first preview of Steam reviews and wiki changes. Activity SHALL offer the full feed, ordered by event time and identified by game or wiki, type, and relative time.
+The Overview SHALL show separate newest-first previews of Steam reviews and wiki changes, reviews first. Each preview SHALL show up to six events from the selected range and link to Activity filtered to its type. Activity SHALL offer the full feed, ordered by event time and identified by game or wiki, type, and relative time.
 
 #### Scenario: Mixed events
 
 - **WHEN** new Steam reviews and wiki edits are stored
-- **THEN** both types appear in time order on Activity and in the limited Overview preview
+- **THEN** both types appear in time order on Activity, and each type appears in its own Overview preview
+
+#### Scenario: One quiet type
+
+- **WHEN** the selected range has wiki edits but no Steam reviews
+- **THEN** the Overview reviews preview states that there are no Steam reviews, and the wiki preview still shows its events
 
 #### Scenario: Empty feed
 
