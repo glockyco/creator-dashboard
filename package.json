@@ -58,5 +58,5 @@
     "vitest": "latest",
     "wrangler": "latest"
   },
-  "packageManager": "pnpm@11.28.0"
+  "packageManager": "pnpm@12.11.2"
 }
