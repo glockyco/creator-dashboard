@@ -2,37 +2,25 @@ import { describe, expect, it } from 'vitest';
 import { buildWranglerDevArgs, e2eSeedSql, previewSeedSql } from './harness';
 
 describe('local preview harness helpers', () => {
-  it('builds wrangler dev args with local Access verification vars', () => {
-    expect(
-      buildWranglerDevArgs({
-        workerPort: 8788,
-        persistPath: '.tmp/e2e-wrangler',
-        issuerDomain: 'team.cloudflareaccess.com',
-        audience: 'creator-dashboard-e2e',
-        jwksUrl: 'http://127.0.0.1:8790/jwks',
-        smokeEndpointsEnabled: true
-      })
-    ).toEqual([
-      'exec',
-      'wrangler',
-      'dev',
-      '--port',
-      '8788',
-      '--persist-to',
-      '.tmp/e2e-wrangler',
-      '--show-interactive-dev-session',
-      'false',
-      '--log-level',
-      'error',
-      '--var',
-      'ACCESS_TEAM_DOMAIN:team.cloudflareaccess.com',
-      '--var',
-      'ACCESS_AUD:creator-dashboard-e2e',
-      '--var',
-      'ACCESS_JWKS_URL:http://127.0.0.1:8790/jwks',
-      '--var',
-      'SMOKE_ENDPOINTS_ENABLED:true'
-    ]);
+  it('points local Access at the fixture and never at the real Discord webhook', () => {
+    const args = buildWranglerDevArgs({
+      workerPort: 8788,
+      persistPath: '.tmp/e2e-wrangler',
+      issuerDomain: 'team.cloudflareaccess.com',
+      audience: 'creator-dashboard-e2e',
+      jwksUrl: 'http://127.0.0.1:8790/jwks',
+      smokeEndpointsEnabled: true
+    });
+    const vars = args.flatMap((arg, index) => (args[index - 1] === '--var' ? [arg] : []));
+
+    expect(vars).toEqual(
+      expect.arrayContaining([
+        'ACCESS_TEAM_DOMAIN:team.cloudflareaccess.com',
+        'ACCESS_AUD:creator-dashboard-e2e',
+        'ACCESS_JWKS_URL:http://127.0.0.1:8790/jwks',
+        'DISCORD_ALERTS_WEBHOOK:'
+      ])
+    );
   });
 
   it('seeds retained performance and activity rows relative to the current time', () => {

@@ -219,7 +219,11 @@ export function buildWranglerDevArgs(options: WranglerDevOptions): string[] {
     '--var',
     `ACCESS_JWKS_URL:${options.jwksUrl}`,
     '--var',
-    `SMOKE_ENDPOINTS_ENABLED:${String(options.smokeEndpointsEnabled)}`
+    `SMOKE_ENDPOINTS_ENABLED:${String(options.smokeEndpointsEnabled)}`,
+    // wrangler dev also loads .dev.vars, which holds the production Discord webhook for deploy preflight.
+    // Blank it so retries and recoveries in a local run never post to the real channel.
+    '--var',
+    'DISCORD_ALERTS_WEBHOOK:'
   ];
 }
 
