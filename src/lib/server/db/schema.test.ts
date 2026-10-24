@@ -138,6 +138,32 @@ describe('D1 schema migrations', () => {
     }
   });
 
+  it('keeps only human wiki edits and new pages outside the owner account', () => {
+    const db = new DatabaseSync(':memory:');
+    const index = migrationFiles.indexOf('0007_wiki_human_edits.sql');
+    for (const sql of migrations.slice(0, index)) db.exec(sql);
+    const wiki = (id: string, author: string, type: string, bot: boolean) =>
+      `INSERT INTO events VALUES ('erenshor-wiki-recent', '${id}', 1, 'wiki_edit', '${author}', 'Page', NULL, NULL,
+         '{"type":"${type}","bot":${bot}}');`;
+    db.exec(
+      wiki('human-edit', 'Killagamer', 'edit', false) +
+        wiki('human-new', 'Kyrros', 'new', false) +
+        wiki('bot-edit', 'WoWBot', 'edit', true) +
+        wiki('owner-edit', 'WoWMuch', 'edit', false) +
+        wiki('human-log', 'Kyrros', 'log', false) +
+        wiki('human-categorize', 'Kyrros', 'categorize', false) +
+        "INSERT INTO events VALUES ('steam-reviews-erenshor', 'review-1', 1, 'review', 'WoWMuch', 'Review', NULL, NULL, NULL);"
+    );
+
+    db.exec(migrations[index]!);
+
+    expect(db.prepare('SELECT external_id FROM events ORDER BY external_id').all()).toEqual([
+      { external_id: 'human-edit' },
+      { external_id: 'human-new' },
+      { external_id: 'review-1' }
+    ]);
+  });
+
   it('deduplicates metric writes with NULL dimensions', () => {
     const db = migratedDb();
     const upsert = db.prepare(
