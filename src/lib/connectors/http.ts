@@ -1,11 +1,14 @@
 import type { z } from 'zod';
 
+// Upstream error bodies can be whole HTML pages; they are stored per attempt and sent to Discord.
+const MAX_ERROR_BODY = 2_000;
+
 export class FetchError extends Error {
   status: number;
   headers: Headers;
 
   constructor(status: number, message: string, headers: Headers = new Headers()) {
-    super(message);
+    super(message.length > MAX_ERROR_BODY ? `${message.slice(0, MAX_ERROR_BODY)}... (truncated)` : message);
     this.name = 'FetchError';
     this.status = status;
     this.headers = headers;
