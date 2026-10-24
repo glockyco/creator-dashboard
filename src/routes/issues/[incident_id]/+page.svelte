@@ -224,7 +224,10 @@
             <dd
               class={`rounded-full border px-2.5 py-1 font-medium ${notificationTone(data.incident.recoveryNotificationState)}`}
             >
-              {notificationLabels[data.incident.recoveryNotificationState] ?? data.incident.recoveryNotificationState}
+              {data.incident.resolvedAt === null
+                ? 'Waiting for recovery'
+                : (notificationLabels[data.incident.recoveryNotificationState] ??
+                  data.incident.recoveryNotificationState)}
             </dd>
           </div>
         </dl>
