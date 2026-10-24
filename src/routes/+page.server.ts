@@ -1,15 +1,15 @@
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { loadPerformance, type Range } from '$lib/server/performance';
+import { loadPerformance } from '$lib/server/performance';
 import { getActivity } from '$lib/server/activity';
+import { rangeDurationMs } from '$lib/performance/series';
+import { selectRange } from '$lib/server/range';
 
-export const load: PageServerLoad = async ({ platform, url, parent }) => {
+export const load: PageServerLoad = async ({ platform, url, cookies, parent }) => {
   if (!platform?.env.DB) throw error(500, 'Cloudflare D1 binding missing');
   const now = Date.now();
-  const selected = url.searchParams.get('range');
-  const range: Range = selected === '7d' || selected === '90d' ? selected : '30d';
-  const days = Number.parseInt(range, 10);
-  const since = now - days * 86_400_000;
+  const range = selectRange(url, cookies);
+  const since = now - rangeDurationMs(range);
   const [performance, reviews, wikiEdits, layout] = await Promise.all([
     loadPerformance(platform.env.DB, range, now),
     getActivity(platform.env.DB, { kind: 'review', since, limit: 6 }),

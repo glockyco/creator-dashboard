@@ -35,8 +35,11 @@
   <header class="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-4">
     <h1 class="text-3xl font-semibold tracking-tight text-fg-primary">Activity</h1>
     <p class="text-sm text-fg-muted">
-      <span class="font-semibold tabular-nums text-fg-primary">{data.activity.items.length}</span>
-      {data.activity.items.length === 1 ? 'event' : 'events'} · Newest first
+      {data.activity.items.length === 0
+        ? 'No events'
+        : data.nextPageHref || data.firstPageHref
+          ? `Showing ${data.activity.items.length} events`
+          : `${data.activity.items.length} ${data.activity.items.length === 1 ? 'event' : 'events'}`} · Newest first
     </p>
   </header>
 
@@ -196,12 +199,20 @@
     </section>
   {/if}
 
-  {#if data.nextPageHref}
-    <nav class="flex justify-center border-t border-border pt-6" aria-label="Activity pages">
-      <a
-        class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-bg-secondary px-5 py-2 text-sm font-semibold text-fg-primary outline-none transition-colors hover:border-glockyco/50 hover:text-glockyco focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary sm:w-auto"
-        href={resolve(data.nextPageHref as '/activity')}>Next page <span class="ml-2" aria-hidden="true">→</span></a
-      >
+  {#if data.nextPageHref || data.firstPageHref}
+    <nav class="flex flex-wrap justify-center gap-3 border-t border-border pt-6" aria-label="Activity pages">
+      {#if data.firstPageHref}
+        <a
+          class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-bg-secondary px-5 py-2 text-sm font-semibold text-fg-primary outline-none transition-colors hover:border-glockyco/50 hover:text-glockyco focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary sm:w-auto"
+          href={resolve(data.firstPageHref as '/activity')}>Newest</a
+        >
+      {/if}
+      {#if data.nextPageHref}
+        <a
+          class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-bg-secondary px-5 py-2 text-sm font-semibold text-fg-primary outline-none transition-colors hover:border-glockyco/50 hover:text-glockyco focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary sm:w-auto"
+          href={resolve(data.nextPageHref as '/activity')}>Next page <span class="ml-2" aria-hidden="true">→</span></a
+        >
+      {/if}
     </nav>
   {/if}
 </section>

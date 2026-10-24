@@ -1,26 +1,13 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import type { Range } from '$lib/server/performance';
+  import type { Range } from '$lib/performance/series';
 
   const ranges: Range[] = ['7d', '30d', '90d'];
   let { selected }: { selected: Range } = $props();
 
-  onMount(() => {
-    if (page.url.searchParams.has('range')) return;
-    const saved = localStorage.getItem('creator-pulse-range');
-    if (saved && ranges.includes(saved as Range) && saved !== selected) {
-      const url = new URL(page.url);
-      url.searchParams.set('range', saved);
-      // The URL comes from the current page and already includes the configured base path.
-      // eslint-disable-next-line svelte/no-navigation-without-resolve
-      void goto(url, { replaceState: true, noScroll: true, keepFocus: true });
-    }
-  });
-
+  // The server remembers an explicit range in a cookie, so later pages open with it.
   function change(value: Range) {
-    localStorage.setItem('creator-pulse-range', value);
     const url = new URL(page.url);
     url.searchParams.set('range', value);
     // The URL comes from the current page and already includes the configured base path.

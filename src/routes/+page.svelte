@@ -127,7 +127,7 @@
       <p class="mt-1 text-xs text-fg-muted">
         {data.issueSummary.collectedThrough === null
           ? 'Some collectors have not collected yet'
-          : `Every collector has collected since ${new Date(data.issueSummary.collectedThrough).toLocaleString()}`}
+          : `Every collector has collected since ${collectedFormat.format(new Date(data.issueSummary.collectedThrough))}`}
       </p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
@@ -194,7 +194,7 @@
                   <!-- eslint-disable svelte/no-navigation-without-resolve -- The internal URL appends a range to a resolved route. -->
                   <a
                     href={asset.kind === 'review'
-                      ? `${resolve('/activity')}?type=review&subject=${encodeURIComponent(asset.reviewId)}`
+                      ? `${resolve('/activity')}?type=review&subject=${encodeURIComponent(asset.reviewId)}&sentiment=${asset.sentiment}&range=${data.range}`
                       : `${resolve('/performance/[asset_id]', { asset_id: asset.id })}?range=${data.range}`}
                     class="text-fg-primary underline-offset-4 hover:text-glockyco hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-glockyco"
                     >{asset.name}</a
@@ -292,7 +292,7 @@
         <h2 id="{section.id}-activity-heading" class="text-lg font-bold tracking-tight">{section.title}</h2>
         <!-- eslint-disable svelte/no-navigation-without-resolve -- The internal URL appends a type filter to a resolved route. -->
         <a
-          href={`${resolve('/activity')}?type=${section.type}`}
+          href={`${resolve('/activity')}?type=${section.type}&range=${data.range}`}
           class="text-xs font-semibold text-glockyco hover:underline focus-visible:outline-2 focus-visible:outline-glockyco"
           >View all →</a
         >

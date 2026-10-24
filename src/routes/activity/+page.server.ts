@@ -1,23 +1,18 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { rangeDurationMs } from '$lib/performance/series';
 import { activitySubjects, getActivity, type ActivityKind, type ActivitySentiment } from '$lib/server/activity';
+import { selectRange } from '$lib/server/range';
 
-const RANGE_MS = {
-  '7d': 7 * 86_400_000,
-  '30d': 30 * 86_400_000,
-  '90d': 90 * 86_400_000
-} as const;
-
-type ActivityRange = keyof typeof RANGE_MS;
 type FilterValue<T extends string> = T | 'all';
 
-export const load: PageServerLoad = async ({ platform, url }) => {
+export const load: PageServerLoad = async ({ platform, url, cookies }) => {
   if (!platform?.env) throw error(500, 'Cloudflare platform env missing');
 
   const type = parseType(url.searchParams.get('type'));
   const subject = parseSubject(url.searchParams.get('subject'));
   const sentiment = parseSentiment(url.searchParams.get('sentiment'));
-  const range = parseRange(url.searchParams.get('range'));
+  const range = selectRange(url, cookies);
   const cursor = url.searchParams.get('cursor') ?? undefined;
   const now = Date.now();
 
@@ -27,7 +22,7 @@ export const load: PageServerLoad = async ({ platform, url }) => {
       kind: type === 'all' ? undefined : type,
       sourceId: subject === 'all' ? undefined : subject,
       sentiment: sentiment === 'all' ? undefined : sentiment,
-      since: now - RANGE_MS[range],
+      since: now - rangeDurationMs(range),
       cursor,
       limit: 20
     });
@@ -42,6 +37,13 @@ export const load: PageServerLoad = async ({ platform, url }) => {
     nextUrl.searchParams.set('cursor', activity.nextCursor);
     nextPageHref = `${nextUrl.pathname}${nextUrl.search}`;
   }
+  // Back to the newest events with the same filters; only offered once the user has paged.
+  let firstPageHref: string | null = null;
+  if (cursor) {
+    const firstUrl = new URL(url);
+    firstUrl.searchParams.delete('cursor');
+    firstPageHref = `${firstUrl.pathname}${firstUrl.search}`;
+  }
 
   return {
     title: 'Activity',
@@ -49,7 +51,8 @@ export const load: PageServerLoad = async ({ platform, url }) => {
     subjects: activitySubjects,
     filters: { type, subject, sentiment, range },
     now,
-    nextPageHref
+    nextPageHref,
+    firstPageHref
   };
 };
 
@@ -69,10 +72,4 @@ function parseSentiment(value: string | null): FilterValue<ActivitySentiment> {
   if (!value || value === 'all') return 'all';
   if (value === 'positive' || value === 'negative') return value;
   throw error(400, 'Invalid review sentiment');
-}
-
-function parseRange(value: string | null): ActivityRange {
-  if (!value) return '30d';
-  if (value === '7d' || value === '30d' || value === '90d') return value;
-  throw error(400, 'Invalid activity range');
 }
