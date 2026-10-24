@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { FetchError } from '../http';
+import { FetchError, InvalidResponseError } from '../http';
 import fixture from './thunderstore-team.fixture.json';
 import { fetchThunderstoreTeam } from './thunderstore-team';
 
@@ -32,24 +32,46 @@ describe('fetchThunderstoreTeam', () => {
     expect(out.events).toEqual([]);
   });
 
-  it('accepts live paginated Thunderstore responses', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
+  it('follows paginated responses to the last page', async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            next: null,
-            previous: null,
-            results: [{ namespace: 'WoW_Much', name: 'LivePackage', download_count: 9 }]
-          }),
-          { status: 200 }
+            next: 'https://thunderstore.io/api/v1/package/?page=2',
+            results: [{ namespace: 'WoW_Much', name: 'First', download_count: 9 }]
+          })
         )
       )
-    );
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ next: null, results: [{ namespace: 'WoW_Much', name: 'Second', download_count: 4 }] })
+        )
+      );
+    vi.stubGlobal('fetch', fetchSpy);
 
     const out = await fetchThunderstoreTeam({ source, env, now });
 
-    expect(out.metric_points.find((point) => point.metric === 'total_downloads')?.value).toBe(9);
+    expect(String(fetchSpy.mock.calls[1]?.[0])).toBe('https://thunderstore.io/api/v1/package/?page=2');
+    expect(out.metric_points.find((point) => point.metric === 'total_downloads')?.value).toBe(13);
+  });
+
+  it('fails instead of recording zeros when the namespace or a count is missing', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify([{ namespace: 'Someone_Else', name: 'Other', download_count: 3 }]))
+        )
+    );
+    await expect(fetchThunderstoreTeam({ source, env, now })).rejects.toBeInstanceOf(InvalidResponseError);
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify([{ namespace: 'WoW_Much', name: 'NoCount' }])))
+    );
+    await expect(fetchThunderstoreTeam({ source, env, now })).rejects.toBeInstanceOf(InvalidResponseError);
   });
 
   it('uses the configured Thunderstore community endpoint', async () => {
