@@ -31,16 +31,13 @@ describe('serviceTokenHeaders', () => {
 });
 
 describe('chooseAccessHeaders', () => {
-  it('prefers service token headers when env has them, regardless of URL', async () => {
+  it('sends the service token only to remote Workers', async () => {
     const env = { CF_ACCESS_CLIENT_ID: 'id.access', CF_ACCESS_CLIENT_SECRET: 'secret' };
-    expect(await chooseAccessHeaders('http://127.0.0.1:8788', env)).toEqual({
-      'CF-Access-Client-Id': 'id.access',
-      'CF-Access-Client-Secret': 'secret'
-    });
     expect(await chooseAccessHeaders('https://dashboard.glockyco.com', env)).toEqual({
       'CF-Access-Client-Id': 'id.access',
       'CF-Access-Client-Secret': 'secret'
     });
+    expect(await chooseAccessHeaders('http://127.0.0.1:8788', env)).not.toHaveProperty('CF-Access-Client-Secret');
   });
 
   it('throws a directive error when targeting a remote URL with no service token', async () => {

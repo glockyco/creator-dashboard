@@ -51,10 +51,11 @@ export function serviceTokenHeaders(env: AccessHeadersEnv): Record<string, strin
 }
 
 export async function chooseAccessHeaders(baseUrl: string, env?: AccessHeadersEnv): Promise<Record<string, string>> {
+  // A loopback Worker trusts only the local fixture, and must never receive the production service token.
+  if (isLoopbackBaseUrl(baseUrl)) return accessJwtHeaders();
   const resolved = env ?? (await loadEnvWithDevVars());
   const svc = serviceTokenHeaders(resolved);
   if (svc) return svc;
-  if (isLoopbackBaseUrl(baseUrl)) return accessJwtHeaders();
   throw new Error(
     `cannot authenticate to ${baseUrl}: set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET (see .dev.vars.example) ` +
       `to verify against a remote Worker, or point --base-url at the local preview to use the JWT fixture.`
