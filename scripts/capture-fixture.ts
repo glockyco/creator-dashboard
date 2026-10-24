@@ -175,9 +175,12 @@ async function captureSteamGuide({ source, env }: { source: CaptureSource; env: 
 }
 
 async function captureSteamReviews({ source }: { source: CaptureSource }): Promise<void> {
-  await fetch(
-    `https://store.steampowered.com/appreviews/${String(source.config?.appid)}?json=1&filter=recent&language=all&purchase_type=all`
+  const url = new URL('https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/');
+  url.searchParams.set(
+    'input_json',
+    JSON.stringify({ appid: Number(source.config?.appid), filter: 1, languages: ['all'], purchase_type: 1 })
   );
+  await fetch(url);
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

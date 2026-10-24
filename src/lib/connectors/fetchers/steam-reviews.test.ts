@@ -57,24 +57,24 @@ describe('fetchSteamReviews', () => {
     expect(headers.get('user-agent')).toMatch(/creator-dashboard\/[0-9]+\.[0-9]+ \(\+https?:\/\/[^)]+\)/);
   });
 
-  it('accepts live Steam weighted vote scores as either numbers or strings', async () => {
+  it('records summary metrics when a page has no reviews', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
         new Response(
           JSON.stringify({
-            success: 1,
-            query_summary: { num_reviews: 1, total_reviews: 1, review_score: 8, total_positive: 1, total_negative: 0 },
-            reviews: [
-              {
-                recommendationid: 'live-1',
-                author: {},
-                review: 'Mixed live shape.',
-                timestamp_created: 1778002566,
-                voted_up: true,
-                weighted_vote_score: 0.5
-              }
-            ]
+            response: {
+              query_summary: {
+                num_reviews: 0,
+                review_score: 0,
+                review_score_desc: 'No user reviews',
+                total_positive: 0,
+                total_negative: 0,
+                total_reviews: 0
+              },
+              cursor: '*',
+              total_matching: 0
+            }
           }),
           { status: 200 }
         )
@@ -83,16 +83,14 @@ describe('fetchSteamReviews', () => {
 
     const out = await fetchSteamReviews({ source, env, now });
 
-    expect(out.events[0]).toMatchObject({
-      url: 'https://steamcommunity.com/app/2382520/reviews/?browsefilter=mostrecent',
-      metadata: { native_link_kind: 'review_list', weighted_vote_score: 0.5 }
-    });
+    expect(out.events).toEqual([]);
+    expect(out.metric_points.find((point) => point.metric === 'review_total')?.value).toBe(0);
   });
 
   it('throws ZodError on schema drift', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: 1, reviews: [null] }), { status: 200 }))
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ response: { reviews: [null] } }), { status: 200 }))
     );
     await expect(fetchSteamReviews({ source, env, now })).rejects.toBeInstanceOf(z.ZodError);
   });

@@ -17,34 +17,45 @@ const Review = z.object({
   timestamp_created: z.number(),
   voted_up: z.boolean(),
   votes_up: z.number().optional(),
-  weighted_vote_score: z.union([z.string(), z.number()]).optional(),
+  weighted_vote_score: z.number().optional(),
   comment_count: z.number().optional(),
   steam_purchase: z.boolean().optional(),
   received_for_free: z.boolean().optional()
 });
+// GetAppReviews omits `reviews` on an empty page and returns an empty `response` for an unknown app.
 const Response = z.object({
-  success: z.number(),
-  query_summary: z
-    .object({
-      num_reviews: z.number(),
-      total_reviews: z.number(),
-      review_score: z.number(),
-      total_positive: z.number(),
-      total_negative: z.number()
-    })
-    .optional(),
-  reviews: z.array(Review)
+  response: z.object({
+    query_summary: z
+      .object({
+        num_reviews: z.number(),
+        total_reviews: z.number(),
+        review_score: z.number(),
+        total_positive: z.number(),
+        total_negative: z.number()
+      })
+      .optional(),
+    reviews: z.array(Review).default([])
+  })
 });
+
+// Enum values from https://partner.steamgames.com/doc/webapi/IUserReviewsService#Enums
+const FILTER_RECENT = 1;
+const PURCHASE_TYPE_ALL = 1;
 
 export async function fetchSteamReviews({ source, now }: FetcherInput): Promise<FetcherOutput> {
   const config = Config.parse(source.config);
-  const url = new URL(`https://store.steampowered.com/appreviews/${config.appid}`);
-  url.searchParams.set('json', '1');
-  url.searchParams.set('filter', 'recent');
-  url.searchParams.set('language', 'all');
-  url.searchParams.set('purchase_type', 'all');
+  const url = new URL('https://api.steampowered.com/IUserReviewsService/GetAppReviews/v1/');
+  url.searchParams.set(
+    'input_json',
+    JSON.stringify({
+      appid: Number(config.appid),
+      filter: FILTER_RECENT,
+      languages: ['all'],
+      purchase_type: PURCHASE_TYPE_ALL
+    })
+  );
 
-  const data = await fetchJson(url, {
+  const { response: data } = await fetchJson(url, {
     schema: Response,
     headers: { 'User-Agent': 'creator-dashboard/1.0 (+https://dashboard.glockyco.com)' }
   });
