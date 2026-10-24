@@ -139,7 +139,7 @@ describe('loadPerformance', () => {
       negative: {
         total: 5,
         dayGain: 1,
-        periodGain: null
+        periodGain: -15
       }
     });
   });

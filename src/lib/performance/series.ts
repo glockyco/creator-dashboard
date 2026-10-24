@@ -31,6 +31,7 @@ export function boundaryToleranceMs(cadenceHours: number): number {
   return Math.max(cadenceHours, 1) * 2 * HOUR_MS;
 }
 
+/** A cumulative counter, such as views or downloads, only grows; a fall is a reset and voids the gain. */
 export function summarizePerformanceSeries(
   input: readonly PerformancePoint[],
   range: Range,
@@ -40,7 +41,7 @@ export function summarizePerformanceSeries(
   return summarizeSeries(input, range, now, cadenceHours, false);
 }
 
-/** A rating can rise or fall; report its signed change instead of treating a fall as a counter reset. */
+/** A level, such as a rating, a favorite count, or a review count, can fall; report its signed change. */
 export function summarizeLevelSeries(
   input: readonly PerformancePoint[],
   range: Range,

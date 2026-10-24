@@ -114,8 +114,9 @@ function summarizeAssets(
       now,
       definition.cadenceHours
     );
+    // Favorites, votes, awards, and ratings can all fall when someone withdraws them.
     const guideMetric = (field: (typeof guideMetricDefinitions)[number]['field']) =>
-      (field === 'rating' ? summarizeLevelSeries : summarizePerformanceSeries)(
+      summarizeLevelSeries(
         rowsBySelector.get(assetMetricId(definition.id, field)) ?? [],
         range,
         now,
@@ -148,16 +149,17 @@ function summarizeReviews(
   range: Range,
   now: number
 ): PerformanceReview[] {
+  // Review counts fall when a review is deleted or flips sentiment.
   return definitions.map((definition) => ({
     id: definition.id,
     name: definition.name,
-    positive: summarizePerformanceSeries(
+    positive: summarizeLevelSeries(
       rowsBySelector.get(reviewSeriesId(definition.id, 'positive')) ?? [],
       range,
       now,
       definition.cadenceHours
     ),
-    negative: summarizePerformanceSeries(
+    negative: summarizeLevelSeries(
       rowsBySelector.get(reviewSeriesId(definition.id, 'negative')) ?? [],
       range,
       now,

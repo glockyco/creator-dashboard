@@ -110,6 +110,13 @@
     return value === null || value === 0 ? 'text-fg-muted' : value < 0 ? 'text-danger' : 'text-success';
   }
 
+  // More negative reviews is bad news, so their gains read in the opposite colors.
+  function gainTone(asset: { kind: string; sentiment?: string }, value: number | null) {
+    return asset.kind === 'review' && asset.sentiment === 'negative'
+      ? changeTone(value === null ? null : -value)
+      : changeTone(value);
+  }
+
   function trend(points: PerformanceAsset['points']) {
     if (points.length < 2) return '';
     let low = Infinity;
@@ -229,13 +236,11 @@
                 <td class="px-3 py-3 text-right font-bold text-fg-primary"
                   >{asset.total === null ? 'Awaiting data' : number(asset.total)}</td
                 >
-                <td
-                  class={`px-3 py-3 text-right font-semibold ${asset.dayGain === null ? 'text-fg-muted' : asset.kind === 'review' && asset.sentiment === 'negative' ? 'text-danger' : 'text-success'}`}
-                  >{asset.dayGain === null ? 'Unavailable' : `+${number(asset.dayGain)}`}</td
+                <td class={`px-3 py-3 text-right font-semibold ${gainTone(asset, asset.dayGain)}`}
+                  >{engagementChange(asset.dayGain, false)}</td
                 >
-                <td
-                  class={`px-3 py-3 text-right font-semibold ${asset.periodGain === null ? 'text-fg-muted' : asset.kind === 'review' && asset.sentiment === 'negative' ? 'text-danger' : 'text-success'}`}
-                  >{asset.periodGain === null ? 'Unavailable' : `+${number(asset.periodGain)}`}</td
+                <td class={`px-3 py-3 text-right font-semibold ${gainTone(asset, asset.periodGain)}`}
+                  >{engagementChange(asset.periodGain, false)}</td
                 >
                 <td class="px-4 py-3 text-right">
                   {#if asset.points.length > 1}

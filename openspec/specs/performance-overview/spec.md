@@ -46,6 +46,11 @@ The Overview and performance details SHALL support 7-, 30-, and 90-day ranges. T
 - **WHEN** the selected range or 24-hour interval lacks a usable baseline capture
 - **THEN** the affected change is marked unavailable rather than zero
 
+#### Scenario: A count falls
+
+- **WHEN** a favorite, vote, award, or review count falls within the selected range
+- **THEN** the change is shown as a negative number, and only cumulative views and downloads treat a fall as a counter reset that makes the change unavailable
+
 ### Requirement: Focused performance detail
 
 Selecting a guide or mod SHALL show its trend, current total, absolute 24-hour and selected-range gains, and source freshness. A mod on multiple platforms SHALL keep platform series separate unless their equivalence is explicitly defined.
