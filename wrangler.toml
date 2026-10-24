@@ -35,3 +35,7 @@ max_batch_size = 1
 
 [triggers]
 crons = ["0 * * * *"]
+
+# Keep Worker logs so a failure or a failed Discord delivery leaves a trace outside D1.
+[observability]
+enabled = true

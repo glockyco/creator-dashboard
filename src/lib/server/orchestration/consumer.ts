@@ -67,6 +67,13 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
   } catch (err) {
     const failure = classify(err);
     const errorMessage = err instanceof Error ? err.message : String(err);
+    log('warn', 'source fetch failed', {
+      source_id,
+      tier: failure.tier,
+      status_code: failure.statusCode,
+      error_class: failure.errorClass,
+      attempt: message.attempts
+    });
     const retryDelaySeconds = failure.tier === 'permanent' ? null : (failure.retryAfterSeconds ?? 300);
     const incident = await recordCollectionFailure(env.DB, {
       sourceId: source_id,
