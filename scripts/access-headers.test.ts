@@ -1,5 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { chooseAccessHeaders, isLoopbackBaseUrl, serviceTokenHeaders } from './access-headers.ts';
+
+// The real fixture reads keys that only exist after the local preview has run.
+vi.mock('../e2e/support/access-auth.ts', () => ({
+  accessHeaders: async () => ({ 'Cf-Access-Jwt-Assertion': 'local-fixture-jwt' })
+}));
 
 describe('isLoopbackBaseUrl', () => {
   it.each([
@@ -37,7 +42,9 @@ describe('chooseAccessHeaders', () => {
       'CF-Access-Client-Id': 'id.access',
       'CF-Access-Client-Secret': 'secret'
     });
-    expect(await chooseAccessHeaders('http://127.0.0.1:8788', env)).not.toHaveProperty('CF-Access-Client-Secret');
+    expect(await chooseAccessHeaders('http://127.0.0.1:8788', env)).toEqual({
+      'Cf-Access-Jwt-Assertion': 'local-fixture-jwt'
+    });
   });
 
   it('throws a directive error when targeting a remote URL with no service token', async () => {
