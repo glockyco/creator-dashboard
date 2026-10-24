@@ -20,7 +20,8 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
     return;
   }
 
-  if (!force) {
+  // Only a fresh dispatch is gated: a redelivered retry follows a failure that just set last_run_at.
+  if (!force && message.attempts <= 1) {
     const run = await env.DB.prepare('SELECT last_run_at FROM fetcher_runs WHERE source_id = ?')
       .bind(source_id)
       .first<{ last_run_at: number }>();

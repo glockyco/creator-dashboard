@@ -73,14 +73,14 @@ type FakeMessage = Message<{ source_id: string; dispatch_ts: number; force: bool
   retry: Mock;
 };
 
-function message(body: { source_id: string; dispatch_ts: number; force: boolean }): FakeMessage {
+function message(body: { source_id: string; dispatch_ts: number; force: boolean }, attempts = 1): FakeMessage {
   return {
     body,
     ack: vi.fn(),
     retry: vi.fn(),
     id: 'msg-1',
     timestamp: new Date(),
-    attempts: 1
+    attempts
   } as unknown as FakeMessage;
 }
 
@@ -112,6 +112,17 @@ describe('consumeMessage', () => {
     await consumeMessage(msg, env, 1714838400000);
 
     expect(mocks.fetcher).not.toHaveBeenCalled();
+    expect(msg.ack).toHaveBeenCalledOnce();
+  });
+
+  it('runs a scheduled retry even though the failed attempt just set last_run_at', async () => {
+    mocks.fetcher.mockResolvedValueOnce({ metric_points: [], events: [] });
+    const msg = message({ source_id: 'source-a', dispatch_ts: 1, force: false }, 2);
+    const { env } = dbWithRun({ last_run_at: 1714838100000 });
+
+    await consumeMessage(msg, env, 1714838400000);
+
+    expect(mocks.fetcher).toHaveBeenCalledOnce();
     expect(msg.ack).toHaveBeenCalledOnce();
   });
 
