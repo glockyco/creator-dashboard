@@ -184,6 +184,26 @@ export async function recordCollectionFailure(db: D1Database, input: RecordFailu
   return incident;
 }
 
+/**
+ * Marks the active incident as out of automatic retries. The latest real failure stays the incident's
+ * evidence, and no attempt is recorded because the dead-letter queue does not fetch.
+ */
+export async function markRetriesExhausted(db: D1Database, sourceId: string): Promise<CollectionIncident | null> {
+  await db
+    .prepare(
+      `
+        UPDATE collection_incidents
+        SET latest_tier = 'dlq',
+            next_retry_at = NULL,
+            manual_retry_queued_at = NULL
+        WHERE source_id = ? AND resolved_at IS NULL
+      `
+    )
+    .bind(sourceId)
+    .run();
+  return getActiveIncident(db, sourceId);
+}
+
 export function prepareIncidentResolution(db: D1Database, incidentId: number, resolvedAt: number): D1PreparedStatement {
   return db
     .prepare(

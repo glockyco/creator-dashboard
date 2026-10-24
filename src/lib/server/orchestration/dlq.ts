@@ -1,7 +1,7 @@
 import { getSource } from '$lib/sources/registry';
 import type { JobMsg } from '$lib/types/orchestration';
 import { maybeSendFailureAlert } from '$lib/server/alerts/dedup';
-import { recordCollectionFailure } from '$lib/server/incidents';
+import { markRetriesExhausted } from '$lib/server/incidents';
 import { log } from '$lib/server/log';
 
 export async function consumeDlqMessage(message: Message<JobMsg>, env: Env, now = Date.now()): Promise<void> {
@@ -12,14 +12,13 @@ export async function consumeDlqMessage(message: Message<JobMsg>, env: Env, now 
     return;
   }
 
-  const incident = await recordCollectionFailure(env.DB, {
-    sourceId,
-    ts: now,
-    tier: 'dlq',
-    statusCode: null,
-    error: 'Exhausted queue retries',
-    nextRetryAt: null
-  });
+  const incident = await markRetriesExhausted(env.DB, sourceId);
+  if (!incident) {
+    // A later collection succeeded and resolved the incident, so there is nothing to report.
+    message.ack();
+    return;
+  }
+
   try {
     await maybeSendFailureAlert(env, incident, now);
   } catch (notificationError) {

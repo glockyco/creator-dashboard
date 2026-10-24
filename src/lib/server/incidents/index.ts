@@ -2,6 +2,7 @@ export {
   MANUAL_RETRY_GUARD_MS,
   claimManualRetry,
   getActiveIncident,
+  markRetriesExhausted,
   prepareIncidentResolution,
   recordCollectionFailure,
   releaseManualRetry,
