@@ -9,14 +9,14 @@ importers:
   .:
     dependencies:
       jose:
-        specifier: latest
+        specifier: ^6.2.12
         version: 6.2.12
       zod:
-        specifier: latest
+        specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: latest
+        specifier: ^5.20260924.1
         version: 5.20260924.1
       '@commitlint/cli':
         specifier: ^21.0.2
@@ -25,52 +25,52 @@ importers:
         specifier: ^21.0.2
         version: 21.2.3
       '@eslint/js':
-        specifier: latest
+        specifier: ^10.0.1
         version: 10.0.1(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))
       '@playwright/test':
-        specifier: latest
+        specifier: ^1.63.0
         version: 1.63.0
       '@sveltejs/adapter-cloudflare':
-        specifier: latest
+        specifier: ^7.2.9
         version: 7.2.9(@sveltejs/kit@2.70.3(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0)))(svelte@5.57.1(@typescript-eslint/types@8.70.1))(typescript@6.0.3)(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0)))(wrangler@4.137.0(@cloudflare/workers-types@5.20260924.1)(@types/node@26.6.2))
       '@sveltejs/kit':
-        specifier: latest
+        specifier: ^2.70.3
         version: 2.70.3(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0)))(svelte@5.57.1(@typescript-eslint/types@8.70.1))(typescript@6.0.3)(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0))
       '@sveltejs/vite-plugin-svelte':
-        specifier: latest
+        specifier: ^7.3.1
         version: 7.3.1(svelte@5.57.1(@typescript-eslint/types@8.70.1))(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0))
       '@tailwindcss/vite':
-        specifier: latest
+        specifier: ^4.3.3
         version: 4.3.3(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0))
       '@types/node':
-        specifier: latest
+        specifier: ^26.6.2
         version: 26.6.2
       eslint:
-        specifier: latest
+        specifier: ^10.11.0
         version: 10.11.0(jiti@2.7.0)(supports-color@10.2.2)
       eslint-config-prettier:
-        specifier: latest
+        specifier: ^10.1.8
         version: 10.1.8(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))
       eslint-plugin-svelte:
-        specifier: latest
+        specifier: ^3.23.0
         version: 3.23.0(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(svelte@5.57.1(@typescript-eslint/types@8.70.1))
       globals:
         specifier: ^17.6.0
         version: 17.12.0
       prettier:
-        specifier: latest
+        specifier: ^3.9.9
         version: 3.9.9
       prettier-plugin-svelte:
-        specifier: latest
+        specifier: ^4.1.1
         version: 4.1.1(prettier@3.9.9)(svelte@5.57.1(@typescript-eslint/types@8.70.1))
       svelte:
-        specifier: latest
+        specifier: ^5.57.1
         version: 5.57.1(@typescript-eslint/types@8.70.1)
       svelte-check:
-        specifier: latest
+        specifier: ^4.7.6
         version: 4.7.6(picomatch@4.0.7)(svelte@5.57.1(@typescript-eslint/types@8.70.1))(typescript@6.0.3)
       tailwindcss:
-        specifier: latest
+        specifier: ^4.3.3
         version: 4.3.3
       typescript:
         specifier: ^6.0.3
@@ -79,13 +79,13 @@ importers:
         specifier: ^8.59.3
         version: 8.70.1(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
       vite:
-        specifier: latest
+        specifier: ^8.3.0
         version: 8.3.0(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0)
       vitest:
-        specifier: latest
+        specifier: ^5.0.1
         version: 5.0.1(@types/node@26.6.2)(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.1)(jiti@2.7.0))
       wrangler:
-        specifier: latest
+        specifier: ^4.137.0
         version: 4.137.0(@cloudflare/workers-types@5.20260924.1)(@types/node@26.6.2)
 
 packages:
