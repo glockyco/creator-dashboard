@@ -11,6 +11,8 @@ export type PerformanceSeriesSummary = {
   periodGain: number | null;
   points: PerformancePoint[];
   lastCapturedAt: number | null;
+  /** The latest capture is older than the boundary tolerance, so the total is not current and gains are void. */
+  stale: boolean;
 };
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -73,7 +75,8 @@ function summarizeSeries(
       dayGain: null,
       periodGain: null,
       points: trend,
-      lastCapturedAt: null
+      lastCapturedAt: null,
+      stale: false
     };
   }
 
@@ -88,7 +91,8 @@ function summarizeSeries(
     dayGain,
     periodGain,
     points: trend,
-    lastCapturedAt: latest.ts
+    lastCapturedAt: latest.ts,
+    stale: !latestIsEligible
   };
 }
 

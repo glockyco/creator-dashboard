@@ -27,6 +27,7 @@ export type PerformanceAsset = {
   points: { ts: number; value: number }[];
   href: string | null;
   lastCapturedAt: number | null;
+  stale: boolean;
   guideMetrics: {
     favorites: PerformanceSeriesSummary;
     approval: PerformanceSeriesSummary;

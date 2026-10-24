@@ -22,7 +22,8 @@ describe('summarizePerformanceSeries', () => {
       dayGain: 5,
       periodGain: 30,
       points: [point(14, 120), point(20, 145), point(21, 150)],
-      lastCapturedAt: NOW
+      lastCapturedAt: NOW,
+      stale: false
     });
   });
 
@@ -83,13 +84,20 @@ describe('summarizePerformanceSeries', () => {
     expect(summary.periodGain).toBeNull();
   });
 
+  it('marks a series stale and voids its gains when the latest capture is too old', () => {
+    const summary = summarizePerformanceSeries([point(7, 100), point(19, 140)], '7d', NOW, 1);
+
+    expect(summary).toMatchObject({ total: 140, dayGain: null, periodGain: null, stale: true });
+  });
+
   it('keeps every value unavailable when no capture exists', () => {
     expect(summarizePerformanceSeries([], '90d', NOW, 1)).toEqual({
       total: null,
       dayGain: null,
       periodGain: null,
       points: [],
-      lastCapturedAt: null
+      lastCapturedAt: null,
+      stale: false
     });
   });
 });

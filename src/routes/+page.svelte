@@ -84,6 +84,8 @@
     });
   }
 
+  const collectedFormat = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+
   // More negative reviews is bad news, so their gains read in the opposite colors.
   function gainTone(asset: OverviewRow, value: number | null) {
     return asset.kind === 'review' && asset.sentiment === 'negative'
@@ -204,6 +206,13 @@
                     <span
                       class={`mt-1 block text-xs font-normal ${asset.kind === 'review' ? (asset.sentiment === 'positive' ? 'text-success' : 'text-danger') : 'text-fg-muted'}`}
                       >{asset.platform}</span
+                    >
+                  {/if}
+                  {#if asset.stale && asset.lastCapturedAt !== null}
+                    <a
+                      href={resolve('/issues')}
+                      class="mt-1 block text-xs font-normal text-warning underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-glockyco"
+                      >Not collected since {collectedFormat.format(new Date(asset.lastCapturedAt))}</a
                     >
                   {/if}
                 </th>
