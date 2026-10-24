@@ -134,7 +134,25 @@ describe('getIssues', () => {
     await expect(getIssueSummary({ prepare } as unknown as D1Database, now)).resolves.toEqual({
       activeCount: 1,
       issues: [{ id: 17, sourceId: 'failed', name: 'FAILED' }],
-      latestSuccessAt: now - 2_000
+      collectedThrough: null
+    });
+  });
+
+  it('reports the oldest success so one healthy collector cannot hide a stale one', async () => {
+    const runs = ['retrying', 'failed', 'never', 'stale', 'healthy', 'recovered'].map((sourceId, index) => ({
+      source_id: sourceId,
+      last_success_at: now - index * 1_000
+    }));
+    const prepare = vi.fn((sql: string) => ({
+      all: vi.fn().mockResolvedValue({
+        results: sql.includes('FROM collection_incidents')
+          ? []
+          : [...runs, { source_id: 'retired', last_success_at: now - 99_000 }]
+      })
+    }));
+
+    await expect(getIssueSummary({ prepare } as unknown as D1Database, now)).resolves.toMatchObject({
+      collectedThrough: now - 5_000
     });
   });
 });

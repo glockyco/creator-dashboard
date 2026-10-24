@@ -39,7 +39,8 @@ export type IssueDetail = {
 export type IssueSummary = {
   activeCount: number;
   issues: Array<{ id: number; sourceId: string; name: string }>;
-  latestSuccessAt: number | null;
+  /** Every retained collector has succeeded at or after this time; null while any has never succeeded. */
+  collectedThrough: number | null;
 };
 
 type RunRow = {
@@ -223,15 +224,9 @@ export async function getIssueSummary(db: D1Database, _now = Date.now()): Promis
       sourceId: incident.source_id,
       name: sourceById[incident.source_id]?.name ?? incident.source_id
     }));
-  const latestSuccessAt = runsResult.results
-    .filter((run) => sourceById[run.source_id] !== undefined)
-    .reduce<number | null>(
-      (latest, run) =>
-        run.last_success_at !== null && (latest === null || run.last_success_at > latest)
-          ? run.last_success_at
-          : latest,
-      null
-    );
+  const successBySource = new Map(runsResult.results.map((run) => [run.source_id, run.last_success_at]));
+  const successes = sources.map((source) => successBySource.get(source.id) ?? null);
+  const collectedThrough = successes.includes(null) ? null : Math.min(...(successes as number[]));
 
-  return { activeCount: issues.length, issues, latestSuccessAt };
+  return { activeCount: issues.length, issues, collectedThrough };
 }

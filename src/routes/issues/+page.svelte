@@ -4,6 +4,10 @@
 
   let { data }: { data: PageData } = $props();
 
+  const staleCount = $derived(
+    data.collectors.filter((collector) => collector.state === 'stale' || collector.state === 'never-run').length
+  );
+
   const timestampFormat = new Intl.DateTimeFormat('en-GB', {
     dateStyle: 'medium',
     timeStyle: 'short'
@@ -51,8 +55,14 @@
   >
     <div class="flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
       <h2 id="active-issues-heading" class="text-lg font-semibold tracking-tight text-fg-primary">Active issues</h2>
-      <span class={`text-xs font-medium ${data.activeIssues.length > 0 ? 'text-danger' : 'text-success'}`}>
-        {data.activeIssues.length > 0 ? `${data.activeIssues.length} need attention` : 'All collectors clear'}
+      <span
+        class={`text-xs font-medium ${data.activeIssues.length > 0 ? 'text-danger' : staleCount > 0 ? 'text-warning' : 'text-success'}`}
+      >
+        {data.activeIssues.length > 0
+          ? `${data.activeIssues.length} need attention`
+          : staleCount > 0
+            ? `${staleCount} not collected recently`
+            : 'All collectors clear'}
       </span>
     </div>
 

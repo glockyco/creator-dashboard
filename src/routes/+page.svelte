@@ -142,9 +142,9 @@
     <div>
       <h1 class="text-3xl font-bold tracking-tight text-fg-primary">Overview</h1>
       <p class="mt-1 text-xs text-fg-muted">
-        {data.issueSummary.latestSuccessAt === null
-          ? 'No successful collection yet'
-          : `Last successful collection ${new Date(data.issueSummary.latestSuccessAt).toLocaleString()}`}
+        {data.issueSummary.collectedThrough === null
+          ? 'Some collectors have not collected yet'
+          : `Every collector has collected since ${new Date(data.issueSummary.collectedThrough).toLocaleString()}`}
       </p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
