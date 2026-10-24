@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { FetchError, fetchJson } from './http';
+import { InvalidResponseError, fetchJson } from './http';
 
 beforeEach(() => vi.unstubAllGlobals());
 
@@ -22,11 +22,17 @@ describe('fetchJson', () => {
     await expect(fetchJson('https://example.invalid/api')).rejects.toMatchObject({ status: 401, message: 'bad token' });
   });
 
-  it('throws FetchError status 200 for invalid JSON', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('not json', { status: 200 })));
+  it('throws InvalidResponseError naming the redirect target for a non-JSON body', async () => {
+    const response = new Response('<html>', { status: 200 });
+    Object.defineProperty(response, 'redirected', { value: true });
+    Object.defineProperty(response, 'url', { value: 'https://store.example/?key=secret' });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response));
 
     const error = await fetchJson('https://example.invalid/api').catch((err: unknown) => err);
-    expect(error).toBeInstanceOf(FetchError);
-    expect(error).toMatchObject({ status: 200 });
+    expect(error).toBeInstanceOf(InvalidResponseError);
+    expect(error).toMatchObject({
+      status: 200,
+      message: 'invalid JSON response after redirect to https://store.example/'
+    });
   });
 });

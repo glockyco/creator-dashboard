@@ -12,6 +12,17 @@ export class FetchError extends Error {
   }
 }
 
+/** The upstream answered, but not with the data the connector depends on. Retrying will not help. */
+export class InvalidResponseError extends Error {
+  status: number | null;
+
+  constructor(message: string, status: number | null = null) {
+    super(message);
+    this.name = 'InvalidResponseError';
+    this.status = status;
+  }
+}
+
 type FetchJsonOptions<T> = RequestInit & {
   timeoutMs?: number;
   schema?: z.ZodType<T>;
@@ -31,7 +42,12 @@ export async function fetchJson<T>(url: string | URL, options: FetchJsonOptions<
     try {
       json = text.length > 0 ? JSON.parse(text) : null;
     } catch {
-      throw new FetchError(200, 'invalid JSON response', response.headers);
+      // A retired endpoint often redirects to an HTML page; name the target, without its query string.
+      const target = response.redirected ? new URL(response.url) : null;
+      throw new InvalidResponseError(
+        target ? `invalid JSON response after redirect to ${target.origin}${target.pathname}` : 'invalid JSON response',
+        response.status
+      );
     }
 
     return schema ? schema.parse(json) : (json as T);

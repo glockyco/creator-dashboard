@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { fetchJson } from '../http';
+import { fetchJson, InvalidResponseError } from '../http';
 import type { FetcherInput, FetcherOutput } from '../types';
 
 const Config = z.object({ mods: z.array(z.string().min(1)).min(1) });
@@ -26,7 +26,7 @@ export async function fetchErenshorVaultMods({ source, now }: FetcherInput): Pro
   });
   const missingMods = config.mods.filter((mod) => !matchedConfiguredMods.has(mod));
   if (missingMods.length > 0) {
-    throw new Error(`Erenshor Vault did not return configured mod(s): ${missingMods.join(', ')}`);
+    throw new InvalidResponseError(`Erenshor Vault did not return configured mod(s): ${missingMods.join(', ')}`);
   }
 
   return {

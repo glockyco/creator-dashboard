@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { describe, expect, it, vi } from 'vitest';
-import { FetchError } from '$lib/connectors/http';
+import { FetchError, InvalidResponseError } from '$lib/connectors/http';
 import { classify, parseRetryAfter } from './errors';
 
 describe('orchestration error classification', () => {
@@ -40,6 +40,17 @@ describe('orchestration error classification', () => {
       retryAfterSeconds: 42,
       errorClass: 'rate_limited'
     });
+  });
+
+  it('classifies responses that retrying cannot fix as permanent', () => {
+    expect(classify(new InvalidResponseError('invalid JSON response', 200))).toMatchObject({
+      tier: 'permanent',
+      statusCode: 200,
+      errorClass: 'invalid_response'
+    });
+    expect(classify(new FetchError(410, 'gone'))).toMatchObject({ tier: 'permanent', statusCode: 410 });
+    expect(classify(new FetchError(400, 'bad request'))).toMatchObject({ tier: 'permanent', statusCode: 400 });
+    expect(classify(new FetchError(408, 'timeout'))).toMatchObject({ tier: 'transient', statusCode: 408 });
   });
 
   it('classifies 5xx and unknown errors as transient', () => {
