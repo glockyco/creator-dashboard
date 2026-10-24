@@ -58,8 +58,9 @@ describe('runWatchdog', () => {
 
   it('opens and alerts a stale incident for a collector that stopped succeeding without failing', async () => {
     const { env, incident } = setup(`
-      INSERT INTO fetcher_runs VALUES ('thunderstore-wowmuch', ${NOW - 3 * HOUR}, ${NOW - 3 * HOUR}, 'success', NULL, 0);
-      INSERT INTO fetcher_runs VALUES ('steam-guide-ak', ${NOW - HOUR}, ${NOW - HOUR}, 'success', NULL, 0);
+      INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures)
+      VALUES ('thunderstore-wowmuch', ${NOW - 3 * HOUR}, ${NOW - 3 * HOUR}, 'success', NULL, 0),
+             ('steam-guide-ak', ${NOW - HOUR}, ${NOW - HOUR}, 'success', NULL, 0);
     `);
 
     await runWatchdog(env, NOW);

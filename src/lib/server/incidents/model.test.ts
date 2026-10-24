@@ -65,7 +65,7 @@ describe('collection incident persistence', () => {
   it('keeps one incident through failures and recovery, then opens a new incident', async () => {
     const { sqlite, d1 } = d1Fixture();
     sqlite.exec(`
-      INSERT INTO fetcher_runs
+      INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures)
       VALUES ('steam-guide-afallon', 50, 50, 'success', NULL, 0);
     `);
 
@@ -75,7 +75,9 @@ describe('collection incident persistence', () => {
       tier: 'transient',
       statusCode: 503,
       error: 'temporary outage',
-      nextRetryAt: 400
+      nextRetryAt: 400,
+      scheduled: true,
+      endsManualRetry: false
     });
     const second = await recordCollectionFailure(d1, {
       sourceId: 'steam-guide-afallon',
@@ -83,7 +85,9 @@ describe('collection incident persistence', () => {
       tier: 'permanent',
       statusCode: 401,
       error: 'complete authentication failure',
-      nextRetryAt: null
+      nextRetryAt: null,
+      scheduled: true,
+      endsManualRetry: false
     });
 
     expect(second.id).toBe(first.id);
@@ -129,13 +133,28 @@ describe('collection incident persistence', () => {
       tier: 'transient',
       statusCode: 502,
       error: 'new outage',
-      nextRetryAt: 600
+      nextRetryAt: 600,
+      scheduled: true,
+      endsManualRetry: false
     });
     expect(later.id).not.toBe(first.id);
     expect(later).toMatchObject({ attemptCount: 1, lastSuccessAt: 250, nextRetryAt: 600 });
 
     await expect(claimManualRetry(d1, later.id, 'steam-guide-afallon', 700)).resolves.toBe(true);
     await expect(claimManualRetry(d1, later.id, 'steam-guide-afallon', 701)).resolves.toBe(false);
+
+    // A scheduled failure while the manual retry chain is still running must not reopen the button.
+    await recordCollectionFailure(d1, {
+      sourceId: 'steam-guide-afallon',
+      ts: 702,
+      tier: 'transient',
+      statusCode: 502,
+      error: 'still down',
+      nextRetryAt: 1_002,
+      scheduled: true,
+      endsManualRetry: false
+    });
+    await expect(claimManualRetry(d1, later.id, 'steam-guide-afallon', 703)).resolves.toBe(false);
     await releaseManualRetry(d1, later.id, 700);
     await expect(claimManualRetry(d1, later.id, 'steam-guide-afallon', 701)).resolves.toBe(true);
   });

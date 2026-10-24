@@ -20,23 +20,47 @@ describe('successStatements', () => {
     const { sqlite, d1 } = d1Fixture();
 
     await d1.batch(
-      successStatements(d1, 'steam-reviews-erenshor', 10_000, {
-        metric_points: [],
-        events: [review('Needs work.', false)]
-      })
+      successStatements(
+        d1,
+        'steam-reviews-erenshor',
+        10_000,
+        { metric_points: [], events: [review('Needs work.', false)] },
+        true
+      )
     );
     await d1.batch(
-      successStatements(d1, 'steam-reviews-erenshor', 20_000, {
-        metric_points: [
-          { source_id: 'steam-reviews-erenshor', metric: 'review_total', ts: 20_000, value: 1, dimensions: null }
-        ],
-        events: [review('Fixed now, great.', true, 5_000)]
-      })
+      successStatements(
+        d1,
+        'steam-reviews-erenshor',
+        20_000,
+        {
+          metric_points: [
+            { source_id: 'steam-reviews-erenshor', metric: 'review_total', ts: 20_000, value: 1, dimensions: null }
+          ],
+          events: [review('Fixed now, great.', true, 5_000)]
+        },
+        true
+      )
     );
 
     expect(sqlite.prepare('SELECT ts, title, body, metadata FROM events').all()).toEqual([
       { ts: 1_000, title: 'Positive review', body: 'Fixed now, great.', metadata: '{"voted_up":true}' }
     ]);
     expect(sqlite.prepare('SELECT last_success_at FROM fetcher_runs').get()).toEqual({ last_success_at: 20_000 });
+  });
+
+  it('records a manual run without moving the scheduled-run time the cadence gate uses', async () => {
+    const { sqlite, d1 } = d1Fixture();
+
+    await d1.batch(successStatements(d1, 'steam-guide-ak', 10_000, { metric_points: [], events: [] }, true));
+    await d1.batch(successStatements(d1, 'steam-guide-ak', 40_000, { metric_points: [], events: [] }, false));
+
+    expect(
+      sqlite.prepare('SELECT last_run_at, last_scheduled_run_at, last_success_at FROM fetcher_runs').get()
+    ).toEqual({
+      last_run_at: 40_000,
+      last_scheduled_run_at: 10_000,
+      last_success_at: 40_000
+    });
   });
 });

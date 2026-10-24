@@ -20,13 +20,14 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
     return;
   }
 
-  // Only a fresh dispatch is gated: a redelivered retry follows a failure that just set last_run_at.
+  // Only a fresh scheduled dispatch is gated, and only by earlier scheduled runs: a redelivered retry follows
+  // a failure that just ran, and a manual retry must not push the next hourly collection back.
   if (!force && message.attempts <= 1) {
-    const run = await env.DB.prepare('SELECT last_run_at FROM fetcher_runs WHERE source_id = ?')
+    const run = await env.DB.prepare('SELECT last_scheduled_run_at FROM fetcher_runs WHERE source_id = ?')
       .bind(source_id)
-      .first<{ last_run_at: number }>();
+      .first<{ last_scheduled_run_at: number | null }>();
     const cadenceMs = source.cadenceHours * 3_600_000;
-    if (run && now - run.last_run_at < cadenceMs - 300_000) {
+    if (run?.last_scheduled_run_at != null && now - run.last_scheduled_run_at < cadenceMs - 300_000) {
       message.ack();
       return;
     }
@@ -35,7 +36,7 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
   try {
     const output = await source.fetcher({ source, env, now });
     const activeIncident = await getActiveIncident(env.DB, source_id);
-    const statements = successStatements(env.DB, source_id, now, output);
+    const statements = successStatements(env.DB, source_id, now, output, !force);
     if (activeIncident) statements.push(prepareIncidentResolution(env.DB, activeIncident.id, now));
     await env.DB.batch(statements);
     log('info', 'source fetch succeeded', {
@@ -81,7 +82,9 @@ export async function consumeMessage(message: Message<JobMsg>, env: Env, now = D
       tier: failure.tier,
       statusCode: failure.statusCode,
       error: errorMessage,
-      nextRetryAt: retryDelaySeconds === null ? null : now + retryDelaySeconds * 1_000
+      nextRetryAt: retryDelaySeconds === null ? null : now + retryDelaySeconds * 1_000,
+      scheduled: !force,
+      endsManualRetry: force && failure.tier === 'permanent'
     });
 
     if (failure.tier === 'permanent') {

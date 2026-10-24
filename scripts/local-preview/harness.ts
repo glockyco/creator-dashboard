@@ -173,8 +173,8 @@ const retainedSourceIds = [
 const runSeedSql = retainedSourceIds
   .map((sourceId) =>
     sourceId === 'erenshor-wiki-recent'
-      ? `INSERT INTO fetcher_runs VALUES ('${sourceId}', ${seedNow - hourMs}, ${seedNow - 2 * dayMs}, 'permanent_failure', 'Preview seed: wiki request rejected.', 2);`
-      : `INSERT INTO fetcher_runs VALUES ('${sourceId}', ${seedNow - hourMs}, ${seedNow - hourMs}, 'success', NULL, 0);`
+      ? `INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures) VALUES ('${sourceId}', ${seedNow - hourMs}, ${seedNow - 2 * dayMs}, 'permanent_failure', 'Preview seed: wiki request rejected.', 2);`
+      : `INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures) VALUES ('${sourceId}', ${seedNow - hourMs}, ${seedNow - hourMs}, 'success', NULL, 0);`
   )
   .join('\n');
 

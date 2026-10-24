@@ -30,9 +30,14 @@ export type RecordFailureInput = {
   statusCode: number | null;
   error: string;
   nextRetryAt: number | null;
+  /** A cron-dispatched run, which advances the cadence gate. Manual retries do not. */
+  scheduled: boolean;
+  /** The failure ends a manual retry chain, so the retry button may be offered again. */
+  endsManualRetry: boolean;
 };
 
-export const MANUAL_RETRY_GUARD_MS = 15 * 60_000;
+// A forced retry chain runs up to six attempts five or more minutes apart before reaching the dead-letter queue.
+export const MANUAL_RETRY_GUARD_MS = 45 * 60_000;
 
 /** A collector is stale when it has gone two expected collection intervals without a success. */
 export function isStale(lastSuccessAt: number, cadenceHours: number, now: number): boolean {
@@ -137,7 +142,7 @@ export async function getActiveIncident(db: D1Database, sourceId: string): Promi
 }
 
 export async function recordCollectionFailure(db: D1Database, input: RecordFailureInput): Promise<CollectionIncident> {
-  const { sourceId, ts, tier, statusCode, error, nextRetryAt } = input;
+  const { sourceId, ts, tier, statusCode, error, nextRetryAt, scheduled, endsManualRetry } = input;
   await db.batch([
     db
       .prepare(
@@ -174,11 +179,11 @@ export async function recordCollectionFailure(db: D1Database, input: RecordFailu
               latest_error = ?,
               attempt_count = attempt_count + 1,
               next_retry_at = ?,
-              manual_retry_queued_at = NULL
+              manual_retry_queued_at = CASE WHEN ? THEN NULL ELSE manual_retry_queued_at END
           WHERE source_id = ? AND resolved_at IS NULL
         `
       )
-      .bind(ts, tier, statusCode, error, nextRetryAt, sourceId),
+      .bind(ts, tier, statusCode, error, nextRetryAt, endsManualRetry ? 1 : 0, sourceId),
     db
       .prepare(
         `
@@ -195,17 +200,18 @@ export async function recordCollectionFailure(db: D1Database, input: RecordFailu
       .prepare(
         `
           INSERT INTO fetcher_runs (
-            source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures
+            source_id, last_run_at, last_scheduled_run_at, last_success_at, last_status, last_error, consecutive_failures
           )
-          VALUES (?, ?, NULL, ?, ?, 1)
+          VALUES (?, ?, ?, NULL, ?, ?, 1)
           ON CONFLICT(source_id) DO UPDATE SET
             last_run_at = excluded.last_run_at,
+            last_scheduled_run_at = COALESCE(excluded.last_scheduled_run_at, fetcher_runs.last_scheduled_run_at),
             last_status = excluded.last_status,
             last_error = excluded.last_error,
             consecutive_failures = fetcher_runs.consecutive_failures + 1
         `
       )
-      .bind(sourceId, ts, `${tier}_failure`, error)
+      .bind(sourceId, ts, scheduled ? ts : null, `${tier}_failure`, error)
   ]);
 
   const incident = await getActiveIncident(db, sourceId);

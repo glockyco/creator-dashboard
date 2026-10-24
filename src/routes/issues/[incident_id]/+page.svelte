@@ -184,7 +184,8 @@
           </p>
         {:else}
           <p class="mt-3 text-sm leading-6 text-fg-muted">
-            A manual retry queues one forced collection. The issue remains active until that collection succeeds.
+            A manual retry queues a forced collection, which retries on its own after temporary failures. The issue
+            remains active until a collection succeeds.
           </p>
           <button
             class="mt-4 w-full rounded-lg bg-glockyco px-4 py-2.5 text-sm font-semibold text-bg-primary outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary disabled:cursor-not-allowed disabled:opacity-50"

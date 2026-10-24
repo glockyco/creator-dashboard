@@ -84,7 +84,7 @@ function message(body: { source_id: string; dispatch_ts: number; force: boolean 
   } as unknown as FakeMessage;
 }
 
-function dbWithRun(run: { last_run_at: number } | null = null) {
+function dbWithRun(run: { last_scheduled_run_at: number | null } | null = null) {
   const batch = vi.fn().mockResolvedValue(undefined);
   const first = vi.fn().mockResolvedValue(run);
   const prepare = vi.fn((_sql: string) => ({
@@ -107,7 +107,7 @@ describe('consumeMessage', () => {
 
   it('acks without fetching when cadence gate says the source is not due', async () => {
     const msg = message({ source_id: 'source-a', dispatch_ts: 1, force: false });
-    const { env } = dbWithRun({ last_run_at: 1714838300000 });
+    const { env } = dbWithRun({ last_scheduled_run_at: 1714838300000 });
 
     await consumeMessage(msg, env, 1714838400000);
 
@@ -115,10 +115,10 @@ describe('consumeMessage', () => {
     expect(msg.ack).toHaveBeenCalledOnce();
   });
 
-  it('runs a scheduled retry even though the failed attempt just set last_run_at', async () => {
+  it('runs a scheduled retry even though the failed attempt just ran', async () => {
     mocks.fetcher.mockResolvedValueOnce({ metric_points: [], events: [] });
     const msg = message({ source_id: 'source-a', dispatch_ts: 1, force: false }, 2);
-    const { env } = dbWithRun({ last_run_at: 1714838100000 });
+    const { env } = dbWithRun({ last_scheduled_run_at: 1714838100000 });
 
     await consumeMessage(msg, env, 1714838400000);
 

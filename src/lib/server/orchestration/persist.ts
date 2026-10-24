@@ -4,7 +4,9 @@ export function successStatements(
   db: D1Database,
   sourceId: string,
   now: number,
-  output: FetcherOutput
+  output: FetcherOutput,
+  /** A cron-dispatched run, which advances the cadence gate. Manual retries do not. */
+  scheduled: boolean
 ): D1PreparedStatement[] {
   return [
     ...output.metric_points.map((point) =>
@@ -48,16 +50,19 @@ export function successStatements(
     db
       .prepare(
         `
-      INSERT INTO fetcher_runs (source_id, last_run_at, last_success_at, last_status, last_error, consecutive_failures)
-      VALUES (?, ?, ?, 'success', NULL, 0)
+      INSERT INTO fetcher_runs (
+        source_id, last_run_at, last_scheduled_run_at, last_success_at, last_status, last_error, consecutive_failures
+      )
+      VALUES (?, ?, ?, ?, 'success', NULL, 0)
       ON CONFLICT(source_id) DO UPDATE SET
         last_run_at = excluded.last_run_at,
+        last_scheduled_run_at = COALESCE(excluded.last_scheduled_run_at, fetcher_runs.last_scheduled_run_at),
         last_success_at = excluded.last_success_at,
         last_status = 'success',
         last_error = NULL,
         consecutive_failures = 0
     `
       )
-      .bind(sourceId, now, now)
+      .bind(sourceId, now, scheduled ? now : null, now)
   ];
 }
