@@ -40,6 +40,13 @@ describe('assertAccessJwt', () => {
     await expect(assertAccessJwt(request, env)).resolves.toMatchObject({ email: 'johann@example.com' });
   });
 
+  it('refuses every token when the audience is not configured', async () => {
+    const token = await signedToken({ aud: 'another-access-app' });
+    const request = new Request('https://dashboard.glockyco.com/', { headers: { 'Cf-Access-Jwt-Assertion': token } });
+
+    await expect(assertAccessJwt(request, { ...env, ACCESS_AUD: '' })).rejects.toThrow('not configured');
+  });
+
   it('rejects missing, expired, wrong audience, wrong issuer, and malformed tokens', async () => {
     await expect(assertAccessJwt(new Request('https://dashboard.glockyco.com/'), env)).rejects.toMatchObject({
       status: 401

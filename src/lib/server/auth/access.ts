@@ -18,6 +18,10 @@ export function resetAccessJwksCacheForTests(): void {
 }
 
 export async function assertAccessJwt(request: Request, env: AccessJwtEnv): Promise<AccessUser> {
+  // jose skips the audience check when it is undefined, so a missing secret would accept a token
+  // from any Access application on the team. Fail closed instead.
+  if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) throw new Error('Access team domain or audience is not configured');
+
   const token = request.headers.get('Cf-Access-Jwt-Assertion');
   if (!token) throw new AuthError('missing Access JWT');
 
