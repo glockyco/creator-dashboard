@@ -1,4 +1,4 @@
-export type IncidentFailureTier = 'transient' | 'rate_limited' | 'permanent' | 'dlq';
+export type IncidentFailureTier = 'transient' | 'rate_limited' | 'permanent' | 'dlq' | 'stale';
 export type FailureNotificationState = 'not_requested' | 'sending' | 'sent' | 'failed';
 export type RecoveryNotificationState = 'not_required' | 'pending' | 'sending' | 'sent' | 'failed';
 
@@ -33,6 +33,35 @@ export type RecordFailureInput = {
 };
 
 export const MANUAL_RETRY_GUARD_MS = 15 * 60_000;
+
+/** A collector is stale when it has gone two expected collection intervals without a success. */
+export function isStale(lastSuccessAt: number, cadenceHours: number, now: number): boolean {
+  return now - lastSuccessAt > cadenceHours * 2 * 3_600_000;
+}
+
+/** Opens an incident for a collector that stopped succeeding without recording a failure. */
+export async function openStaleIncident(
+  db: D1Database,
+  sourceId: string,
+  lastSuccessAt: number | null,
+  now: number
+): Promise<CollectionIncident | null> {
+  const since = lastSuccessAt === null ? 'its first run' : new Date(lastSuccessAt).toISOString();
+  await db
+    .prepare(
+      `
+        INSERT INTO collection_incidents (
+          source_id, first_failure_at, last_failure_at, latest_tier, latest_status_code, latest_error,
+          attempt_count, last_success_at, next_retry_at, failure_notification_state, recovery_notification_state
+        )
+        SELECT ?, ?, ?, 'stale', NULL, ?, 0, ?, NULL, 'not_requested', 'not_required'
+        WHERE NOT EXISTS (SELECT 1 FROM collection_incidents WHERE source_id = ? AND resolved_at IS NULL)
+      `
+    )
+    .bind(sourceId, now, now, `No successful collection since ${since}.`, lastSuccessAt, sourceId)
+    .run();
+  return getActiveIncident(db, sourceId);
+}
 
 export type IncidentRow = {
   id: number;

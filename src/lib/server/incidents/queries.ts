@@ -1,5 +1,5 @@
 import { sources, type SourceDef } from '$lib/sources/registry';
-import { incidentColumns, mapIncident, type CollectionIncident, type IncidentRow } from './model';
+import { incidentColumns, isStale, mapIncident, type CollectionIncident, type IncidentRow } from './model';
 
 export type IssueState = 'retrying' | 'failed' | 'recovered';
 export type CollectorState = 'never-run' | 'stale' | 'healthy' | 'retrying' | 'failed' | 'recovered';
@@ -140,7 +140,7 @@ export async function getIssues(
       state = 'never-run';
     } else if (run.last_status !== 'success' || run.last_success_at === null) {
       state = 'failed';
-    } else if (now - run.last_success_at > source.cadenceHours * 2 * 3_600_000) {
+    } else if (isStale(run.last_success_at, source.cadenceHours, now)) {
       state = 'stale';
     } else if (latestIncident?.resolvedAt === run.last_success_at) {
       state = 'recovered';
