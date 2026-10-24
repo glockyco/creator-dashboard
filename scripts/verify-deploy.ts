@@ -19,8 +19,13 @@ export function parseVerifyDeployArgs(argv: string[]): VerifyDeployArgs {
 }
 
 async function requireOk(url: string, headers: Record<string, string>): Promise<void> {
-  const response = await fetch(url, { headers });
-  if (!response.ok) throw new Error(`deploy verify failed ${url}: ${response.status} ${await response.text()}`);
+  // Access answers an unauthenticated request with a redirect to its login page, which would follow to a 200.
+  const response = await fetch(url, { headers, redirect: 'manual' });
+  const body = await response.text();
+  if (!response.ok || !body.includes('Creator Pulse'))
+    throw new Error(
+      `deploy verify failed ${url}: ${response.status} ${response.headers.get('location') ?? body.slice(0, 200)}`
+    );
 }
 
 async function main(): Promise<void> {
