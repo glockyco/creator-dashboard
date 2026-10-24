@@ -1,5 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
+  import { invalidateAll } from '$app/navigation';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -7,6 +8,16 @@
   let locallyQueued = $state(false);
   const retryQueued = $derived(data.retryQueued || locallyQueued);
   let retryError = $state<string | null>(null);
+
+  // While a manual retry is queued, reload the issue so recovery or a new failure appears without a reload.
+  $effect(() => {
+    if (!retryQueued || data.incident.resolvedAt !== null) return;
+    const timer = setInterval(async () => {
+      await invalidateAll();
+      if (!data.retryQueued) locallyQueued = false;
+    }, 10_000);
+    return () => clearInterval(timer);
+  });
 
   const timestampFormat = new Intl.DateTimeFormat('en-GB', {
     dateStyle: 'medium',
@@ -16,6 +27,15 @@
   function formatTimestamp(value: number | null): string {
     return value === null ? 'Not available' : timestampFormat.format(new Date(value));
   }
+
+  const notificationLabels: Record<string, string> = {
+    not_requested: 'Not sent yet',
+    not_required: 'Not needed',
+    pending: 'Pending',
+    sending: 'Sending',
+    sent: 'Sent',
+    failed: 'Failed, will retry'
+  };
 
   function notificationTone(state: string): string {
     if (state === 'sent') return 'border-success/30 bg-success/10 text-success';
@@ -177,7 +197,7 @@
           </button>
           {#if retryQueued && !submitting}
             <p class="mt-3 text-xs leading-5 text-fg-muted" role="status">
-              The forced collection is queued. This page will show recovery after a successful run.
+              The forced collection is queued. This page updates when it finishes.
             </p>
           {/if}
           {#if retryError}
@@ -196,7 +216,7 @@
             <dd
               class={`rounded-full border px-2.5 py-1 font-medium ${notificationTone(data.incident.failureNotificationState)}`}
             >
-              {data.incident.failureNotificationState}
+              {notificationLabels[data.incident.failureNotificationState] ?? data.incident.failureNotificationState}
             </dd>
           </div>
           <div class="flex items-center justify-between gap-4 py-3 last:pb-0">
@@ -204,7 +224,7 @@
             <dd
               class={`rounded-full border px-2.5 py-1 font-medium ${notificationTone(data.incident.recoveryNotificationState)}`}
             >
-              {data.incident.recoveryNotificationState}
+              {notificationLabels[data.incident.recoveryNotificationState] ?? data.incident.recoveryNotificationState}
             </dd>
           </div>
         </dl>
@@ -219,7 +239,9 @@
     <div class="flex min-h-14 items-center justify-between gap-3 border-b border-border px-5 py-3">
       <h2 id="attempt-history-heading" class="text-lg font-semibold tracking-tight text-fg-primary">Attempt history</h2>
       <span class="text-xs text-fg-muted">
-        {data.attempts.length} linked {data.attempts.length === 1 ? 'attempt' : 'attempts'}
+        {data.incident.attemptCount > data.attempts.length
+          ? `Latest ${data.attempts.length} of ${data.incident.attemptCount} attempts`
+          : `${data.attempts.length} linked ${data.attempts.length === 1 ? 'attempt' : 'attempts'}`}
       </span>
     </div>
     {#if data.attempts.length === 0}
@@ -239,11 +261,6 @@
                       HTTP {attempt.statusCode ?? 'not available'}
                     </span>
                   </div>
-                  {#if attempt.retryScheduledAt !== null}
-                    <p class="mt-2 text-xs text-warning">
-                      Retry scheduled for {formatTimestamp(attempt.retryScheduledAt)}
-                    </p>
-                  {/if}
                 </div>
                 <time class="shrink-0 text-xs text-fg-muted" datetime={new Date(attempt.ts).toISOString()}>
                   {formatTimestamp(attempt.ts)}

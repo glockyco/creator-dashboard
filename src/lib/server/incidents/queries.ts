@@ -61,6 +61,7 @@ type AttemptRow = {
   retry_scheduled_at: number | null;
 };
 
+const ISSUE_ATTEMPT_LIMIT = 20;
 const sourceById: Record<string, SourceDef> = Object.fromEntries(sources.map((source) => [source.id, source]));
 
 function issueState(incident: CollectionIncident, now: number): IssueState {
@@ -176,14 +177,16 @@ export async function getIssue(db: D1Database, incidentId: number, now = Date.no
     .first<IncidentRow>();
   if (!row) return null;
 
+  // The incident's attempt_count holds the full total; the page shows only the recent attempts.
   const attemptResult = await db
     .prepare(
       `SELECT id, ts, tier, status_code, error_message, retry_scheduled_at
        FROM fetcher_failures
        WHERE incident_id = ?
-       ORDER BY ts DESC, id DESC`
+       ORDER BY ts DESC, id DESC
+       LIMIT ?`
     )
-    .bind(incidentId)
+    .bind(incidentId, ISSUE_ATTEMPT_LIMIT)
     .all<AttemptRow>();
   const incident = mapIncident(row);
 
