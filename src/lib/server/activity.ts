@@ -184,7 +184,8 @@ function toNativeContext(
 
   const oldRevision = integerValue(metadata.old_revid);
   const revision = integerValue(metadata.revid);
-  if (oldRevision == null || revision == null) {
+  // MediaWiki reports revision 0 when none exists, such as the parent of a new page.
+  if (oldRevision == null || revision == null || oldRevision <= 0 || revision <= 0) {
     return { href: storedUrl.toString(), hrefLabel: 'View page on the wiki' };
   }
   return {

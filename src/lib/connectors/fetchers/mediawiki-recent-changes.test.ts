@@ -79,6 +79,81 @@ describe('fetchMediaWikiRecentChanges', () => {
     });
   });
 
+  it('asks only for human edits and new pages within the lookback window', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 }));
+    vi.stubGlobal('fetch', fetchSpy);
+
+    await fetchMediaWikiRecentChanges({ source, env, now });
+
+    const params = new URL(fetchSpy.mock.calls[0]?.[0] as URL).searchParams;
+    expect(params.get('rcshow')).toBe('!bot');
+    expect(params.get('rctype')).toBe('edit|new');
+    expect(params.get('rcend')).toBe(new Date(now - 7 * 86_400_000).toISOString());
+  });
+
+  it('follows continuation and drops excluded accounts', async () => {
+    const change = (rcid: number, user: string) => ({
+      type: 'edit',
+      ns: 0,
+      title: 'Page',
+      revid: rcid + 1,
+      old_revid: rcid,
+      rcid,
+      user,
+      timestamp: '2026-05-04T12:00:00Z'
+    });
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            query: { recentchanges: [change(1, 'Editor'), change(2, 'WoWMuch')] },
+            continue: { rccontinue: 'next-page', continue: '-||' }
+          })
+        )
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify({ query: { recentchanges: [change(3, 'Editor')] } })));
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const out = await fetchMediaWikiRecentChanges({
+      source: { ...source, config: { wiki: 'erenshor.wiki.gg', excludeUsers: ['WoWMuch'] } },
+      env,
+      now
+    });
+
+    expect(new URL(fetchSpy.mock.calls[1]?.[0] as URL).searchParams.get('rccontinue')).toBe('next-page');
+    expect(out.events.map((event) => event.external_id)).toEqual(['1', '3']);
+  });
+
+  it('does not link a diff to revision 0', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            query: {
+              recentchanges: [
+                {
+                  type: 'new',
+                  ns: 0,
+                  title: 'New Page',
+                  revid: 1003,
+                  old_revid: 0,
+                  rcid: 9002,
+                  timestamp: '2026-05-04T13:00:00Z'
+                }
+              ]
+            }
+          })
+        )
+      )
+    );
+
+    const out = await fetchMediaWikiRecentChanges({ source, env, now });
+
+    expect(out.events[0]).toMatchObject({ url: 'https://erenshor.wiki.gg/wiki/New_Page' });
+  });
+
   it('identifies itself with a contact-URL User-Agent so Cloudflare-fronted wikis like wiki.gg do not 403', async () => {
     const fetchSpy = vi.fn().mockResolvedValue(new Response(JSON.stringify(fixture), { status: 200 }));
     vi.stubGlobal('fetch', fetchSpy);

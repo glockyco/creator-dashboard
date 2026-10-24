@@ -103,6 +103,6 @@ export const sourceRecords: SourceRecord[] = [
     category: 'event_feed',
     cadenceHours: 1,
     connector: 'mediaWikiRecentChanges',
-    config: { wiki: 'erenshor.wiki.gg' }
+    config: { wiki: 'erenshor.wiki.gg', excludeUsers: ['WoWMuch'] }
   }
 ];
