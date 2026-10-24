@@ -20,6 +20,20 @@ The Overview SHALL show a quiet all-healthy indicator or a prominent active-issu
 - **WHEN** all retained collectors are healthy
 - **THEN** Overview shows freshness without filling the page with healthy collector cards
 
+### Requirement: Stale collectors
+
+A collector SHALL be stale when it has gone two of its expected collection intervals without a successful capture. A stale collector without an active failure SHALL open an issue, so a collector that stops running is reported like one that fails. Overview freshness SHALL reflect the least recently successful collector.
+
+#### Scenario: Collector stops running
+
+- **WHEN** an hourly collector has no successful capture for more than two hours and no recorded failure
+- **THEN** an issue opens for it and Discord receives a failure notification
+
+#### Scenario: One collector behind
+
+- **WHEN** one collector last succeeded two days ago and the others succeeded this hour
+- **THEN** Overview freshness shows the time from two days ago
+
 ### Requirement: Investigable issue details
 
 An issue SHALL identify its collector, failure tier, complete error, HTTP status when known, consecutive failure count, last attempt, last success, and attempt history. Next retry SHALL appear only when an actual automatic retry is scheduled.
@@ -40,7 +54,12 @@ An authenticated user SHALL be able to request a retry for a retained collector 
 
 ### Requirement: Failure and recovery notifications
 
-A retained collector's permanent failure or exhausted retries SHALL trigger a deduplicated Discord notification containing a direct investigation link. A later successful capture SHALL attempt a recovery notification for that incident and SHALL not resend it after confirmed delivery. No daily digest SHALL be sent.
+A retained collector's permanent failure, exhausted automatic retries, or an issue that stays open for three hours SHALL trigger a deduplicated Discord notification containing a direct investigation link and the latest real failure. A failed or interrupted notification SHALL be attempted again. A later successful capture SHALL attempt a recovery notification for that incident and SHALL not resend it after confirmed delivery. No daily digest SHALL be sent.
+
+#### Scenario: Persistent transient failure
+
+- **WHEN** a collector keeps failing with an upstream 5xx or timeout
+- **THEN** Discord receives a failure notification once automatic retries are exhausted, and no later than three hours after the first failure
 
 #### Scenario: Repeat failures
 
@@ -56,3 +75,21 @@ A retained collector's permanent failure or exhausted retries SHALL trigger a de
 
 - **WHEN** a recovered collector later enters a new failure incident
 - **THEN** it can send a new failure notification for the new incident
+
+### Requirement: Unfixable responses are permanent
+
+A response that retrying cannot fix, such as an unexpected 4xx status or a body that is not the expected JSON, SHALL count as a permanent failure.
+
+#### Scenario: Retired endpoint
+
+- **WHEN** an upstream endpoint redirects to an HTML page instead of returning JSON
+- **THEN** the failure is permanent and alerts at once, naming the redirect target
+
+### Requirement: Retained history
+
+Collected metrics, events, and incident history SHALL be retained indefinitely, and an issue detail SHALL stay readable however many attempts it accumulates.
+
+#### Scenario: Long incident
+
+- **WHEN** an incident has accumulated more attempts than fit on one screen
+- **THEN** the detail shows the most recent attempts and states how many earlier attempts exist
