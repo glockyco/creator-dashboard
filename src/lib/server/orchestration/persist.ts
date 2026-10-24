@@ -23,7 +23,15 @@ export function successStatements(
     ...output.events.map((event) =>
       db
         .prepare(
-          'INSERT OR IGNORE INTO events (source_id, external_id, ts, kind, author, title, body, url, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+          // Reviews can be edited or flip sentiment; keep the original event time and refresh the content.
+          `INSERT INTO events (source_id, external_id, ts, kind, author, title, body, url, metadata)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(source_id, external_id) DO UPDATE SET
+             author = excluded.author, title = excluded.title, body = excluded.body,
+             url = excluded.url, metadata = excluded.metadata
+           WHERE events.title IS NOT excluded.title OR events.body IS NOT excluded.body
+             OR events.url IS NOT excluded.url OR events.metadata IS NOT excluded.metadata
+             OR events.author IS NOT excluded.author`
         )
         .bind(
           event.source_id,
