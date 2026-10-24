@@ -164,6 +164,40 @@ describe('D1 schema migrations', () => {
     ]);
   });
 
+  it('rebuilds fetcher_failures after its parent table without losing rows or ids', () => {
+    const db = new DatabaseSync(':memory:');
+    const index = migrationFiles.indexOf('0008_rebuild_fetcher_failures.sql');
+    for (const sql of migrations.slice(0, index)) db.exec(sql);
+    db.exec(`
+      INSERT INTO collection_incidents (source_id, first_failure_at, last_failure_at, latest_tier, latest_error)
+      VALUES ('steam-guide-ak', 1, 2, 'transient', 'error');
+      INSERT INTO fetcher_failures (id, source_id, ts, tier, status_code, error_message, incident_id, retry_scheduled_at)
+      VALUES (41, 'steam-guide-ak', 2, 'transient', 502, 'error code: 502', 1, 300);
+    `);
+
+    db.exec(migrations[index]!);
+
+    const tables = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('collection_incidents', 'fetcher_failures') ORDER BY rowid"
+      )
+      .all()
+      .map((row) => row.name);
+    expect(tables).toEqual(['collection_incidents', 'fetcher_failures']);
+    expect(db.prepare('SELECT * FROM fetcher_failures').all()).toEqual([
+      {
+        id: 41,
+        source_id: 'steam-guide-ak',
+        ts: 2,
+        tier: 'transient',
+        status_code: 502,
+        error_message: 'error code: 502',
+        incident_id: 1,
+        retry_scheduled_at: 300
+      }
+    ]);
+  });
+
   it('deduplicates metric writes with NULL dimensions', () => {
     const db = migratedDb();
     const upsert = db.prepare(
