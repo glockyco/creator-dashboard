@@ -1,9 +1,22 @@
+import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 
 const D1_PLACEHOLDER = '<replace with wrangler d1 create creator-dashboard database_id>';
 
 export function requiredProductionSecrets(): string[] {
   return ['ACCESS_TEAM_DOMAIN', 'ACCESS_AUD', 'DISCORD_ALERTS_WEBHOOK', 'STEAM_WEB_API_KEY'];
+}
+
+/** Compares the Worker's secret names with what the code reads: a missing one breaks it, an extra one is an unused credential. */
+export function deployedSecretErrors(names: string[]): string[] {
+  const required = new Set(requiredProductionSecrets());
+  const deployed = new Set(names);
+  return [
+    ...[...required].filter((name) => !deployed.has(name)).map((name) => `production Worker is missing secret ${name}`),
+    ...[...deployed]
+      .filter((name) => !required.has(name))
+      .map((name) => `production Worker holds unused secret ${name}; delete it and revoke the credential`)
+  ];
 }
 
 export function parseDevVars(text: string): Record<string, string> {
@@ -17,10 +30,6 @@ export function parseDevVars(text: string): Record<string, string> {
     vars[key] = stripQuotes(line.slice(equals + 1).trim());
   }
   return vars;
-}
-
-export function missingProductionSecrets(source: Record<string, string | undefined>): string[] {
-  return requiredProductionSecrets().filter((name) => isMissingOrPlaceholder(source[name]));
 }
 
 export function parseWranglerPreflight(text: string): { errors: string[] } {
@@ -44,18 +53,10 @@ export function parseWranglerPreflight(text: string): { errors: string[] } {
   return { errors };
 }
 
-async function readDevVarsIfPresent(path = '.dev.vars'): Promise<Record<string, string>> {
-  try {
-    return parseDevVars(await readFile(path, 'utf8'));
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return {};
-    throw error;
-  }
-}
-
-function isMissingOrPlaceholder(value: string | undefined): boolean {
-  if (!value) return true;
-  return /(?:replace|example\.|\/example\/|<replace)/i.test(value);
+function deployedSecretNames(): string[] {
+  const output = execFileSync('wrangler', ['secret', 'list', '--format', 'json'], { encoding: 'utf8' });
+  const parsed = JSON.parse(output.slice(output.indexOf('['))) as { name: string }[];
+  return parsed.map((secret) => secret.name);
 }
 
 function stripQuotes(value: string): string {
@@ -65,12 +66,11 @@ function stripQuotes(value: string): string {
 }
 
 async function main(): Promise<void> {
-  const wrangler = await readFile('wrangler.toml', 'utf8');
-  const localVars = await readDevVarsIfPresent();
-  const source = { ...localVars, ...process.env } as Record<string, string | undefined>;
-  const errors = parseWranglerPreflight(wrangler).errors;
-  const missingSecrets = missingProductionSecrets(source);
-  for (const secret of missingSecrets) errors.push(`missing production env var ${secret}`);
+  const errors = parseWranglerPreflight(await readFile('wrangler.toml', 'utf8')).errors;
+  // Deploy ships the working tree, so uncommitted edits would reach production without review.
+  if (execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim() !== '')
+    errors.push('working tree has uncommitted changes');
+  errors.push(...deployedSecretErrors(deployedSecretNames()));
   if (errors.length > 0) throw new Error(errors.join('\n'));
   console.log('deploy preflight passed');
 }
