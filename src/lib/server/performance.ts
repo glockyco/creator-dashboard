@@ -29,8 +29,8 @@ export type PerformanceAsset = {
   lastCapturedAt: number | null;
   guideMetrics: {
     favorites: PerformanceSeriesSummary;
-    rating: PerformanceSeriesSummary;
-    ratings: PerformanceSeriesSummary;
+    approval: PerformanceSeriesSummary;
+    votes: PerformanceSeriesSummary;
     awards: PerformanceSeriesSummary;
   } | null;
 };
@@ -64,8 +64,9 @@ type PerformanceSelector = {
 
 const guideMetricDefinitions = [
   { field: 'favorites', metric: 'favorite_count' },
-  { field: 'rating', metric: 'rating' },
-  { field: 'ratings', metric: 'ratings' },
+  // Share of up-votes among all votes; Steam's own weighted score is not an approval rate.
+  { field: 'approval', metric: 'approval' },
+  { field: 'votes', metric: 'ratings' },
   { field: 'awards', metric: 'award_count' }
 ] as const;
 
@@ -114,7 +115,7 @@ function summarizeAssets(
       now,
       definition.cadenceHours
     );
-    // Favorites, votes, awards, and ratings can all fall when someone withdraws them.
+    // Favorites, votes, awards, and approval can all fall when someone withdraws them.
     const guideMetric = (field: (typeof guideMetricDefinitions)[number]['field']) =>
       summarizeLevelSeries(
         rowsBySelector.get(assetMetricId(definition.id, field)) ?? [],
@@ -134,8 +135,8 @@ function summarizeAssets(
         definition.kind === 'guide'
           ? {
               favorites: guideMetric('favorites'),
-              rating: guideMetric('rating'),
-              ratings: guideMetric('ratings'),
+              approval: guideMetric('approval'),
+              votes: guideMetric('votes'),
               awards: guideMetric('awards')
             }
           : null

@@ -43,16 +43,18 @@ export async function fetchSteamGuide({ source, env, now }: FetcherInput): Promi
       value: detail.favorited,
       dimensions: null
     });
-  metricPoints.push(
-    { source_id: source.id, metric: 'rating', ts: now, value: detail.vote_data.score, dimensions: null },
-    {
+  const votes = detail.vote_data.votes_up + detail.vote_data.votes_down;
+  // Steam's vote_data.score is a confidence-weighted score: 4 up-votes and none down score about 0.52.
+  // Store the plain share of up-votes, which is what a reader expects from an approval rate.
+  if (votes > 0)
+    metricPoints.push({
       source_id: source.id,
-      metric: 'ratings',
+      metric: 'approval',
       ts: now,
-      value: detail.vote_data.votes_up + detail.vote_data.votes_down,
+      value: detail.vote_data.votes_up / votes,
       dimensions: null
-    }
-  );
+    });
+  metricPoints.push({ source_id: source.id, metric: 'ratings', ts: now, value: votes, dimensions: null });
   if (detail.reactions !== undefined)
     metricPoints.push({
       source_id: source.id,

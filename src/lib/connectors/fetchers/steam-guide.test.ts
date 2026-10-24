@@ -26,16 +26,30 @@ describe('fetchSteamGuide', () => {
     expect(out.metric_points.map((point) => point.metric)).toEqual([
       'views',
       'favorite_count',
-      'rating',
+      'approval',
       'ratings',
       'award_count'
     ]);
     expect(out.metric_points.find((point) => point.metric === 'views')?.value).toBe(2087);
     expect(out.metric_points.find((point) => point.metric === 'favorite_count')?.value).toBe(62);
-    expect(out.metric_points.find((point) => point.metric === 'rating')?.value).toBe(0.82);
     expect(out.metric_points.find((point) => point.metric === 'ratings')?.value).toBe(50);
     expect(out.metric_points.find((point) => point.metric === 'award_count')?.value).toBe(7);
     expect(out.events).toEqual([]);
+  });
+
+  it("reports approval as the share of up-votes, not Steam's weighted score", async () => {
+    const detail = {
+      ...fixture.response.publishedfiledetails[0],
+      vote_data: { score: 0.519, votes_up: 4, votes_down: 0 }
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ response: { publishedfiledetails: [detail] } })))
+    );
+
+    const out = await fetchSteamGuide({ source, env, now });
+
+    expect(out.metric_points.find((point) => point.metric === 'approval')?.value).toBe(1);
   });
 
   it('calls IPublishedFileService.GetDetails with the key and includevotes', async () => {

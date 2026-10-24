@@ -8,7 +8,7 @@ Give the creator a fast view of guide growth and mod downloads without requiring
 
 ### Requirement: Focused overview
 
-The Overview SHALL present Steam guides, Thunderstore mods, Vault mods, and Steam reviews in separate compact tables. Each table SHALL sort by name by default. Guide and mod rows SHALL show their platform, latest cumulative total, rolling 24-hour gain, selected-range gain, and trend in that order. Guide rows SHALL also show current favorites, rating, vote count, and aggregate awards with absolute 24-hour and selected-range changes. Steam reviews SHALL show positive and negative totals and gains as separate rows for each game.
+The Overview SHALL present Steam guides, Thunderstore mods, Vault mods, and Steam reviews in separate compact tables. Each table SHALL sort by name by default. Guide and mod rows SHALL show their platform, latest cumulative total, rolling 24-hour gain, selected-range gain, and trend in that order. Guide rows SHALL also show current favorites, approval as the share of up-votes, vote count, and aggregate awards with absolute 24-hour and selected-range changes. Steam reviews SHALL show positive and negative totals and gains as separate rows for each game.
 
 #### Scenario: Multiple assets and platforms
 
@@ -24,7 +24,7 @@ The Overview SHALL present Steam guides, Thunderstore mods, Vault mods, and Stea
 
 - **WHEN** Steam returns favorites, votes, and reactions for a guide
 - **THEN** the guide row and detail show each metric's current value and absolute 24-hour and selected-range changes
-- **AND** rating changes are signed percentage-point differences, not relative percentages
+- **AND** approval changes are signed percentage-point differences, not relative percentages
 - **AND** a missing value or required boundary is unavailable rather than zero
 
 #### Scenario: Review sentiment growth
@@ -58,7 +58,7 @@ Selecting a guide or mod SHALL show its trend, current total, absolute 24-hour a
 #### Scenario: Inspect a guide
 
 - **WHEN** the user opens the Afallon guide detail
-- **THEN** the detail shows guide view history, current favorites, rating, vote count, aggregate awards, their 24-hour and selected-range changes, and an ordinary link to the Steam guide
+- **THEN** the detail shows guide view history, current favorites, approval, vote count, aggregate awards, their 24-hour and selected-range changes, and an ordinary link to the Steam guide
 
 #### Scenario: Inspect a mod
 

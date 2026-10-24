@@ -12,12 +12,12 @@ const rows = [
   { selector_id: 'asset:steam-guide-afallon:favorites', ts: 14 * DAY_MS, value: 30 },
   { selector_id: 'asset:steam-guide-afallon:favorites', ts: 20 * DAY_MS, value: 40 },
   { selector_id: 'asset:steam-guide-afallon:favorites', ts: NOW, value: 44 },
-  { selector_id: 'asset:steam-guide-afallon:rating', ts: 14 * DAY_MS, value: 0.9 },
-  { selector_id: 'asset:steam-guide-afallon:rating', ts: 20 * DAY_MS, value: 0.84 },
-  { selector_id: 'asset:steam-guide-afallon:rating', ts: NOW, value: 0.82 },
-  { selector_id: 'asset:steam-guide-afallon:ratings', ts: 14 * DAY_MS, value: 8 },
-  { selector_id: 'asset:steam-guide-afallon:ratings', ts: 20 * DAY_MS, value: 10 },
-  { selector_id: 'asset:steam-guide-afallon:ratings', ts: NOW, value: 12 },
+  { selector_id: 'asset:steam-guide-afallon:approval', ts: 14 * DAY_MS, value: 0.9 },
+  { selector_id: 'asset:steam-guide-afallon:approval', ts: 20 * DAY_MS, value: 0.84 },
+  { selector_id: 'asset:steam-guide-afallon:approval', ts: NOW, value: 0.82 },
+  { selector_id: 'asset:steam-guide-afallon:votes', ts: 14 * DAY_MS, value: 8 },
+  { selector_id: 'asset:steam-guide-afallon:votes', ts: 20 * DAY_MS, value: 10 },
+  { selector_id: 'asset:steam-guide-afallon:votes', ts: NOW, value: 12 },
   { selector_id: 'asset:steam-guide-afallon:awards', ts: 14 * DAY_MS, value: 3 },
   { selector_id: 'asset:steam-guide-afallon:awards', ts: 20 * DAY_MS, value: 6 },
   { selector_id: 'asset:steam-guide-afallon:awards', ts: NOW, value: 7 },
@@ -82,14 +82,14 @@ describe('loadPerformance', () => {
       periodGain: 30,
       guideMetrics: {
         favorites: { total: 44, dayGain: 4, periodGain: 14 },
-        rating: { total: 0.82 },
-        ratings: { total: 12, dayGain: 2, periodGain: 4 },
+        approval: { total: 0.82 },
+        votes: { total: 12, dayGain: 2, periodGain: 4 },
         awards: { total: 7, dayGain: 1, periodGain: 4 }
       }
     });
-    const rating = result.guides.find((asset) => asset.id === 'steam-guide-afallon')?.guideMetrics?.rating;
-    expect(rating?.dayGain).toBeCloseTo(-0.02);
-    expect(rating?.periodGain).toBeCloseTo(-0.08);
+    const approval = result.guides.find((asset) => asset.id === 'steam-guide-afallon')?.guideMetrics?.approval;
+    expect(approval?.dayGain).toBeCloseTo(-0.02);
+    expect(approval?.periodGain).toBeCloseTo(-0.08);
     expect(result.mods.find((asset) => asset.id === 'thunderstore-adventure-guide')).toMatchObject({
       platform: 'Thunderstore',
       total: 1_200,
@@ -159,8 +159,8 @@ describe('loadPerformance', () => {
       lastCapturedAt: null,
       guideMetrics: {
         favorites: { total: null, dayGain: null, periodGain: null },
-        rating: { total: null, dayGain: null, periodGain: null },
-        ratings: { total: null, dayGain: null, periodGain: null },
+        approval: { total: null, dayGain: null, periodGain: null },
+        votes: { total: null, dayGain: null, periodGain: null },
         awards: { total: null, dayGain: null, periodGain: null }
       }
     });

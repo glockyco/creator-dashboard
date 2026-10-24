@@ -146,7 +146,7 @@ const guideSignalSeedSql = performanceSeries
     (
       [
         ['favorite_count', 52 + index * 17, 4 + index],
-        ['rating', 0.92 - index * 0.07, index === 3 ? -0.004 : 0.004],
+        ['approval', 0.98 - index * 0.07, index === 3 ? -0.004 : 0.004],
         ['ratings', 38 + index * 13, 4],
         ['award_count', 12 + index * 5, 1]
       ] as const

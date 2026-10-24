@@ -4,6 +4,7 @@
   import type { PageData } from './$types';
   import type { PerformanceAsset } from '$lib/server/performance';
   import type { PerformanceSeriesSummary } from '$lib/performance/series';
+  import { changeTone, formatChange, formatCount, formatValue, guideSignals } from '$lib/ui/format';
 
   type ReviewRow = PerformanceSeriesSummary & {
     id: string;
@@ -83,35 +84,8 @@
     });
   }
 
-  const guideSignals = [
-    { key: 'favorites', label: 'Favorites' },
-    { key: 'rating', label: 'Rating' },
-    { key: 'ratings', label: 'Votes' },
-    { key: 'awards', label: 'Awards' }
-  ] as const;
-
-  const numberFormatter = new Intl.NumberFormat();
-
-  function number(value: number) {
-    return numberFormatter.format(value);
-  }
-
-  function engagementValue(value: number | null, rating: boolean) {
-    if (value === null) return 'Unavailable';
-    return rating ? `${(value * 100).toFixed(1)}%` : number(value);
-  }
-
-  function engagementChange(value: number | null, rating: boolean) {
-    if (value === null) return 'Unavailable';
-    return `${value > 0 ? '+' : ''}${rating ? `${(value * 100).toFixed(1)} pp` : number(value)}`;
-  }
-
-  function changeTone(value: number | null) {
-    return value === null || value === 0 ? 'text-fg-muted' : value < 0 ? 'text-danger' : 'text-success';
-  }
-
   // More negative reviews is bad news, so their gains read in the opposite colors.
-  function gainTone(asset: { kind: string; sentiment?: string }, value: number | null) {
+  function gainTone(asset: OverviewRow, value: number | null) {
     return asset.kind === 'review' && asset.sentiment === 'negative'
       ? changeTone(value === null ? null : -value)
       : changeTone(value);
@@ -234,13 +208,13 @@
                   {/if}
                 </th>
                 <td class="px-3 py-3 text-right font-bold text-fg-primary"
-                  >{asset.total === null ? 'Awaiting data' : number(asset.total)}</td
+                  >{asset.total === null ? 'Awaiting data' : formatCount(asset.total)}</td
                 >
                 <td class={`px-3 py-3 text-right font-semibold ${gainTone(asset, asset.dayGain)}`}
-                  >{engagementChange(asset.dayGain, false)}</td
+                  >{formatChange(asset.dayGain, false)}</td
                 >
                 <td class={`px-3 py-3 text-right font-semibold ${gainTone(asset, asset.periodGain)}`}
-                  >{engagementChange(asset.periodGain, false)}</td
+                  >{formatChange(asset.periodGain, false)}</td
                 >
                 <td class="px-4 py-3 text-right">
                   {#if asset.points.length > 1}
@@ -275,17 +249,17 @@
                         <div class="min-w-0 px-3 py-2 first:pl-0 last:pr-0">
                           <p class="text-xs font-bold uppercase tracking-wide text-fg-muted">{signal.label}</p>
                           <p class="mt-1 font-semibold tabular-nums text-fg-primary">
-                            {engagementValue(metric.total, signal.key === 'rating')}
+                            {formatValue(metric.total, signal.percent)}
                           </p>
                           <p class="mt-1 text-xs text-fg-muted">
-                            24h <span class={changeTone(metric.dayGain)}
-                              >{engagementChange(metric.dayGain, signal.key === 'rating')}</span
+                            24h <span class={changeTone(metric.dayGain, signal.percent)}
+                              >{formatChange(metric.dayGain, signal.percent)}</span
                             >
                           </p>
                           <p class="text-xs text-fg-muted">
                             {data.range}
-                            <span class={changeTone(metric.periodGain)}
-                              >{engagementChange(metric.periodGain, signal.key === 'rating')}</span
+                            <span class={changeTone(metric.periodGain, signal.percent)}
+                              >{formatChange(metric.periodGain, signal.percent)}</span
                             >
                           </p>
                         </div>

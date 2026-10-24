@@ -1,6 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import DateRangePicker from '$lib/ui/DateRangePicker.svelte';
+  import { changeTone, formatChange, formatValue, guideSignals } from '$lib/ui/format';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -20,50 +21,24 @@
       .map((point) => `${((point.ts - first) / span) * 100},${94 - ((point.value - floor) / height) * 82}`)
       .join(' ');
   });
-  const guideSignals = [
-    { key: 'favorites', label: 'Favorites' },
-    { key: 'rating', label: 'Rating' },
-    { key: 'ratings', label: 'Votes' },
-    { key: 'awards', label: 'Awards' }
-  ] as const;
-
-  function signed(value: number): string {
-    return `${value > 0 ? '+' : ''}${value.toLocaleString()}`;
-  }
-
-  function engagementValue(value: number | null, rating: boolean) {
-    if (value === null) return 'Unavailable';
-    return rating ? `${(value * 100).toFixed(1)}%` : value.toLocaleString();
-  }
-
-  function engagementChange(value: number | null, rating: boolean) {
-    if (value === null) return 'Unavailable';
-    return rating ? `${value > 0 ? '+' : ''}${(value * 100).toFixed(1)} pp` : signed(value);
-  }
-
-  function changeTone(value: number | null) {
-    return value === null || value === 0 ? 'text-fg-muted' : value < 0 ? 'text-danger' : 'text-success';
-  }
-
   const metrics = $derived([
     {
       label: 'Total',
-      value: data.asset.total === null ? 'Unavailable' : data.asset.total.toLocaleString(),
+      value: formatValue(data.asset.total, false),
       note: 'Latest cumulative count',
       tone: data.asset.total === null ? 'text-fg-muted' : 'text-fg-primary'
     },
     {
       label: 'Rolling 24h',
-      value: data.asset.dayGain === null ? 'Unavailable' : signed(data.asset.dayGain),
+      value: formatChange(data.asset.dayGain, false),
       note: 'Latest 24-hour gain',
-      tone: data.asset.dayGain === null ? 'text-fg-muted' : data.asset.dayGain < 0 ? 'text-danger' : 'text-success'
+      tone: changeTone(data.asset.dayGain)
     },
     {
       label: `${data.range} gain`,
-      value: data.asset.periodGain === null ? 'Unavailable' : signed(data.asset.periodGain),
+      value: formatChange(data.asset.periodGain, false),
       note: 'Selected range',
-      tone:
-        data.asset.periodGain === null ? 'text-fg-muted' : data.asset.periodGain < 0 ? 'text-danger' : 'text-success'
+      tone: changeTone(data.asset.periodGain)
     }
   ]);
 </script>
@@ -133,17 +108,17 @@
             >
               <p class="text-xs font-semibold uppercase tracking-[0.08em] text-fg-muted">{signal.label}</p>
               <p class="mt-2 text-xl font-semibold tabular-nums text-fg-primary">
-                {engagementValue(metric.total, signal.key === 'rating')}
+                {formatValue(metric.total, signal.percent)}
               </p>
               <p class="mt-2 text-xs text-fg-muted">
-                24h <span class={changeTone(metric.dayGain)}
-                  >{engagementChange(metric.dayGain, signal.key === 'rating')}</span
+                24h <span class={changeTone(metric.dayGain, signal.percent)}
+                  >{formatChange(metric.dayGain, signal.percent)}</span
                 >
               </p>
               <p class="text-xs text-fg-muted">
                 {data.range}
-                <span class={changeTone(metric.periodGain)}
-                  >{engagementChange(metric.periodGain, signal.key === 'rating')}</span
+                <span class={changeTone(metric.periodGain, signal.percent)}
+                  >{formatChange(metric.periodGain, signal.percent)}</span
                 >
               </p>
             </div>
