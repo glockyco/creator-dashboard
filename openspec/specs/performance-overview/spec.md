@@ -38,7 +38,7 @@ The Overview and performance details SHALL support 7-, 30-, and 90-day ranges. T
 
 #### Scenario: Range selection
 
-- **WHEN** the user selects 7 days
+- **WHEN** you select 7 days
 - **THEN** the trend spans the selected 7 days and the gain uses an eligible sample at the 7-day boundary
 
 #### Scenario: Incomplete history
@@ -57,12 +57,12 @@ Selecting a guide or mod SHALL show its trend, current total, absolute 24-hour a
 
 #### Scenario: Inspect a guide
 
-- **WHEN** the user opens the Afallon guide detail
+- **WHEN** you open the Afallon guide detail
 - **THEN** the detail shows guide view history, current favorites, approval, vote count, aggregate awards, their 24-hour and selected-range changes, and an ordinary link to the Steam guide
 
 #### Scenario: Inspect a mod
 
-- **WHEN** the user opens a mod detail
+- **WHEN** you open a mod detail
 - **THEN** each available platform's downloads and external destination remain distinguishable
 
 ### Requirement: Native destinations without collection
@@ -71,7 +71,7 @@ The Overview SHALL offer ordinary links to the GitHub profile, Google Search Con
 
 #### Scenario: Follow a native link
 
-- **WHEN** the user activates a native destination link normally
+- **WHEN** you activate a native destination link normally
 - **THEN** it navigates in the current tab, while browser-controlled new-tab gestures remain available
 
 ### Requirement: Compact responsive navigation
@@ -80,5 +80,5 @@ The interface SHALL expose Overview, Activity, and Issues on desktop and mobile 
 
 #### Scenario: Mobile navigation
 
-- **WHEN** the user views the dashboard on a narrow screen
+- **WHEN** you view the dashboard on a narrow screen
 - **THEN** the three primary destinations and active issue count remain accessible without horizontal scrolling

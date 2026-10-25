@@ -31,7 +31,7 @@ Activity SHALL support type, game or wiki, date range, and review sentiment filt
 
 #### Scenario: Negative reviews
 
-- **WHEN** the user filters to negative Steam reviews
+- **WHEN** you filter to negative Steam reviews
 - **THEN** wiki edits and positive reviews are excluded without hiding reviews from other games
 
 ### Requirement: Actionable event information

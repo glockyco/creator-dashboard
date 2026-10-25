@@ -45,11 +45,11 @@ An issue SHALL identify its collector, failure tier, complete error, HTTP status
 
 ### Requirement: Manual recovery
 
-An authenticated user SHALL be able to request a retry for a retained collector and see whether the subsequent collection succeeded. Duplicate clicks SHALL not create unbounded duplicate work.
+The application SHALL let you request a retry for a retained collector after authentication and show whether the subsequent collection succeeded. Duplicate clicks SHALL not create unbounded duplicate work.
 
 #### Scenario: Retry from an issue
 
-- **WHEN** the user requests a retry from an active issue
+- **WHEN** you request a retry from an active issue
 - **THEN** the request is queued once and the issue remains visible until a successful capture clears its active failure
 
 ### Requirement: Failure and recovery notifications
