@@ -50,4 +50,4 @@ Single-tenant SvelteKit app on Cloudflare Workers, fronted by Cloudflare Access.
 
 - Svelte 5 runes (`$state`, `$derived`, `$props`, `$effect`). Do not reintroduce `export let` or `<script>`-level `let` reactivity.
 - LF line endings repo-wide via `.gitattributes`; check `git ls-files --eol` if anything content-hash-sensitive breaks.
-- Conventional Commits per `skill://commit-policy`. Never push without explicit user request.
+- Conventional Commits per `skill://commit-policy`. Never push without explicit instruction.
