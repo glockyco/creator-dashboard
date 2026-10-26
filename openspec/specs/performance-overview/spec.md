@@ -8,17 +8,39 @@ Give the creator a fast view of guide growth and mod downloads without requiring
 
 ### Requirement: Focused overview
 
-The Overview SHALL present Steam guides, Thunderstore mods, Vault mods, and Steam reviews in separate compact tables. Each table SHALL sort by name by default. Guide and mod rows SHALL show their platform, latest cumulative total, rolling 24-hour gain, selected-range gain, and trend in that order. Guide rows SHALL also show current favorites, approval as the share of up-votes, vote count, and aggregate awards with absolute 24-hour and selected-range changes. Steam reviews SHALL show positive and negative totals and gains as separate rows for each game.
+The Overview SHALL present Steam guides, Thunderstore mods, Vault mods, and Steam reviews in separate compact tables.
 
 #### Scenario: Multiple assets and platforms
 
 - **WHEN** guide and mod captures exist for more than one asset or platform
 - **THEN** the Overview shows separate guide rows and separate mod-platform rows, with direct links to the relevant performance detail
 
+### Requirement: Default table order
+
+Each Overview table SHALL sort by name by default.
+
+#### Scenario: Open an overview table
+
+- WHEN an Overview table first appears
+- THEN its rows are sorted by name
+
+### Requirement: Guide and mod overview metrics
+
+Guide and mod rows SHALL show their platform, latest cumulative total, rolling 24-hour gain, selected-range gain, and trend in that order.
+
+#### Scenario: Read a guide or mod row
+
+- WHEN a guide or mod row appears
+- THEN it shows platform, latest cumulative total, rolling 24-hour gain, selected-range gain, and trend in that order
+
 #### Scenario: No captured data
 
 - **WHEN** an asset has no successful capture
 - **THEN** its row shows an explicit awaiting-data state rather than a zero total or zero growth
+
+### Requirement: Guide engagement metrics
+
+Guide rows SHALL also show current favorites, approval as the share of up-votes, vote count, and aggregate awards with absolute 24-hour and selected-range changes.
 
 #### Scenario: Guide engagement
 
@@ -26,6 +48,10 @@ The Overview SHALL present Steam guides, Thunderstore mods, Vault mods, and Stea
 - **THEN** the guide row and detail show each metric's current value and absolute 24-hour and selected-range changes
 - **AND** approval changes are signed percentage-point differences, not relative percentages
 - **AND** a missing value or required boundary is unavailable rather than zero
+
+### Requirement: Review sentiment rows
+
+Steam reviews SHALL show positive and negative totals and gains as separate rows for each game.
 
 #### Scenario: Review sentiment growth
 
