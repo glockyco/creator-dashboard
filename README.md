@@ -17,6 +17,8 @@ pnpm dev
 
 Open the local URL printed by Vite. The seeded data lets you explore without production credentials. Fill in [.dev.vars](.dev.vars.example) for authenticated connector checks or deployment verification, as described in [AGENTS.md](AGENTS.md).
 
+Dependency updates must pass the release-age policy in [`pnpm-workspace.yaml`](pnpm-workspace.yaml). Keep Renovate's delay aligned in [`renovate.json`](renovate.json) so automated updates do not select releases that installation rejects.
+
 Local development skips Access authentication. To exercise the Worker runtime and JWT verification, use `pnpm preview:local` and open the proxy URL it prints. That preview uses a separate local database and disables Discord delivery.
 
 ## Use the dashboard
