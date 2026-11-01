@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { loadPerformance, loadPerformanceAsset } from '$lib/server/performance';
+import { loadPerformance, loadPerformanceAsset } from '#lib/server/performance.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const NOW = 21 * DAY_MS;

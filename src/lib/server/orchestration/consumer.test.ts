@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
-import type { FetcherOutput } from '$lib/types/domain';
-import type { CollectionIncident } from '$lib/server/incidents';
+import type { FetcherOutput } from '#lib/types/domain.js';
+import type { CollectionIncident } from '#lib/server/incidents/index.js';
 import { consumeMessage } from './consumer';
 
 const mocks = vi.hoisted(() => ({
@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   maybeSendRecoveryAlert: vi.fn()
 }));
 
-vi.mock('$lib/sources/registry', () => ({
+vi.mock('#lib/sources/registry.js', () => ({
   getSource: (sourceId: string) =>
     sourceId === 'source-a'
       ? {
@@ -28,13 +28,13 @@ vi.mock('$lib/sources/registry', () => ({
       : undefined
 }));
 
-vi.mock('$lib/server/incidents', () => ({
+vi.mock('#lib/server/incidents/index.js', () => ({
   getActiveIncident: mocks.getActiveIncident,
   prepareIncidentResolution: mocks.prepareIncidentResolution,
   recordCollectionFailure: mocks.recordCollectionFailure
 }));
 
-vi.mock('$lib/server/alerts/dedup', () => ({
+vi.mock('#lib/server/alerts/dedup.js', () => ({
   maybeSendFailureAlert: mocks.maybeSendFailureAlert,
   maybeSendRecoveryAlert: mocks.maybeSendRecoveryAlert
 }));

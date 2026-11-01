@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { d1Fixture } from '$lib/server/db/test-d1';
+import { d1Fixture } from '#lib/server/db/test-d1.js';
 import { ESCALATE_AFTER_MS, runWatchdog } from './watchdog';
 
 const discord = vi.hoisted(() => ({ postDiscord: vi.fn() }));
-vi.mock('$lib/server/alerts/discord', () => discord);
+vi.mock('#lib/server/alerts/discord.js', () => discord);
 
 const NOW = 1_800_000_000_000;
 const HOUR = 3_600_000;

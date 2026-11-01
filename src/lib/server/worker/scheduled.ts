@@ -1,6 +1,6 @@
-import { dispatchDueSources } from '$lib/server/orchestration/dispatcher';
-import { runWatchdog } from '$lib/server/orchestration/watchdog';
-import { log } from '$lib/server/log';
+import { dispatchDueSources } from '#lib/server/orchestration/dispatcher.js';
+import { runWatchdog } from '#lib/server/orchestration/watchdog.js';
+import { log } from '#lib/server/log.js';
 
 export async function scheduled(controller: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
   if (controller.cron === '0 * * * *') {

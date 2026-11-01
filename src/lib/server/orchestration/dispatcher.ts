@@ -1,6 +1,6 @@
-import { sources } from '$lib/sources/registry';
-import type { JobMsg } from '$lib/types/orchestration';
-import { log } from '$lib/server/log';
+import { sources } from '#lib/sources/registry.js';
+import type { JobMsg } from '#lib/types/orchestration.js';
+import { log } from '#lib/server/log.js';
 
 export async function dispatchDueSources(
   env: Env,

@@ -1,13 +1,13 @@
-import { getSource } from '$lib/sources/registry';
-import type { JobMsg } from '$lib/types/orchestration';
-import { maybeSendFailureAlert, maybeSendRecoveryAlert } from '$lib/server/alerts/dedup';
+import { getSource } from '#lib/sources/registry.js';
+import type { JobMsg } from '#lib/types/orchestration.js';
+import { maybeSendFailureAlert, maybeSendRecoveryAlert } from '#lib/server/alerts/dedup.js';
 import {
   getActiveIncident,
   prepareIncidentResolution,
   recordCollectionFailure,
   type CollectionIncident
-} from '$lib/server/incidents';
-import { log } from '$lib/server/log';
+} from '#lib/server/incidents/index.js';
+import { log } from '#lib/server/log.js';
 import { classify } from './errors';
 import { successStatements } from './persist';
 

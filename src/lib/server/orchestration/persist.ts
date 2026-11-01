@@ -1,4 +1,4 @@
-import type { FetcherOutput } from '$lib/types/domain';
+import type { FetcherOutput } from '#lib/types/domain.js';
 
 export function successStatements(
   db: D1Database,

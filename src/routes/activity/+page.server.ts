@@ -1,14 +1,13 @@
 import { error } from '@sveltejs/kit';
+import { env } from 'cloudflare:workers';
 import type { PageServerLoad } from './$types';
-import { rangeDurationMs } from '$lib/performance/series';
-import { activitySubjects, getActivity, type ActivityKind, type ActivitySentiment } from '$lib/server/activity';
-import { selectRange } from '$lib/server/range';
+import { rangeDurationMs } from '#lib/performance/series.js';
+import { activitySubjects, getActivity, type ActivityKind, type ActivitySentiment } from '#lib/server/activity.js';
+import { selectRange } from '#lib/server/range.js';
 
 type FilterValue<T extends string> = T | 'all';
 
-export const load: PageServerLoad = async ({ platform, url, cookies }) => {
-  if (!platform?.env) throw error(500, 'Cloudflare platform env missing');
-
+export const load: PageServerLoad = async ({ url, cookies }) => {
   const type = parseType(url.searchParams.get('type'));
   const subject = parseSubject(url.searchParams.get('subject'));
   const sentiment = parseSentiment(url.searchParams.get('sentiment'));
@@ -18,7 +17,7 @@ export const load: PageServerLoad = async ({ platform, url, cookies }) => {
 
   let activity;
   try {
-    activity = await getActivity(platform.env.DB, {
+    activity = await getActivity(env.DB, {
       kind: type === 'all' ? undefined : type,
       sourceId: subject === 'all' ? undefined : subject,
       sentiment: sentiment === 'all' ? undefined : sentiment,

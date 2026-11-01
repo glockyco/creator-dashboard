@@ -71,7 +71,7 @@ async function main(): Promise<void> {
   const server = await createServer({ appType: 'custom', logLevel: 'error', server: { middlewareMode: true } });
   let sources: BackfillSource[];
   try {
-    // Vite resolves the app's $lib aliases; ssrLoadModule returns an untyped module record.
+    // Vite resolves the app's #lib imports to their TypeScript sources; ssrLoadModule returns an untyped module record.
     const registry = (await server.ssrLoadModule('/src/lib/sources/registry.ts')) as { sources: BackfillSource[] };
     sources = registry.sources;
   } finally {

@@ -1,18 +1,18 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import type { Range } from '$lib/performance/series';
+  import type { Range } from '#lib/performance/series.js';
 
   const ranges: Range[] = ['7d', '30d', '90d'];
   let { selected }: { selected: Range } = $props();
 
   // The server remembers an explicit range in a cookie, so later pages open with it.
   function change(value: Range) {
-    const url = new URL(page.url);
+    const url = new URL(page.url.href);
     url.searchParams.set('range', value);
     // The URL comes from the current page and already includes the configured base path.
     // eslint-disable-next-line svelte/no-navigation-without-resolve
-    void goto(url, { noScroll: true, keepFocus: true });
+    void goto(url, { reset: false });
   }
 </script>
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
-  import DateRangePicker from '$lib/ui/DateRangePicker.svelte';
-  import { changeTone, formatChange, formatValue, guideSignals } from '$lib/ui/format';
+  import DateRangePicker from '#lib/ui/DateRangePicker.svelte';
+  import { changeTone, formatChange, formatValue, guideSignals } from '#lib/ui/format.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();

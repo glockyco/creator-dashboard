@@ -1,10 +1,11 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
-  import DateRangePicker from '$lib/ui/DateRangePicker.svelte';
+  import DateRangePicker from '#lib/ui/DateRangePicker.svelte';
   import type { PageData } from './$types';
-  import type { PerformanceAsset } from '$lib/server/performance';
-  import type { PerformanceSeriesSummary } from '$lib/performance/series';
-  import { changeTone, formatChange, formatCount, formatValue, guideSignals } from '$lib/ui/format';
+  import type { PerformanceAsset } from '#lib/server/performance.js';
+  import type { PerformanceSeriesSummary } from '#lib/performance/series.js';
+
+  import { changeTone, formatChange, formatCount, formatValue, guideSignals } from '#lib/ui/format.js';
 
   type ReviewRow = PerformanceSeriesSummary & {
     id: string;
@@ -149,7 +150,7 @@
     <a
       href={data.issueSummary.activeCount === 1
         ? resolve('/issues/[incident_id]', { incident_id: String(data.issueSummary.issues[0].id) })
-        : resolve('/issues')}
+        : resolve('issues')}
       class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-warning/50 bg-warning/10 px-4 py-3 text-sm text-fg-primary hover:border-warning focus-visible:outline-2 focus-visible:outline-glockyco"
     >
       <span class="size-2 rounded-full bg-warning" aria-hidden="true"></span>
@@ -194,7 +195,7 @@
                   <!-- eslint-disable svelte/no-navigation-without-resolve -- The internal URL appends a range to a resolved route. -->
                   <a
                     href={asset.kind === 'review'
-                      ? `${resolve('/activity')}?type=review&subject=${encodeURIComponent(asset.reviewId)}&sentiment=${asset.sentiment}&range=${data.range}`
+                      ? `${resolve('activity')}?type=review&subject=${encodeURIComponent(asset.reviewId)}&sentiment=${asset.sentiment}&range=${data.range}`
                       : `${resolve('/performance/[asset_id]', { asset_id: asset.id })}?range=${data.range}`}
                     class="text-fg-primary underline-offset-4 hover:text-glockyco hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-glockyco"
                     >{asset.name}</a
@@ -204,13 +205,18 @@
                     <span class="mt-1 block text-xs font-normal text-fg-muted">Steam</span>
                   {:else}
                     <span
-                      class={`mt-1 block text-xs font-normal ${asset.kind === 'review' ? (asset.sentiment === 'positive' ? 'text-success' : 'text-danger') : 'text-fg-muted'}`}
-                      >{asset.platform}</span
+                      class={`mt-1 block text-xs font-normal ${
+                        asset.kind === 'review'
+                          ? asset.sentiment === 'positive'
+                            ? 'text-success'
+                            : 'text-danger'
+                          : 'text-fg-muted'
+                      }`}>{asset.platform}</span
                     >
                   {/if}
                   {#if asset.stale && asset.lastCapturedAt !== null}
                     <a
-                      href={resolve('/issues')}
+                      href={resolve('issues')}
                       class="mt-1 block text-xs font-normal text-warning underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-glockyco"
                       >Not collected since {collectedFormat.format(new Date(asset.lastCapturedAt))}</a
                     >
@@ -242,7 +248,7 @@
                         vector-effect="non-scaling-stroke"
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                      />
+                      ></polyline>
                     </svg>
                   {:else}
                     <span class="text-xs text-fg-muted">No trend yet</span>
@@ -292,7 +298,7 @@
         <h2 id="{section.id}-activity-heading" class="text-lg font-bold tracking-tight">{section.title}</h2>
         <!-- eslint-disable svelte/no-navigation-without-resolve -- The internal URL appends a type filter to a resolved route. -->
         <a
-          href={`${resolve('/activity')}?type=${section.type}&range=${data.range}`}
+          href={`${resolve('activity')}?type=${section.type}&range=${data.range}`}
           class="text-xs font-semibold text-glockyco hover:underline focus-visible:outline-2 focus-visible:outline-glockyco"
           >View all →</a
         >

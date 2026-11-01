@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
-import { d1Fixture, migrationsThrough } from '$lib/server/db/test-d1';
+import { d1Fixture, migrationsThrough } from '#lib/server/db/test-d1.js';
 import { getIssue } from './queries';
 import {
   claimManualRetry,

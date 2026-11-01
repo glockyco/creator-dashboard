@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { IncidentRow } from './model';
 import { getIssues, getIssueSummary } from './queries';
 
-vi.mock('$lib/sources/registry', () => ({
+vi.mock('#lib/sources/registry.js', () => ({
   sources: ['retrying', 'failed', 'never', 'stale', 'healthy', 'recovered'].map((id) => ({
     id,
     name: id.toUpperCase(),

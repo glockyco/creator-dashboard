@@ -111,7 +111,7 @@
         >
         <a
           class="inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-bg-primary px-4 py-2 text-sm font-medium text-fg-muted outline-none transition-colors hover:border-glockyco/50 hover:text-fg-primary focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary"
-          href={resolve('/activity')}>Clear</a
+          href={resolve('activity')}>Clear</a
         >
       </div>
     </div>
@@ -123,7 +123,7 @@
       <p class="mt-2 text-sm text-fg-muted">Adjust the filters or clear them to see more activity.</p>
       <a
         class="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-bg-primary px-4 py-2 text-sm font-semibold text-fg-primary outline-none transition-colors hover:border-glockyco/50 focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-secondary"
-        href={resolve('/activity')}>Clear all filters</a
+        href={resolve('activity')}>Clear all filters</a
       >
     </section>
   {:else}
@@ -210,8 +210,11 @@
       {#if data.nextPageHref}
         <a
           class="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-border bg-bg-secondary px-5 py-2 text-sm font-semibold text-fg-primary outline-none transition-colors hover:border-glockyco/50 hover:text-glockyco focus-visible:ring-2 focus-visible:ring-glockyco focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary sm:w-auto"
-          href={resolve(data.nextPageHref as '/activity')}>Next page <span class="ml-2" aria-hidden="true">→</span></a
+          href={resolve(data.nextPageHref as '/activity')}
         >
+          Next page
+          <span class="ml-2" aria-hidden="true">→</span>
+        </a>
       {/if}
     </nav>
   {/if}

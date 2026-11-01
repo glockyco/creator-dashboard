@@ -1,4 +1,4 @@
-import type { CollectionIncident } from '$lib/server/incidents';
+import type { CollectionIncident } from '#lib/server/incidents/index.js';
 import { postDiscord } from './discord';
 
 const dashboardOrigin = 'https://dashboard.glockyco.com';

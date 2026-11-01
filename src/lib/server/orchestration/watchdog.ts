@@ -1,5 +1,5 @@
-import { sources } from '$lib/sources/registry';
-import { maybeSendFailureAlert, maybeSendRecoveryAlert } from '$lib/server/alerts/dedup';
+import { sources } from '#lib/sources/registry.js';
+import { maybeSendFailureAlert, maybeSendRecoveryAlert } from '#lib/server/alerts/dedup.js';
 import {
   incidentColumns,
   isStale,
@@ -7,8 +7,8 @@ import {
   openStaleIncident,
   type CollectionIncident,
   type IncidentRow
-} from '$lib/server/incidents/model';
-import { log } from '$lib/server/log';
+} from '#lib/server/incidents/model.js';
+import { log } from '#lib/server/log.js';
 
 /** An incident open this long alerts even if no single failure was permanent or exhausted its retries. */
 export const ESCALATE_AFTER_MS = 3 * 3_600_000;

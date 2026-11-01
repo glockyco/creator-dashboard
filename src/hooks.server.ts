@@ -1,6 +1,8 @@
-import { dev } from '$app/environment';
-import { error, type Handle } from '@sveltejs/kit';
-import { assertAccessJwt, AuthError } from '$lib/server/auth/access';
+import { error } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit/hooks';
+import { env } from 'cloudflare:workers';
+import { dev } from '$app/env';
+import { assertAccessJwt, AuthError } from '#lib/server/auth/access.js';
 
 export const handle: Handle = async ({ event, resolve }) => {
   // Local Vite dev mode runs entirely on the loopback interface and has
@@ -10,8 +12,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   // because `dev` is a build-time false constant.
   if (dev) return resolve(event);
   try {
-    if (!event.platform?.env) throw error(500, 'Cloudflare platform env missing');
-    await assertAccessJwt(event.request, event.platform.env);
+    await assertAccessJwt(event.request, env);
     return resolve(event);
   } catch (err) {
     if (err instanceof AuthError) throw error(401, 'Unauthorized');

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
-  import { nativeDestinations } from '$lib/native-links';
+  import { nativeDestinations } from '#lib/native-links.js';
 
   const navigation = [
     { href: '/', label: 'Overview' },

@@ -1,4 +1,4 @@
-import { sources, type SourceDef } from '$lib/sources/registry';
+import { sources, type SourceDef } from '#lib/sources/registry.js';
 import { incidentColumns, isStale, mapIncident, type CollectionIncident, type IncidentRow } from './model';
 
 export type IssueState = 'retrying' | 'failed' | 'recovered';

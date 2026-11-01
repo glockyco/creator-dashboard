@@ -1,4 +1,4 @@
-import type { SourceDef } from '$lib/sources/registry';
+import type { SourceDef } from '#lib/sources/registry.js';
 
 export type JsonRecord = Record<string, string | number | boolean | null>;
 
