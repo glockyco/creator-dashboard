@@ -1,26 +1,23 @@
+import { env } from 'cloudflare:workers';
 import { describe, expect, it, vi } from 'vitest';
 import { POST } from './+server';
 
 const dispatch = vi.hoisted(() => ({ dispatchDueSources: vi.fn() }));
 
-vi.mock('$lib/server/orchestration/dispatcher', () => ({
+vi.mock('#lib/server/orchestration/dispatcher.js', () => ({
   dispatchDueSources: dispatch.dispatchDueSources
 }));
 
 describe('POST /api/smoke/hourly', () => {
   it('returns 404 unless smoke endpoints are explicitly enabled', async () => {
-    await expect(
-      POST({
-        platform: { env: { SMOKE_ENDPOINTS_ENABLED: 'false' } },
-        request: new Request('http://test/smoke')
-      } as never)
-    ).rejects.toMatchObject({ status: 404 });
+    env.SMOKE_ENDPOINTS_ENABLED = 'false';
+    await expect(POST({ request: new Request('http://test/smoke') } as never)).rejects.toMatchObject({ status: 404 });
   });
 
   it('dispatches only the requested source when enabled', async () => {
     dispatch.dispatchDueSources.mockResolvedValue(1);
+    env.SMOKE_ENDPOINTS_ENABLED = 'true';
     const response = await POST({
-      platform: { env: { SMOKE_ENDPOINTS_ENABLED: 'true' } },
       request: new Request('http://test/smoke', {
         method: 'POST',
         body: JSON.stringify({ sourceId: 'steam-reviews-erenshor' })

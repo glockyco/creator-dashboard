@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { dispatchDueSources } from './dispatcher';
 
-vi.mock('$lib/sources/registry', () => ({
+vi.mock('#lib/sources/registry.js', () => ({
   sources: [
     {
       id: 'source-a',

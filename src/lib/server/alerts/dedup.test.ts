@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CollectionIncident } from '$lib/server/incidents';
+import type { CollectionIncident } from '#lib/server/incidents/index.js';
 import { maybeSendFailureAlert, maybeSendRecoveryAlert } from './dedup';
 
 const postDiscord = vi.hoisted(() => vi.fn());

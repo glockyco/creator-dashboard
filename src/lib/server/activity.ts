@@ -1,4 +1,4 @@
-import { sourceRecords } from '$lib/sources/registry-data';
+import { sourceRecords } from '#lib/sources/registry-data.js';
 
 export type ActivityKind = 'review' | 'wiki_edit';
 export type ActivitySentiment = 'positive' | 'negative';

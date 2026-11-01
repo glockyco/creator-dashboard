@@ -1,5 +1,5 @@
 import { error, type Cookies } from '@sveltejs/kit';
-import type { Range } from '$lib/performance/series';
+import type { Range } from '#lib/performance/series.js';
 
 const RANGE_COOKIE = 'range';
 const DEFAULT_RANGE: Range = '30d';

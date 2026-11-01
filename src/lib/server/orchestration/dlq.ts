@@ -1,8 +1,8 @@
-import { getSource } from '$lib/sources/registry';
-import type { JobMsg } from '$lib/types/orchestration';
-import { maybeSendFailureAlert } from '$lib/server/alerts/dedup';
-import { markRetriesExhausted } from '$lib/server/incidents';
-import { log } from '$lib/server/log';
+import { getSource } from '#lib/sources/registry.js';
+import type { JobMsg } from '#lib/types/orchestration.js';
+import { maybeSendFailureAlert } from '#lib/server/alerts/dedup.js';
+import { markRetriesExhausted } from '#lib/server/incidents/index.js';
+import { log } from '#lib/server/log.js';
 
 export async function consumeDlqMessage(message: Message<JobMsg>, env: Env, now = Date.now()): Promise<void> {
   const sourceId = message.body.source_id;

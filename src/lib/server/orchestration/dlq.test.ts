@@ -6,11 +6,11 @@ const mocks = vi.hoisted(() => ({
   maybeSendFailureAlert: vi.fn()
 }));
 
-vi.mock('$lib/sources/registry', () => ({
+vi.mock('#lib/sources/registry.js', () => ({
   getSource: (sourceId: string) => (sourceId === 'source-a' ? { id: sourceId } : undefined)
 }));
-vi.mock('$lib/server/incidents', () => ({ markRetriesExhausted: mocks.markRetriesExhausted }));
-vi.mock('$lib/server/alerts/dedup', () => ({ maybeSendFailureAlert: mocks.maybeSendFailureAlert }));
+vi.mock('#lib/server/incidents/index.js', () => ({ markRetriesExhausted: mocks.markRetriesExhausted }));
+vi.mock('#lib/server/alerts/dedup.js', () => ({ maybeSendFailureAlert: mocks.maybeSendFailureAlert }));
 
 const exhausted = { id: 9, sourceId: 'source-a', latestError: 'invalid JSON response', latestStatusCode: 200 };
 

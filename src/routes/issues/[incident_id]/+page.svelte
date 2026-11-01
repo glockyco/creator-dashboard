@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
-  import { invalidateAll } from '$app/navigation';
+  import { refreshAll } from '$app/navigation';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -13,7 +13,7 @@
   $effect(() => {
     if (!retryQueued || data.incident.resolvedAt !== null) return;
     const timer = setInterval(async () => {
-      await invalidateAll();
+      await refreshAll();
       if (!data.retryQueued) locallyQueued = false;
     }, 10_000);
     return () => clearInterval(timer);
@@ -73,10 +73,8 @@
 <section class="space-y-6">
   <a
     class="inline-flex items-center gap-2 text-sm font-medium text-glockyco hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-glockyco"
-    href={resolve('/issues')}
+    href={resolve('issues')}><span aria-hidden="true">←</span> All issues</a
   >
-    <span aria-hidden="true">←</span> All issues
-  </a>
 
   <header
     class={`rounded-xl border p-5 sm:p-6 ${

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { describe, expect, it, vi } from 'vitest';
-import { FetchError, InvalidResponseError } from '$lib/connectors/http';
+import { FetchError, InvalidResponseError } from '#lib/connectors/http.js';
 import { classify, parseRetryAfter } from './errors';
 
 describe('orchestration error classification', () => {

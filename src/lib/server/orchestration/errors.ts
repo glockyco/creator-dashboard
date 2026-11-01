@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { FetchError, InvalidResponseError } from '$lib/connectors/http';
-import { parseRetryAfter as parseConnectorRetryAfter } from '$lib/connectors/errors';
+import { FetchError, InvalidResponseError } from '#lib/connectors/http.js';
+import { parseRetryAfter as parseConnectorRetryAfter } from '#lib/connectors/errors.js';
 
 export type FailureTier = 'transient' | 'rate_limited' | 'permanent';
 export type Failure = {

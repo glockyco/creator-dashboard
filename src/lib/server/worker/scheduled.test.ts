@@ -3,10 +3,10 @@ import { scheduled } from './scheduled';
 
 const workerMocks = vi.hoisted(() => ({ dispatchDueSources: vi.fn(), runWatchdog: vi.fn() }));
 
-vi.mock('$lib/server/orchestration/dispatcher', () => ({
+vi.mock('#lib/server/orchestration/dispatcher.js', () => ({
   dispatchDueSources: workerMocks.dispatchDueSources
 }));
-vi.mock('$lib/server/orchestration/watchdog', () => ({ runWatchdog: workerMocks.runWatchdog }));
+vi.mock('#lib/server/orchestration/watchdog.js', () => ({ runWatchdog: workerMocks.runWatchdog }));
 
 function controller(cron: string): ScheduledController {
   return {

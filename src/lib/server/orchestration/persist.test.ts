@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { d1Fixture } from '$lib/server/db/test-d1';
-import type { FetcherOutput } from '$lib/types/domain';
+import { d1Fixture } from '#lib/server/db/test-d1.js';
+import type { FetcherOutput } from '#lib/types/domain.js';
 import { successStatements } from './persist';
 
 const review = (body: string, votedUp: boolean, ts = 1_000): FetcherOutput['events'][number] => ({

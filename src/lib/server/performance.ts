@@ -3,7 +3,7 @@ import {
   performanceReviewDefinitions,
   type PerformanceAssetDefinition,
   type PerformanceReviewDefinition
-} from '$lib/performance/assets';
+} from '#lib/performance/assets.js';
 import {
   boundaryToleranceMs,
   rangeDurationMs,
@@ -12,9 +12,9 @@ import {
   type PerformancePoint,
   type PerformanceSeriesSummary,
   type Range
-} from '$lib/performance/series';
+} from '#lib/performance/series.js';
 
-export type { Range } from '$lib/performance/series';
+export type { Range } from '#lib/performance/series.js';
 
 export type PerformanceAsset = {
   id: string;
