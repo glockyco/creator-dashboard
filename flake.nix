@@ -40,7 +40,7 @@
             # Runs Vite, Wrangler, and the `--experimental-strip-types`
             # scripts. .github/workflows/ci.yml pins the same major
             # independently; keep both in step.
-            pkgs.nodejs_24
+            pkgs.nodejs_26
 
             # pnpm 11 can bootstrap the native binary pinned by packageManager.
             pkgs.pnpm_11
