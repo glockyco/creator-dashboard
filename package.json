@@ -59,7 +59,7 @@
     "vitest": "^5.0.1",
     "wrangler": "^4.137.0"
   },
-  "packageManager": "pnpm@11.28.8",
+  "packageManager": "pnpm@11.28.10",
   "imports": {
     "#lib": "./src/lib/index.js",
     "#lib/*": "./src/lib/*"
