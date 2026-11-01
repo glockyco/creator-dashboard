@@ -1,4 +1,4 @@
-import { rename, writeFile } from 'node:fs/promises';
+import { appendFile, rename, writeFile } from 'node:fs/promises';
 
 const out = '.svelte-kit/cloudflare/worker.js';
 const svelteWorkerOut = '.svelte-kit/cloudflare/sveltekit-worker.js';
@@ -18,4 +18,8 @@ export default {
 `;
 
 await writeFile(out, content);
+// The adapter's .assetsignore names `_worker.js`, the Pages entry point. This
+// Worker's entry points are `worker.js` (wrangler.toml `main`) and the
+// renamed SvelteKit entry, so ignore both, or Workers serves them as files.
+await appendFile('.svelte-kit/cloudflare/.assetsignore', '\nworker.js\nsveltekit-worker.js\n');
 console.log(`wrote ${out}`);
