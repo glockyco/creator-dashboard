@@ -42,8 +42,7 @@
             # independently; keep both in step.
             pkgs.nodejs_24
 
-            # pnpm switches to the exact `packageManager` version in
-            # package.json; Nix supplies the matching major as the bootstrap.
+            # pnpm 11 can bootstrap the native binary pinned by packageManager.
             pkgs.pnpm_11
           ];
         };
